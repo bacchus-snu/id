@@ -1,0 +1,11 @@
+{
+  "name": "bacchus-id",
+  "version": "0.0.1-dev",
+  "description": "Directory service for SNUCSE accounts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bacchus-snu/id.git"
+  },
+  "author": "Bacchus <contact@bacchus.snucse.org>",
+  "license": "MIT"
+}

@@ -1,0 +1,13 @@
+# Dependencies
+/node_modules/
+
+# Logs
+*.log
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Editors
+.*.swp
+.*.swo
