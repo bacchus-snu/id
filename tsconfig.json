@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "noImplicitAny": true,
+    "sourceMap": false,
+    "outDir": "dist/api"
+  },
+  "include": [
+    "src/api/*.ts"
+  ]
+}
