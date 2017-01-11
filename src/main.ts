@@ -4,6 +4,7 @@
 
 import * as express from 'express';
 
+import config from './config';
 import api from './api/main';
 
 const id = express();
