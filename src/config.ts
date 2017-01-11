@@ -15,9 +15,17 @@ interface Configuration {
 }
 
 /* Specifying configuration file from command line */
-let configFilePath = process.argv[2] === '-c' ? process.argv[3] : null;
-if (configFilePath === undefined) {
-  console.error('Path to the configuration file is missing after \'-c\' option.');
+let configFilePath: string;
+if (process.argv[2] === '-c') {
+  if (process.argv[3] === undefined) {
+    console.error('Path to the configuration file is missing after \'-c\' option');
+    process.exit(1);
+  }
+  configFilePath = process.argv[3];
+} else if (process.argv[2] === undefined) {
+  configFilePath = null;
+} else {
+  console.error('Unknown option:', process.argv[2]);
   process.exit(1);
 }
 
