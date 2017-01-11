@@ -3,9 +3,9 @@
   "version": "0.0.1-dev",
   "description": "Directory service for SNUCSE accounts",
   "scripts": {
-    "build": "rm -rf dist/api && tsc",
+    "build": "rm -rf dist && tsc",
     "lint": "tslint --project tsconfig.json",
-    "start": "node dist/api/main.js"
+    "start": "node dist/main.js"
   },
   "repository": {
     "type": "git",

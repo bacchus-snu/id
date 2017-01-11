@@ -4,9 +4,9 @@
     "target": "es6",
     "noImplicitAny": true,
     "sourceMap": false,
-    "outDir": "dist/api"
+    "outDir": "dist"
   },
   "include": [
-    "src/api/*.ts"
+    "src/**/*.ts"
   ]
 }
