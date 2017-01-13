@@ -4,6 +4,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import * as pg from 'pg';
 
 /* Configuration interface */
 
@@ -18,17 +19,7 @@ interface ConnectRedisConfig {
   logErrors?: boolean;
 }
 
-interface Configuration {
-  /**
-   * trust proxy value
-   */
-  trustProxy: boolean | number | string;
-
-  /**
-   * Base path that this web application is served.
-   */
-  path: string;
-
+interface SessionConfig {
   /**
    * The number of milliseconds to use when calculating cookie expiry time.
    */
@@ -42,17 +33,39 @@ interface Configuration {
   /**
    * The name of session ID cookie.
    */
-  sessionName: string;
+  name: string;
 
   /**
    * Secret used to sign the session ID cookie.
    */
-  sessionSecret: string;
+  secret: string;
+}
+
+interface Configuration {
+  /**
+   * trust proxy value
+   */
+  trustProxy: boolean | number | string;
+
+  /**
+   * Base path that this web application is served.
+   */
+  path: string;
+
+  /**
+   * Session config
+   */
+  session: SessionConfig;
 
   /**
    * Redis config.
    */
   redis: ConnectRedisConfig;
+
+  /**
+   * posgresql pool config
+   */
+  postgres: pg.PoolConfig;
 }
 
 /* Specifying configuration file from command line */

@@ -13,15 +13,15 @@ import api from './api/main';
 const sessionConfig: session.SessionOptions = {
   cookie: {
     httpOnly: true,
-    maxAge: config.cookieMaxAge,
+    maxAge: config.session.cookieMaxAge,
     path: config.path,
-    secure: config.secureCookie,
+    secure: config.session.secureCookie,
   },
-  name: config.sessionName,
+  name: config.session.name,
   resave: false,
   rolling: false,
   saveUninitialized: false,
-  secret: config.sessionSecret,
+  secret: config.session.secret,
   store: new (connectRedis(session))(config.redis),
   unset: 'destroy',
 };
