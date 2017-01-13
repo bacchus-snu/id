@@ -7,11 +7,52 @@ import * as fs from 'fs';
 
 /* Configuration interface */
 
+interface ConnectRedisConfig {
+  host?: string;
+  port?: number;
+  socket?: string;
+  url?: string;
+  db?: number;
+  pass?: string;
+  prefix?: string;
+  logErrors?: boolean;
+}
+
 interface Configuration {
+  /**
+   * trust proxy value
+   */
+  trustProxy: boolean | number | string;
+
+  /**
+   * Base path that this web application is served.
+   */
+  path: string;
+
+  /**
+   * The number of milliseconds to use when calculating cookie expiry time.
+   */
+  cookieMaxAge: number | null;
+
   /**
    * Whether or not to set session cookies as secure.
    */
   secureCookie: boolean;
+
+  /**
+   * The name of session ID cookie.
+   */
+  sessionName: string;
+
+  /**
+   * Secret used to sign the session ID cookie.
+   */
+  sessionSecret: string;
+
+  /**
+   * Redis config.
+   */
+  redis: ConnectRedisConfig;
 }
 
 /* Specifying configuration file from command line */

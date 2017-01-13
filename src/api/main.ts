@@ -7,7 +7,13 @@ import * as express from 'express';
 const api = express.Router({ caseSensitive: true, strict: true });
 
 api.get('/', (req, res) => {
-  res.send('Hello, id!');
+  const session = req.session;
+  if (session['views']) {
+    session['views']++;
+  } else {
+    session['views'] = 1;
+  }
+  res.send('Welcome ' + session['views']);
 });
 
 export default api;
