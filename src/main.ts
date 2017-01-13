@@ -8,6 +8,7 @@ import * as connectRedis from 'connect-redis';
 
 import config from './config';
 import api from './api/main';
+import ldap from './ldap/main';
 
 /* session configurations */
 const sessionConfig: session.SessionOptions = {
@@ -35,3 +36,6 @@ id.use(session(sessionConfig));
 id.use('/api', api);
 
 id.listen(3000);
+
+/* ldap */
+ldap.listen(1389);
