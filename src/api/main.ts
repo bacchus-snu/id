@@ -16,15 +16,8 @@ api.get('/', (req, res) => {
     session['views'] = 1;
   }
   res.send('Welcome ' + session['views']);
-  pg.connect((err, client, done) => {
-    if (err) {
-      console.error('error pool', err);
-      return;
-    }
-    client.query('INSERT INTO a values ($1)', [session['views']], (err, result) => {
-      done();
-    });
-  });
+  const queryResult = pg.query('INSERT INTO a values ($1)', [session['views']]);
+  queryResult.then(r => console.log('inserted'));
 });
 
 export default api;
