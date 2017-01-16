@@ -23,13 +23,14 @@ create table users (
   name text unique not null,
   password_digest bytea,
   blocked boolean not null,
+  blocked_expire_after timestamp without time zone,
   realname text,
   snuid_bachelor text,
   snuid_master text,
   snuid_doctor text,
   reset_token text,
   reset_expire_after timestamp without time zone,
-  uid integer,
+  uid integer unique,
   shell_id integer references shells(shell_id)
 );
 
@@ -47,8 +48,10 @@ alter table users add column primary_email_address_id integer references email_a
 create table classes (
   class_id serial primary key,
   owner_id integer references users(user_id) not null,
+  primary_contact_address_id integer references email_addresses(email_address_id) not null,
   expire_after timestamp without time zone,
-  activated boolean not null,
+  accepted boolean not null,
+  application_text text,
   enroll_secret text,
   enroll_auto boolean not null
 );
@@ -70,7 +73,8 @@ create table users_classes (
   user_id integer references users(user_id) not null,
   class_id integer references classes(class_id) not null,
   expire_after timestamp without time zone,
-  activated boolean not null,
+  accepted boolean not null,
+  application_text text,
   primary key(user_id, class_id)
 );
 
@@ -78,7 +82,8 @@ create table users_nodes (
   user_id integer references users(user_id) not null,
   node_id integer not null,
   expire_after timestamp without time zone,
-  activated boolean not null,
+  accepted boolean not null,
+  application_text text,
   primary key(user_id, node_id)
 );
 
@@ -107,7 +112,8 @@ create table users_closure (
 );
 
 create table hosts (
-  hostname text primary key,
+  host_id serial primary key,
+  hostname text unique not null,
   ipv4 text unique,
   ldap_listen boolean not null,
   access_node_id integer
