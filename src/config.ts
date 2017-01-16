@@ -39,6 +39,35 @@ interface SessionConfig {
    * Secret used to sign the session ID cookie.
    */
   secret: string;
+
+  /**
+   * Redis config.
+   */
+  redis: ConnectRedisConfig;
+}
+
+interface LDAPConfig {
+  /**
+   * DN for users subtree.
+   * e.g. ou=users,dc=directory,dc=snucse,dc=org
+   */
+  dnUsers: string;
+
+  /**
+   * Minimum posix uid for users.
+   */
+  minUid: number;
+
+  /**
+   * DN for group entry.
+   * e.g. cn=cseusers,dc=directory,dc=snucse,dc=org
+   */
+  dnGroup: string;
+
+  /**
+   * Posix gid for group.
+   */
+  gid: number;
 }
 
 interface Configuration {
@@ -58,14 +87,14 @@ interface Configuration {
   session: SessionConfig;
 
   /**
-   * Redis config.
-   */
-  redis: ConnectRedisConfig;
-
-  /**
    * posgresql pool config
    */
   postgres: pg.PoolConfig;
+
+  /**
+   * ldap
+   */
+  ldap: LDAPConfig;
 }
 
 /* Specifying configuration file from command line */

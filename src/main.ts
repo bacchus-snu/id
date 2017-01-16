@@ -23,7 +23,7 @@ const sessionConfig: session.SessionOptions = {
   rolling: false,
   saveUninitialized: false,
   secret: config.session.secret,
-  store: new (connectRedis(session))(config.redis),
+  store: new (connectRedis(session))(config.session.redis),
   unset: 'destroy',
 };
 sessionConfig.cookie['sameSite'] = 'strict';

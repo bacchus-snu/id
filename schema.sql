@@ -1,3 +1,4 @@
+drop table if exists shells cascade;
 drop table if exists users cascade;
 drop table if exists email_addresses cascade;
 drop table if exists classes cascade;
@@ -9,18 +10,27 @@ drop table if exists users_terms cascade;
 drop table if exists users_masks cascade;
 drop type if exists node_term_status cascade;
 drop table if exists users_closure cascade;
+drop table if exists hosts cascade;
+drop table if exists reserved_usernames cascade;
+
+create table shells (
+  shell_id serial primary key,
+  shell text unique not null
+);
 
 create table users (
   user_id serial primary key,
-  account text unique not null,
+  name text unique not null,
   password_digest bytea,
   blocked boolean not null,
-  name text,
+  realname text,
   snuid_bachelor text,
   snuid_master text,
   snuid_doctor text,
   reset_token text,
-  reset_expire_after timestamp without time zone
+  reset_expire_after timestamp without time zone,
+  uid integer,
+  shell_id integer references shells(shell_id)
 );
 
 create table email_addresses (
@@ -94,4 +104,15 @@ create table users_closure (
   node_id integer not null,
   term_status node_term_status not null,
   primary key(user_id, node_id)
+);
+
+create table hosts (
+  hostname text primary key,
+  ipv4 text unique,
+  ldap_listen boolean not null,
+  access_node_id integer
+);
+
+create table reserved_usernames (
+  name text primary key
 );
