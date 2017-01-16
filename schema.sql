@@ -53,6 +53,7 @@ create table classes (
   accepted boolean not null,
   application_text text,
   enroll_secret text,
+  enroll_secret_expire_after timestamp without time zone,
   enroll_auto boolean not null
 );
 

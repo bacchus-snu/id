@@ -7,6 +7,7 @@ interface Class {
   accepted: boolean;
   applicationText?: string;
   enrollAuto: boolean;
+  enrollSecretExprieAfter?: Date;
 }
 
 interface StoredClass extends Class {
