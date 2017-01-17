@@ -54,10 +54,6 @@ export function byUid(client: Client, uid: number): Promise<UserModel> {
 
 /**
  * List of users, ordered by user_id
- * Search condition:
- *   - null: ignored
- *   - string x: LIKE %x%
- *   - number, boolean: equality
  */
 export function list(client: Client, length?: number, after?: number, condition?: StoredUser):
   Promise<Array<UserModel>> {

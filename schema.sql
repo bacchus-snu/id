@@ -14,110 +14,110 @@ drop table if exists hosts cascade;
 drop table if exists reserved_usernames cascade;
 
 create table shells (
-  shell_id serial primary key,
+  shellId serial primary key,
   shell text unique not null
 );
 
 create table users (
-  user_id serial primary key,
+  userId serial primary key,
   name text unique not null,
-  password_digest bytea,
+  passwordDigest bytea,
   blocked boolean not null,
-  blocked_expire_after timestamp without time zone,
+  blockedExpireAfter timestamp without time zone,
   realname text,
-  snuid_bachelor text,
-  snuid_master text,
-  snuid_doctor text,
-  reset_token text,
-  reset_expire_after timestamp without time zone,
+  snuidBachelor text,
+  snuidMaster text,
+  snuidDoctor text,
+  resetToken text,
+  resetExpireAfter timestamp without time zone,
   uid integer unique,
-  shell_id integer references shells(shell_id)
+  shellId integer references shells(shellId)
 );
 
 create table email_addresses (
-  email_address_id serial primary key,
-  user_id integer references users(user_id) not null,
-  address_local text not null,
-  address_domain text not null,
+  emailAddressId serial primary key,
+  userId integer references users(userId) not null,
+  addressLocal text not null,
+  addressDomain text not null,
   verified boolean not null,
-  unique(address_local, address_domain)
+  unique(addressLocal, addressDomain)
 );
 
-alter table users add column primary_email_address_id integer references email_addresses(email_address_id);
+alter table users add column primaryEmailAddressId integer references email_addresses(emailAddressId);
 
 create table classes (
-  class_id serial primary key,
-  owner_id integer references users(user_id) not null,
-  primary_contact_address_id integer references email_addresses(email_address_id) not null,
-  expire_after timestamp without time zone,
+  classId serial primary key,
+  ownerId integer references users(userId) not null,
+  primaryContactAddressId integer references email_addresses(emailAddressId) not null,
+  expireAfter timestamp without time zone,
   accepted boolean not null,
-  application_text text,
-  enroll_secret text,
-  enroll_secret_expire_after timestamp without time zone,
-  enroll_auto boolean not null
+  applicationText text,
+  enrollSecret text,
+  enrollSecretExpireAfter timestamp without time zone,
+  enrollAuto boolean not null
 );
 
 create table class_names (
-  class_id integer references classes(class_id) not null,
-  language_code varchar(2) not null,
+  classId integer references classes(classId) not null,
+  languageCode varchar(2) not null,
   name text not null,
-  primary key(class_id, language_code)
+  primary key(classId, languageCode)
 );
 
 create table class_implies (
-  class_id integer references classes(class_id) not null,
-  node_id integer not null,
-  primary key(class_id, node_id)
+  classId integer references classes(classId) not null,
+  nodeId integer not null,
+  primary key(classId, nodeId)
 );
 
 create table users_classes (
-  user_id integer references users(user_id) not null,
-  class_id integer references classes(class_id) not null,
-  expire_after timestamp without time zone,
+  userId integer references users(userId) not null,
+  classId integer references classes(classId) not null,
+  expireAfter timestamp without time zone,
   accepted boolean not null,
-  application_text text,
-  primary key(user_id, class_id)
+  applicationText text,
+  primary key(userId, classId)
 );
 
 create table users_nodes (
-  user_id integer references users(user_id) not null,
-  node_id integer not null,
-  expire_after timestamp without time zone,
+  userId integer references users(userId) not null,
+  nodeId integer not null,
+  expireAfter timestamp without time zone,
   accepted boolean not null,
-  application_text text,
-  primary key(user_id, node_id)
+  applicationText text,
+  primary key(userId, nodeId)
 );
 
 create table users_terms (
-  user_id integer references users(user_id) not null,
-  term_id integer not null,
-  term_revision integer not null,
-  accepted_on timestamp without time zone not null,
-  primary key(user_id, term_id)
+  userId integer references users(userId) not null,
+  termId integer not null,
+  termRevision integer not null,
+  acceptedOn timestamp without time zone not null,
+  primary key(userId, termId)
 );
 
 create table users_masks (
-  user_id integer references users(user_id) not null,
-  node_id integer not null,
-  expire_after timestamp without time zone,
-  primary key(user_id, node_id)
+  userId integer references users(userId) not null,
+  nodeId integer not null,
+  expireAfter timestamp without time zone,
+  primary key(userId, nodeId)
 );
 
 create type node_term_status as enum ('ok', 'old', 'no');
 
 create table users_closure (
-  user_id integer references users(user_id) not null,
-  node_id integer not null,
-  term_status node_term_status not null,
-  primary key(user_id, node_id)
+  userId integer references users(userId) not null,
+  nodeId integer not null,
+  termStatus node_term_status not null,
+  primary key(userId, nodeId)
 );
 
 create table hosts (
-  host_id serial primary key,
+  hostId serial primary key,
   hostname text unique not null,
   ipv4 text unique,
-  ldap_listen boolean not null,
-  access_node_id integer
+  ldapListen boolean not null,
+  accessNodeId integer
 );
 
 create table reserved_usernames (
