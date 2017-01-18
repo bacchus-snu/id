@@ -3,7 +3,9 @@ import * as path from 'path';
 import * as pg from 'pg';
 
 interface Configuration {
+  // express trust proxy configuration
   trustProxy: boolean | number | string;
+  // Base path that this web application is served
   path: string;
   session: SessionConfig;
   postgres: pg.PoolConfig;
@@ -11,10 +13,16 @@ interface Configuration {
 }
 
 interface SessionConfig {
+  // Maximum age of the cookie (in milliseconds)
+  // Undefined value means no maximum age is set
   cookieMaxAge?: number;
+  // Secure attribute of the cookie
   secureCookie: boolean;
+  // The name of the session id cookie
   name: string;
+  // A secret used to sign the session id cookie
   secret: string;
+  // Redis session store config
   redis: ConnectRedisConfig;
 }
 
@@ -30,14 +38,19 @@ interface ConnectRedisConfig {
 }
 
 interface LDAPConfig {
+  // DN for users subtree
   dnUsers: string;
+  // Minimum POSIX uid for users
   minUid: number;
+  // DN for POSIX group entry
   dnGroup: string;
+  // POSIX gid for group
   gid: number;
 }
 
 const config = parseCommandLineAndGetConfig();
 
+// Warning: unsafe casting
 export default config as Configuration;
 
 /**
