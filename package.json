@@ -4,7 +4,7 @@
   "description": "Directory service for SNUCSE accounts",
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "lint": "tslint --project tsconfig.json",
+    "lint": "tslint --project tsconfig.json --type-check",
     "start": "node dist/main.js"
   },
   "repository": {
