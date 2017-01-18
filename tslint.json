@@ -78,10 +78,10 @@
     "no-eval": true,
     "no-for-in-array": true,
     "no-inferrable-types": true,
-    "no-inferred-empty-object-types": false,
+    "no-inferred-empty-object-type": false,
     "no-internal-module": true,
     "no-invalid-this": true,
-    "no-magic-numbers": true,
+    "no-magic-numbers": false,
     "no-mergeable-namespace": false,
     "no-namespace": true,
     "no-null-keyword": false,
@@ -89,14 +89,13 @@
     "no-reference": true,
     "no-require-imports": true,
     "no-shadowed-variable": true,
-    "no-string-literal": true,
+    "no-string-literal": false,
     "no-string-throw": true,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unsafe-finally": true,
     "no-unused-expression": true,
     "no-unused-new": true,
-    "no-unused-variable": true,
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
@@ -135,7 +134,7 @@
       "single"
     ],
     "radix": true,
-    "restrict-plus-operands": true,
+    "restrict-plus-operands": false,
     "semicolon": [
       true,
       "always"
@@ -156,12 +155,10 @@
     "triple-equals": true,
     "typedef": [
       true,
-      "arrow-parameter",
       "call-signature",
       "member-variable-declaration",
       "parameter",
-      "property-declaration",
-      "variable-declaration"
+      "property-declaration"
     ],
     "typedef-whitespace": [
       true,

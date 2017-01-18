@@ -1,13 +1,6 @@
-/**
- * Postgresql connection pool
- */
-
 import * as pg from 'pg';
 
-import config from '../config';
-
 type Client = pg.Client;
-const pool = new pg.Pool(config.postgres);
-const query = pool.query;
+// const pool = new pg.Pool(config.postgres);
 
-export { pool, query, Client };
+export { Client };
