@@ -5,11 +5,10 @@ type QueryResult = pg.QueryResult;
 const pool = new pg.Pool(config.postgres);
 
 /**
- * A PostgreSQL transaction based on a connection which can be safely returned
- * to the connection pool.
- * Use 'commit' or 'rollback' to release the underlying connection.
+ * A PostgreSQL connection which can be safely returned to the connection pool.
+ * Use 'close' to release the underlying connection.
  */
-export class Transaction {
+export class Connection {
   constructor(private client: pg.Client, private done: (err?: any) => void) {
   }
 
@@ -49,22 +48,46 @@ export class Transaction {
     });
   }
 
-  public commit(): Promise<QueryResult> {
-    return this.close('COMMIT');
-  }
-
-  public rollback(): Promise<QueryResult> {
-    return this.close('ROLLBACK');
-  }
-
-  private close(query: string): Promise<QueryResult> {
-    const promisedResult = this.simpleQuery(query);
-    const promisedDone = promisedResult.then(result => {
+  public close(): Promise<{}> {
+    return new Promise((resolve, reject) => {
       this.done();
-      return Promise.resolve(result);
+      resolve();
     });
-    return promisedDone;
   }
+}
+
+/**
+ * A PostgreSQL transaction based on a connection which can be safely returned
+ * to the connection pool.
+ * Use 'commit' or 'rollback' to release the underlying connection.
+ */
+export class Transaction extends Connection {
+  public async commit(): Promise<QueryResult> {
+    const result = await this.simpleQuery('COMMIT');
+    await this.close();
+    return result;
+  }
+
+  public async rollback(): Promise<QueryResult> {
+    const result = await this.simpleQuery('ROLLBACK');
+    await this.close();
+    return result;
+  }
+}
+
+/**
+ * Create a new Connection object
+ */
+export function connect(): Promise<Connection> {
+  return new Promise((resolve, reject) => {
+    pool.connect((error, client, done) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(new Connection(client, done));
+      }
+    });
+  });
 }
 
 /**
