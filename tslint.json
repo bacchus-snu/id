@@ -128,7 +128,7 @@
     ],
     "prefer-const": true,
     "prefer-for-of": true,
-    "promise-function-async": true,
+    "promise-function-async": false,
     "quotemark": [
       true,
       "single"
@@ -143,7 +143,7 @@
       true,
       "never"
     ],
-    "strict-boolean-expressions": true,
+    "strict-boolean-expressions": false,
     "switch-default": true,
     "trailing-comma": [
       true,
