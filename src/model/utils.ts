@@ -9,7 +9,7 @@ const pool = new pg.Pool(config.postgres);
  * to the connection pool.
  * Use 'commit' or 'rollback' to release the underlying connection.
  */
-class Transaction {
+export class Transaction {
   constructor(private client: pg.Client, private done: (err?: any) => void) {
   }
 

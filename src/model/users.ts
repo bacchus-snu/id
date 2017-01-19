@@ -1,3 +1,5 @@
+import { begin, Transaction } from './utils';
+
 interface User {
   userId?: number;
   name?: string;
@@ -16,4 +18,11 @@ interface User {
   primaryEmailAddressId?: number | null;
 }
 
-export default User;
+/**
+ * Create a transaction object with users_closure lock on the specified user
+ */
+async function beginWithUserLock(userId: number): Promise<Transaction> {
+  const transaction: Transaction = await begin();
+  await transaction.query('SELECT pg_advisory_lock(userId) from users where userId = $1', [userId]);
+  return transaction;
+}
