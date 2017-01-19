@@ -9,7 +9,7 @@ drop table if exists users_nodes cascade;
 drop table if exists users_terms cascade;
 drop table if exists users_masks cascade;
 drop type if exists node_term_status cascade;
-drop table if exists users_closure cascade;
+drop table if exists users_valids cascade;
 drop table if exists hosts cascade;
 drop table if exists reserved_usernames cascade;
 
@@ -108,7 +108,7 @@ create table users_masks (
 
 create type node_term_status as enum ('ok', 'old', 'no');
 
-create table users_closure (
+create table users_valids (
   userId integer references users(userId) not null,
   nodeId integer not null,
   termStatus node_term_status not null,
@@ -120,7 +120,8 @@ create table hosts (
   hostname text unique not null,
   ipv4 text unique,
   ldapListen boolean not null,
-  accessNodeId integer
+  accessNodeId integer,
+  traceNodeId integer
 );
 
 create table reserved_usernames (
