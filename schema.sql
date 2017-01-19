@@ -31,7 +31,8 @@ create table users (
   resetToken text,
   resetExpireAfter timestamp without time zone,
   uid integer unique,
-  shellId integer references shells(shellId)
+  shellId integer references shells(shellId),
+  timezone text
 );
 
 create table email_addresses (
@@ -40,6 +41,8 @@ create table email_addresses (
   addressLocal text not null,
   addressDomain text not null,
   verified boolean not null,
+  verifyToken text,
+  verifyExpireAfter timestamp without time zone,
   unique(addressLocal, addressDomain)
 );
 

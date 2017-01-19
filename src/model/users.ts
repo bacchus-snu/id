@@ -12,6 +12,7 @@ interface User {
   resetExpireAfter?: Date | null;
   uid?: number | null;
   shellId?: number | null;
+  timezone?: string | null;
   primaryEmailAddressId?: number | null;
 }
 
