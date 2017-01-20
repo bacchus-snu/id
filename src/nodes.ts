@@ -2,28 +2,41 @@ import Conflict from './model/Conflict';
 import Node from './model/Node';
 import { privacy, snucseTerm, emailTerm, appDevTerm, classTerm, advancedTerm, serverTerm, pcTerm } from './terms';
 
-// Users with this node can log in to id.snucse.org
-const individual: Node = {
+// This node enables storing privacy information of the user
+const account: Node = {
   nodeId: 0,
-  name: 'individual-account',
+  name: 'account',
   description: {
-    ko: '개인 계정',
-    en: 'Individual account',
+    ko: '계정',
+    en: 'Account',
   },
   implies: [],
   impliedBy: [],
   requiredTerms: [],
 };
 
+// Users with this node can log in to id.snucse.org
+const individual: Node = {
+  nodeId: 1,
+  name: 'individual-account',
+  description: {
+    ko: '개인 계정',
+    en: 'Individual account',
+  },
+  implies: [account],
+  impliedBy: [],
+  requiredTerms: [],
+};
+
 // Shared accounts bypass term acceptance checks.
 const shared = {
-  nodeId: 1,
+  nodeId: 2,
   name: 'shared-account',
   description: {
     ko: '공용 계정',
     en: 'Shared account',
   },
-  implies: [],
+  implies: [account],
   impliedBy: [],
   requiredTerms: [],
 };
@@ -32,7 +45,7 @@ const shared = {
 //   * query account details of other users
 //   * review and approve changes on CSE membership status of other users
 const staff = {
-  nodeId: 3,
+  nodeId: 4,
   name: 'staff-privilege',
   description: {
     ko: '행정 권한',
@@ -49,7 +62,7 @@ const staff = {
 //   * modify granted nodes of other users
 //   * block/unblock users
 const admin = {
-  nodeId: 2,
+  nodeId: 3,
   name: 'admin-privilege',
   description: {
     ko: '관리 권한',
@@ -248,6 +261,7 @@ const cse = {
     en: 'CSE member',
   },
   implies: [
+    individual,
     snucseFull,
     thirdPartyApps,
     publishApps,
@@ -271,7 +285,7 @@ const ece = {
     ko: '전기·정보공학부로 전공진입한 컴반',
     en: 'ECE student from CSE class',
   },
-  implies: [snucseFull],
+  implies: [individual, snucseFull],
   impliedBy: [],
   requiredTerms: [privacy],
 };
