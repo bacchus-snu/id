@@ -8,7 +8,6 @@ drop table if exists users_classes cascade;
 drop table if exists users_nodes cascade;
 drop table if exists users_terms cascade;
 drop table if exists users_masks cascade;
-drop type if exists node_term_status cascade;
 drop table if exists users_valids cascade;
 drop table if exists hosts cascade;
 drop table if exists reserved_usernames cascade;
@@ -54,7 +53,7 @@ create table classes (
   primaryContactAddressId integer references email_addresses(emailAddressId) not null,
   expireAfter timestamp without time zone,
   accepted boolean not null,
-  applicationText text,
+  requestText text,
   enrollSecret text,
   enrollSecretExpireAfter timestamp without time zone,
   enrollAuto boolean not null
@@ -78,7 +77,7 @@ create table users_classes (
   classId integer references classes(classId) not null,
   expireAfter timestamp without time zone,
   accepted boolean not null,
-  applicationText text,
+  requestText text,
   primary key(userId, classId)
 );
 
@@ -87,7 +86,7 @@ create table users_nodes (
   nodeId integer not null,
   expireAfter timestamp without time zone,
   accepted boolean not null,
-  applicationText text,
+  requestText text,
   primary key(userId, nodeId)
 );
 
@@ -106,12 +105,11 @@ create table users_masks (
   primary key(userId, nodeId)
 );
 
-create type node_term_status as enum ('ok', 'old', 'no');
-
 create table users_valids (
   userId integer references users(userId) not null,
   nodeId integer not null,
-  termStatus node_term_status not null,
+  termOk boolean not null,
+  termSemi boolean not null,
   primary key(userId, nodeId)
 );
 

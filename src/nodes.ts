@@ -1,6 +1,25 @@
 import Conflict from './model/Conflict';
 import Node from './model/Node';
-import { privacy, snucseTerm, emailTerm, appDevTerm, classTerm, advancedTerm, serverTerm, pcTerm } from './terms';
+import * as terms from './terms';
+
+/**
+ * 1. Lifecycle of users
+ *   - Not exists -> Exists
+ *     To create a user, one of the following is needed
+ *       * A newly granted node
+ *       * A request for a node
+ *       * A new enrollment to an activated class
+ *       * A request for enrollment to a class
+ *  - Exists -> Not exists
+ *    A user is completely deleted from the system when
+ *      * There are no granted nodes
+ *      * There are no requests for nodes
+ *      * Users are not enrolled to any activated classes
+ *      * There are no enrollment requests to classes
+ *  - Alive as account
+ *    When 'account' node is in valid set of a user, the user 
+ *
+ */
 
 // This node enables storing privacy information of the user
 const account: Node = {
@@ -82,7 +101,7 @@ const snucse = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [snucseTerm],
+  requiredTerms: [terms.snucseTerm],
 };
 
 const snucseFull = {
@@ -106,7 +125,7 @@ const snucseProfile = {
   },
   implies: [snucse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const thirdPartyApps = {
@@ -130,7 +149,7 @@ const publishApps = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [appDevTerm],
+  requiredTerms: [terms.appDevTerm],
 };
 
 const snucseEmail = {
@@ -142,7 +161,7 @@ const snucseEmail = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [emailTerm],
+  requiredTerms: [terms.emailTerm],
 };
 
 const createClass = {
@@ -154,10 +173,10 @@ const createClass = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [classTerm],
+  requiredTerms: [terms.classTerm],
 };
 
-const advacedResourceQualification = {
+const advancedResourceQualification = {
   nodeId: 141,
   name: 'qualified-for-advanced-resource',
   description: {
@@ -190,7 +209,7 @@ const advancedResource = {
   },
   implies: [],
   impliedBy: [advancedResourceQualification, advancedResourceRequested],
-  requiredTerms: [advancedTerm],
+  requiredTerms: [terms.advancedTerm],
 };
 
 const martini = {
@@ -202,7 +221,7 @@ const martini = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [serverTerm],
+  requiredTerms: [terms.serverTerm],
 };
 
 const mimosa = {
@@ -214,7 +233,7 @@ const mimosa = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [serverTerm],
+  requiredTerms: [terms.serverTerm],
 };
 
 const sync = {
@@ -238,7 +257,7 @@ const software = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [pcTerm],
+  requiredTerms: [terms.pcTerm],
 };
 
 const hardware = {
@@ -250,7 +269,7 @@ const hardware = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [pcTerm],
+  requiredTerms: [terms.pcTerm],
 };
 
 const cse = {
@@ -287,7 +306,7 @@ const ece = {
   },
   implies: [individual, snucseFull],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const major = {
@@ -299,7 +318,7 @@ const major = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const doub = {
@@ -311,7 +330,7 @@ const doub = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const minor = {
@@ -323,7 +342,7 @@ const minor = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const combined = {
@@ -335,7 +354,7 @@ const combined = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const extended = {
@@ -347,7 +366,7 @@ const extended = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const exchange = {
@@ -359,7 +378,7 @@ const exchange = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const undergraduateAlumni = {
@@ -371,7 +390,7 @@ const undergraduateAlumni = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const preliminary = {
@@ -383,7 +402,7 @@ const preliminary = {
   },
   implies: [snucseProfile],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const club = {
@@ -395,7 +414,7 @@ const club = {
   },
   implies: [shared],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const graduate = {
@@ -407,7 +426,7 @@ const graduate = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const graduateAlumni = {
@@ -419,7 +438,7 @@ const graduateAlumni = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const office = {
@@ -431,7 +450,7 @@ const office = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const professor = {
@@ -443,7 +462,7 @@ const professor = {
   },
   implies: [cse],
   impliedBy: [],
-  requiredTerms: [privacy],
+  requiredTerms: [terms.privacy],
 };
 
 const traceSNUCSE = {

@@ -1,5 +1,10 @@
 import Term from './model/Term';
 
+const PLACEHOLDER = {
+  ko: 'PLACEHOLDER',
+  en: 'PLACEHOLDER',
+};
+
 // id.snucse.org privacy policy
 export const privacy = {
   termId: 0,
@@ -9,7 +14,7 @@ export const privacy = {
     en: 'Privacy policy',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 // www.snucse.org terms of use
@@ -21,7 +26,7 @@ export const snucseTerm = {
     en: 'SNUCSE Terms of Service',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 // @snucse.org mail term
@@ -33,7 +38,7 @@ export const emailTerm = {
     en: 'SNUCSE Mail Terms of Service',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const appDevTerm = {
@@ -44,7 +49,7 @@ export const appDevTerm = {
     en: 'Guideline for app developers',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const classTerm = {
@@ -55,18 +60,18 @@ export const classTerm = {
     en: 'Classroom Terms of Service',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const advancedTerm = {
   termId: 5,
-  name: 'advanced-guideline',
+  name: 'advanced-resource-guideline',
   title: {
     ko: '고급 실습 자원 이용규칙',
     en: 'Guideline for advanced resources'
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const serverTerm = {
@@ -77,7 +82,7 @@ export const serverTerm = {
     en: 'Guideline for using servers',
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const pcTerm = {
@@ -88,7 +93,7 @@ export const pcTerm = {
     en: 'Guideline for using lab PCs'
   },
   currentRevision: 0,
-  contents: [],
+  contents: PLACEHOLDER,
 };
 
 export const terms: Array<Term> = [
