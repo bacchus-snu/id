@@ -87,10 +87,10 @@ export const serverTerm = {
 
 export const pcTerm = {
   termId: 7,
-  name: 'lab-pc-guideline',
+  name: 'pc-guideline',
   title: {
-    ko: '실습실 PC 이용규칙',
-    en: 'Guideline for using lab PCs'
+    ko: 'PC 이용규칙',
+    en: 'Guideline for using PCs'
   },
   currentRevision: 0,
   contents: PLACEHOLDER,

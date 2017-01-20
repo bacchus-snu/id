@@ -5,20 +5,40 @@ import * as terms from './terms';
 /**
  * 1. Lifecycle of users
  *   - Not exists -> Exists
- *     To create a user, one of the following is needed
- *       * A newly granted node
- *       * A request for a node
- *       * A new enrollment to an activated class
- *       * A request for enrollment to a class
- *  - Exists -> Not exists
- *    A user is completely deleted from the system when
- *      * There are no granted nodes
- *      * There are no requests for nodes
- *      * Users are not enrolled to any activated classes
- *      * There are no enrollment requests to classes
- *  - Alive as account
- *    When 'account' node is in valid set of a user, the user 
+ *     To create a user, a newly granted node is needed
+ *   - Exists -> Not exists
+ *     A user is completely deleted from the system when the valid set of the user becomes empty
+ *   - Alive as an account <-> A ghost
+ *     A user is alive as an account if and only if 'account' node is in valid set of the user.
+ *     The system can retain personal information about the user only if the user is alive;
+ *     the system must drop all personal information when the user loses 'account' node.
  *
+ * 2. Implementation of lifecycle policy of individual accounts
+ * Newly registered individual users are granted with 'individual-account' node. This enables
+ * new users to navigate id.snucse.org system and take appropriate actions such as requesting
+ * for nodes, applying for classes, accepting terms, or providing their personal information.
+ *
+ * This basic 'indiviual-account' node is not eternal. This node will expire after the specified
+ * duration from the time when the user is created. Users must obtain other valid nodes
+ * to prevent their account from deleted. This enables stale accounts to be deleted.
+ *
+ * 3. Trace nodes
+ * For some external systems plugged to id.snucse.org, users are distinguished by POSIX uid,
+ * username, or userId. Deleting stale accounts enables id.snucse.org to recycle these
+ * identifiers. Resources named by these identifiers must be freed before deleting users,
+ * in order to prevent unexpected data leakage to future users that happened to be assigned
+ * with those identifiers.
+ *
+ * That's where 'trace nodes' comes in. As users authenticate to external systems and
+ * creates traces with these identifiers, trace nodes are granted. Trace nodes never imply
+ * 'account' node, so that personal information of users with trace nodes only are never stored.
+ * A user can be deleted only after all traces are safely purged from external systems.
+ */
+
+export const nodes: Array<Node> = [];
+
+/**
+ * Node 0~6: Basic user category definition.
  */
 
 // This node enables storing privacy information of the user
@@ -33,8 +53,9 @@ const account: Node = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(account);
 
-// Users with this node can log in to id.snucse.org
+// Users with this node in valid set can log in to id.snucse.org
 const individual: Node = {
   nodeId: 1,
   name: 'individual-account',
@@ -44,8 +65,9 @@ const individual: Node = {
   },
   implies: [account],
   impliedBy: [],
-  requiredTerms: [],
+  requiredTerms: [terms.privacy],
 };
+nodes.push(individual);
 
 // Shared accounts bypass term acceptance checks.
 const shared = {
@@ -57,8 +79,9 @@ const shared = {
   },
   implies: [account],
   impliedBy: [],
-  requiredTerms: [],
+  requiredTerms: [terms.privacy],
 };
+nodes.push(shared);
 
 // Users with staff privilege can
 //   * query account details of other users
@@ -74,6 +97,7 @@ const staff = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(staff);
 
 // Administrators have staff privileges and they can
 //   * review and approve classes submitted by users
@@ -91,7 +115,20 @@ const admin = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(admin);
 
+/**
+ * Node 1xx: Privileges.
+ *   - 10x: SNUCSE, CSE community site
+ *   - 11x: id.snucse.org apps (formerly SNUCSE AppCenter)
+ *   - 12x: mail.snucse.org
+ *   - 13x: id.snucse.org classroom service
+ *   - 14x: advanced resource
+ *   - 15x: servers
+ *   - 16x: PCs
+ */
+
+// users with this node can log in to www.snucse.org
 const snucse = {
   nodeId: 100,
   name: 'use-snucse',
@@ -103,6 +140,7 @@ const snucse = {
   impliedBy: [],
   requiredTerms: [terms.snucseTerm],
 };
+nodes.push(snucse);
 
 const snucseFull = {
   nodeId: 101,
@@ -115,6 +153,7 @@ const snucseFull = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(snucseFull);
 
 const snucseProfile = {
   nodeId: 102,
@@ -125,8 +164,9 @@ const snucseProfile = {
   },
   implies: [snucse],
   impliedBy: [],
-  requiredTerms: [terms.privacy],
+  requiredTerms: [],
 };
+nodes.push(snucseProfile);
 
 const thirdPartyApps = {
   nodeId: 110,
@@ -139,6 +179,7 @@ const thirdPartyApps = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(thirdPartyApps);
 
 const publishApps = {
   nodeId: 111,
@@ -151,6 +192,7 @@ const publishApps = {
   impliedBy: [],
   requiredTerms: [terms.appDevTerm],
 };
+nodes.push(publishApps);
 
 const snucseEmail = {
   nodeId: 120,
@@ -163,6 +205,7 @@ const snucseEmail = {
   impliedBy: [],
   requiredTerms: [terms.emailTerm],
 };
+nodes.push(snucseEmail);
 
 const createClass = {
   nodeId: 130,
@@ -175,6 +218,7 @@ const createClass = {
   impliedBy: [],
   requiredTerms: [terms.classTerm],
 };
+nodes.push(createClass);
 
 const advancedResourceQualification = {
   nodeId: 141,
@@ -187,6 +231,7 @@ const advancedResourceQualification = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(advancedResourceQualification);
 
 const advancedResourceRequested = {
   nodeId: 142,
@@ -197,8 +242,9 @@ const advancedResourceRequested = {
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [],
+  requiredTerms: [terms.advancedTerm],
 };
+nodes.push(advancedResourceRequested);
 
 const advancedResource = {
   nodeId: 140,
@@ -209,8 +255,9 @@ const advancedResource = {
   },
   implies: [],
   impliedBy: [advancedResourceQualification, advancedResourceRequested],
-  requiredTerms: [terms.advancedTerm],
+  requiredTerms: [],
 };
+nodes.push(advancedResource);
 
 const martini = {
   nodeId: 150,
@@ -223,6 +270,7 @@ const martini = {
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
 };
+nodes.push(martini);
 
 const mimosa = {
   nodeId: 151,
@@ -235,18 +283,20 @@ const mimosa = {
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
 };
+nodes.push(mimosa);
 
 const sync = {
   nodeId: 160,
-  name: 'home-synchronization-enabled',
+  name: 'lab-home-sync-enabled',
   description: {
     ko: '실습실 홈 디렉토리 동기화 사용',
     en: 'Use home directory synchronization for lab PCs',
   },
   implies: [],
   impliedBy: [],
-  requiredTerms: [],
+  requiredTerms: [terms.pcTerm],
 };
+nodes.push(sync);
 
 const software = {
   nodeId: 161,
@@ -259,6 +309,7 @@ const software = {
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
 };
+nodes.push(software);
 
 const hardware = {
   nodeId: 162,
@@ -271,9 +322,40 @@ const hardware = {
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
 };
+nodes.push(hardware);
+
+const loungeLab = {
+  nodeId: 163,
+  name: 'use-lounge-lab-pc',
+  description: {
+    ko: '314호 실습 PC 사용',
+    en: 'Access lab PCs in room 314',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [terms.pcTerm],
+};
+nodes.push(loungeLab);
+
+const loungeWin = {
+  nodeId: 164,
+  name: 'use-lounge-win-pc',
+  description: {
+    ko: '314호 Windows PC 사용',
+    en: 'Access Windows PCs in room 314',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [terms.pcTerm],
+};
+nodes.push(loungeWin);
+
+/**
+ * Node 0~6: Basic user category definition. (cont'd)
+ */
 
 const cse = {
-  nodeId: 4,
+  nodeId: 5,
   name: 'cse-member',
   description: {
     ko: '컴퓨터공학부 구성원',
@@ -292,13 +374,16 @@ const cse = {
     sync,
     software,
     hardware,
+    loungeLab,
+    loungeWin,
   ],
   impliedBy: [],
-  requiredTerms: [],
+  requiredTerms: [terms.privacy],
 };
+nodes.push(cse);
 
 const ece = {
-  nodeId: 5,
+  nodeId: 6,
   name: 'ece-from-cse',
   description: {
     ko: '전기·정보공학부로 전공진입한 컴반',
@@ -308,6 +393,13 @@ const ece = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(ece);
+
+/**
+ * Node 10~29: CSE membership
+ *   - 1x: undergraduate
+ *   - 2x: others
+ */
 
 const major = {
   nodeId: 10,
@@ -320,6 +412,7 @@ const major = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(major);
 
 const doub = {
   nodeId: 11,
@@ -332,6 +425,7 @@ const doub = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(doub);
 
 const minor = {
   nodeId: 12,
@@ -344,6 +438,7 @@ const minor = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(minor);
 
 const combined = {
   nodeId: 13,
@@ -356,6 +451,7 @@ const combined = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(combined);
 
 const extended = {
   nodeId: 14,
@@ -368,6 +464,7 @@ const extended = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(extended);
 
 const exchange = {
   nodeId: 15,
@@ -380,6 +477,7 @@ const exchange = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(exchange);
 
 const undergraduateAlumni = {
   nodeId: 16,
@@ -392,6 +490,7 @@ const undergraduateAlumni = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(undergraduateAlumni);
 
 const preliminary = {
   nodeId: 17,
@@ -400,10 +499,11 @@ const preliminary = {
     ko: '예비 새내기',
     en: 'Undergraduate preliminary',
   },
-  implies: [snucseProfile],
+  implies: [individual, snucseProfile],
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(preliminary);
 
 const club = {
   nodeId: 18,
@@ -416,6 +516,7 @@ const club = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(club);
 
 const graduate = {
   nodeId: 20,
@@ -428,6 +529,7 @@ const graduate = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(graduate);
 
 const graduateAlumni = {
   nodeId: 21,
@@ -440,6 +542,7 @@ const graduateAlumni = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(graduateAlumni);
 
 const office = {
   nodeId: 22,
@@ -452,6 +555,7 @@ const office = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(office);
 
 const professor = {
   nodeId: 23,
@@ -464,10 +568,15 @@ const professor = {
   impliedBy: [],
   requiredTerms: [terms.privacy],
 };
+nodes.push(professor);
 
-const traceSNUCSE = {
+/**
+ * 2xx: Traces
+ */
+
+const usedSNUCSE = {
   nodeId: 200,
-  name: 'trace-snucse',
+  name: 'used-snucse',
   description: {
     ko: '스누씨 사용기록이 있음',
     en: 'Used SNUCSE',
@@ -476,10 +585,11 @@ const traceSNUCSE = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(usedSNUCSE);
 
-const traceApp = {
+const usedThirdPartyApp = {
   nodeId: 201,
-  name: 'trace-3rd-app',
+  name: 'used-3rd-party-app',
   description: {
     ko: '제 3자 앱 사용 기록이 있음',
     en: 'Used third party app(s)',
@@ -488,6 +598,7 @@ const traceApp = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(usedThirdPartyApp);
 
 const hasSNUCSEEmail = {
   nodeId: 202,
@@ -500,50 +611,64 @@ const hasSNUCSEEmail = {
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(hasSNUCSEEmail);
 
-const traceMartini = {
+const hasMartiniHome = {
   nodeId: 203,
-  name: 'trace-martini',
+  name: 'has-martini-home',
   description: {
-    ko: '마티니 사용기록이 있음',
-    en: 'Used martini',
+    ko: '마티니에 홈 디렉토리가 있음',
+    en: 'Has home directory in martini',
   },
   implies: [],
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(hasMartiniHome);
 
-const traceMimosa = {
+const hasMimosaHome = {
   nodeId: 204,
-  name: 'trace-mimosa',
+  name: 'has-mimosa-home',
   description: {
-    ko: '미모사 사용기록이 있음',
-    en: 'Used mimosa',
+    ko: '미모사에 홈 디렉토리가 있음',
+    en: 'Has home directory in mimosa',
   },
   implies: [],
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(hasMimosaHome);
 
-const traceLab = {
+const hasSherryHome = {
   nodeId: 205,
-  name: 'trace-lab-pc',
+  name: 'has-sherry-home',
   description: {
-    ko: '실습실 PC 사용기록이 있음',
-    en: 'Used lab PC(s)',
+    ko: '셰리에 홈 디렉토리가 있음',
+    en: 'Has home directory in sherry',
   },
   implies: [],
   impliedBy: [],
   requiredTerms: [],
 };
+nodes.push(hasSherryHome);
 
-export const nodes: Array<Node> = [
-  individual,
-  shared,
-  staff,
-  admin,
-];
+const hasKofHome = {
+  nodeId: 206,
+  name: 'has-kof-home',
+  description: {
+    ko: '키스 오브 파이어에 홈 디렉토리가 있음',
+    en: 'Has home directory in kiss of fire',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [],
+};
+nodes.push(hasKofHome);
 
+/**
+ * Some basic nodes or CSE membership nodes conflicts with each other
+ * Clearing conflicts by revoking old nodes helps maintaining user database cleaner
+ */
 export const conflicts: Array<Conflict> = [
   { a:shared , b: individual },
   { a:shared , b: staff },

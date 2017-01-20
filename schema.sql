@@ -49,8 +49,8 @@ alter table users add column primaryEmailAddressId integer references email_addr
 
 create table classes (
   classId serial primary key,
-  ownerId integer references users(userId) not null,
-  primaryContactAddressId integer references email_addresses(emailAddressId) not null,
+  ownerId integer references users(userId),
+  primaryContactAddressId integer references email_addresses(emailAddressId),
   expireAfter timestamp without time zone,
   accepted boolean not null,
   requestText text,
