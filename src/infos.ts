@@ -1,5 +1,3 @@
-import Info from './model/Info';
-
 export const realname = {
   columnName: 'realname',
   description: {

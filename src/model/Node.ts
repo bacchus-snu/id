@@ -10,9 +10,9 @@ import Term from './Term';
  *   - Expiry time may be provided when granting nodes.
  *   - Records in users_nodes table represents one of the granted nodes (if accepted is true),
  *     or requests by users for the node that has not been granted. (if accepted is false)
- * When a node is being granted, the following checks must be done
- *   - Any granted nodes that conflicts with the node must be revoked.
- *   - Users must have been submitted all 'requiredInfo' of this node
+ * When a node is being granted, any granted nodes that conflicts with the node must be revoked.
+ * When requesting for a node to be granted, users must have been submitted all 'requiredInfo'
+ * of the node
  *
  * 2. Approved
  * A node may be approved to a user because of one of the following reasons:
@@ -74,6 +74,10 @@ interface Node {
   // For any permissions related to this node to be valid,
   // user must accept all the specified terms.
   requiredTerms: Array<Term>;
+  // List of required information for this node to be granted
+  requiredInfo: Array<Info>;
+  // List of domains of verified email addresses that is required for this node to be granted
+  requiredVerifiedEmail: Array<string>;
 }
 
 export default Node;
