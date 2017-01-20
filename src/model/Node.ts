@@ -1,4 +1,5 @@
 import I18N from './I18N';
+import Info from './Info';
 import Term from './Term';
 
 /**

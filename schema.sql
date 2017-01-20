@@ -27,6 +27,7 @@ create table users (
   snuidBachelor text,
   snuidMaster text,
   snuidDoctor text,
+  snuidMasterDoctor text,
   resetToken text,
   resetExpireAfter timestamp without time zone,
   uid integer unique,

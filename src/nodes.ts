@@ -38,7 +38,7 @@ import * as terms from './terms';
 export const nodes: Array<Node> = [];
 
 /**
- * Node 0~6: Basic user category definition.
+ * Node 0~8: Basic user category definition.
  */
 
 // This node enables storing privacy information of the user
@@ -351,7 +351,7 @@ const loungeWin = {
 nodes.push(loungeWin);
 
 /**
- * Node 0~6: Basic user category definition. (cont'd)
+ * Node 0~8: Basic user category definition. (cont'd)
  */
 
 const cse = {
@@ -395,10 +395,37 @@ const ece = {
 };
 nodes.push(ece);
 
+const preliminary = {
+  nodeId: 7,
+  name: 'preliminary',
+  description: {
+    ko: '예비 새내기',
+    en: 'Undergraduate preliminary',
+  },
+  implies: [individual, snucseProfile],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+};
+nodes.push(preliminary);
+
+const club = {
+  nodeId: 8,
+  name: 'club',
+  description: {
+    ko: '동아리',
+    en: 'Student club',
+  },
+  implies: [shared],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+};
+nodes.push(club);
+
 /**
  * Node 10~29: CSE membership
  *   - 1x: undergraduate
- *   - 2x: others
+ *   - 2x: graduate
+ *   - 3x: others
  */
 
 const major = {
@@ -492,47 +519,8 @@ const undergraduateAlumni = {
 };
 nodes.push(undergraduateAlumni);
 
-const preliminary = {
-  nodeId: 17,
-  name: 'preliminary',
-  description: {
-    ko: '예비 새내기',
-    en: 'Undergraduate preliminary',
-  },
-  implies: [individual, snucseProfile],
-  impliedBy: [],
-  requiredTerms: [terms.privacy],
-};
-nodes.push(preliminary);
-
-const club = {
-  nodeId: 18,
-  name: 'club',
-  description: {
-    ko: '동아리',
-    en: 'Student club',
-  },
-  implies: [shared],
-  impliedBy: [],
-  requiredTerms: [terms.privacy],
-};
-nodes.push(club);
-
-const graduate = {
-  nodeId: 20,
-  name: 'graduate',
-  description: {
-    ko: '대학원생',
-    en: 'Graduate student',
-  },
-  implies: [cse],
-  impliedBy: [],
-  requiredTerms: [terms.privacy],
-};
-nodes.push(graduate);
-
 const graduateAlumni = {
-  nodeId: 21,
+  nodeId: 20,
   name: 'graduate-alumni',
   description: {
     ko: '대학원 졸업',
@@ -544,8 +532,47 @@ const graduateAlumni = {
 };
 nodes.push(graduateAlumni);
 
-const office = {
+const master = {
+  nodeId: 21,
+  name: 'master-course',
+  description: {
+    ko: '석사과정',
+    en: 'Master course',
+  },
+  implies: [cse],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+};
+nodes.push(master);
+
+const doctor = {
   nodeId: 22,
+  name: 'doctoral-course',
+  description: {
+    ko: '박사과정',
+    en: 'Doctoral course',
+  },
+  implies: [cse],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+};
+nodes.push(doctor);
+
+const masterDoctor = {
+  nodeId: 23,
+  name: 'master-doctoral-course',
+  description: {
+    ko: '석박통합과정',
+    en: 'Master-doctoral course',
+  },
+  implies: [cse],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+};
+nodes.push(masterDoctor);
+
+const office = {
+  nodeId: 30,
   name: 'cse-staff',
   description: {
     ko: '컴퓨터공학부 행정실',
@@ -558,7 +585,7 @@ const office = {
 nodes.push(office);
 
 const professor = {
-  nodeId: 23,
+  nodeId: 31,
   name: 'cse-professor',
   description: {
     ko: '컴퓨터공학부 교수',
@@ -683,7 +710,9 @@ export const conflicts: Array<Conflict> = [
   { a: major, b: exchange },
   { a: major, b: undergraduateAlumni },
   { a: major, b: preliminary },
-  { a: major, b: graduate },
+  { a: major, b: master },
+  { a: major, b: doctor },
+  { a: major, b: masterDoctor },
   { a: major, b: graduateAlumni },
   { a: doub, b: minor },
   { a: doub, b: combined },
@@ -691,32 +720,49 @@ export const conflicts: Array<Conflict> = [
   { a: doub, b: exchange },
   { a: doub, b: undergraduateAlumni },
   { a: doub, b: preliminary },
-  { a: doub, b: graduate },
+  { a: doub, b: master },
+  { a: doub, b: doctor },
+  { a: doub, b: masterDoctor },
   { a: doub, b: graduateAlumni },
   { a: minor, b: combined },
   { a: minor, b: extended },
   { a: minor, b: exchange },
   { a: minor, b: undergraduateAlumni },
   { a: minor, b: preliminary },
-  { a: minor, b: graduate },
+  { a: minor, b: master },
+  { a: minor, b: doctor },
+  { a: minor, b: masterDoctor },
   { a: minor, b: graduateAlumni },
   { a: combined, b: extended },
   { a: combined, b: exchange },
   { a: combined, b: undergraduateAlumni },
   { a: combined, b: preliminary },
-  { a: combined, b: graduate },
+  { a: combined, b: master },
+  { a: combined, b: doctor },
+  { a: combined, b: masterDoctor },
   { a: combined, b: graduateAlumni },
   { a: extended, b: exchange },
   { a: extended, b: undergraduateAlumni },
   { a: extended, b: preliminary },
-  { a: extended, b: graduate },
+  { a: extended, b: master },
+  { a: extended, b: doctor },
+  { a: extended, b: masterDoctor },
   { a: extended, b: graduateAlumni },
   { a: exchange, b: undergraduateAlumni },
   { a: exchange, b: preliminary },
-  { a: exchange, b: graduate },
+  { a: exchange, b: master },
+  { a: exchange, b: doctor },
+  { a: exchange, b: masterDoctor },
   { a: exchange, b: graduateAlumni },
   { a: undergraduateAlumni, b: preliminary },
-  { a: preliminary, b: graduate },
+  { a: preliminary, b: master },
+  { a: preliminary, b: doctor },
+  { a: preliminary, b: masterDoctor },
   { a: preliminary, b: graduateAlumni },
-  { a: graduate, b: graduateAlumni },
+  { a: master, b: graduateAlumni },
+  { a: doctor, b: graduateAlumni },
+  { a: masterDoctor, b: graduateAlumni },
+  { a: master, b: doctor },
+  { a: master, b: masterDoctor },
+  { a: doctor, b: masterDoctor },
 ];
