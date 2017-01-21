@@ -76,10 +76,12 @@ export class Transaction extends Connection {
 
   /**
    * Acquires users_valids lock
+   * All operations that may require modifying users_valids table must obtain this lock
    */
-  public async lock(userId: number): Promise<QueryResult> {
-    return await this.preparedQuery('users_valids_lock',
+  public async lock(userId: number): Promise<TransactionWithLock> {
+    await this.preparedQuery('users_valids_lock',
       'select pg_advisory_lock(user_id) from users where user_id = $1', [userId]);
+    return this as TransactionWithLock;
   }
 }
 
@@ -139,8 +141,7 @@ export function beginWithLock(userId: number): Promise<TransactionWithLock> {
   const promisedBegin: Promise<TransactionWithLock> = promisedTransaction.then(transaction => {
     return transaction.simpleQuery('begin').then(result => Promise.resolve(transaction));
   });
-  const promisedLock: Promise<TransactionWithLock> = promisedBegin.then(transaction => {
-    return transaction.lock(userId).then(result => Promise.resolve(transaction));
-  });
+  const promisedLock: Promise<TransactionWithLock> = promisedBegin.then(transaction =>
+    transaction.lock(userId));
   return promisedLock;
 }

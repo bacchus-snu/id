@@ -77,8 +77,7 @@ export async function createUser(nodeId: number, expireAfter: Date | null,
   }
   const userId = await nameToUserId(transaction, name);
   // Promote Transaction to TransactionWithLock
-  await transaction.lock(userId);
-  const locked = transaction as TransactionWithLock;
+  const locked = await transaction.lock(userId);
   await grant(locked, userId, nodeId, expireAfter);
   await transaction.commit();
   return userId;
