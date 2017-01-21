@@ -33,6 +33,16 @@ export function userNameDuplicate(name: string): ErrorMessage {
 }
 
 /**
+ * username not found
+ */
+export function userNameNotFound(name: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `ID '${name}' not found`,
+    ko: `ID '${name}': 없습니다`,
+  });
+}
+
+/**
  * ReservedUserName emptyString
  */
 export const reservedUserNameEmpty = new ErrorMessage({

@@ -8,6 +8,6 @@
  * Get node by nodeId
  */
 export async function getById(nodeId: number): Promise<null> {
-  // TODO: throw an Error if not found
+  // TODO: throw an ErrorMessage if not found
   return null;
 }

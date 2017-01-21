@@ -21,7 +21,7 @@ import { begin, Connection, en } from './utils';
 async function nameToUserId(connection: Connection, name: string): Promise<number> {
   const select = await connection.query('select user_id from users where name = $1', [name]);
   if (select.rowCount === 0) {
-    throw new Error(`No user with name '${name}'`);
+    throw trans.userNameNotFound(name);
   }
   return select.rows[0].user_id;
 }
