@@ -5,6 +5,16 @@ type QueryResult = pg.QueryResult;
 const pool = new pg.Pool(config.postgres);
 
 /**
+ * Makes 'e'mtpy string 'n'ull
+ */
+export function en(text: string | null): string | null {
+  if (text === '') {
+    return null;
+  }
+  return text;
+}
+
+/**
  * A PostgreSQL connection which can be safely returned to the connection pool.
  * Use 'close' to release the underlying connection.
  */

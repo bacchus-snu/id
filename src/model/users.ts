@@ -1,5 +1,5 @@
 import * as trans from '../translations';
-import { begin, Connection, TransactionWithLock } from './utils';
+import { begin, Connection, en, TransactionWithLock } from './utils';
 
 /**
  * 1. Blocking a user
@@ -48,14 +48,11 @@ async function grant(locked: TransactionWithLock, userId: number, nodeId: number
  * Returns userId of the created user
  */
 export async function createUser(nodeId: number, expireAfter: Date | null,
-  name: string, realname: string | null, snuidBachelor: number | null,
-  snuidMaster: number | null, snuidDoctor: number | null, snuidMasterDoctor: number | null,
+  name: string, realname: string | null, snuidBachelor: string | null,
+  snuidMaster: string | null, snuidDoctor: string | null, snuidMasterDoctor: string | null,
   shellId: number | null, timezone: string | null): Promise<number> {
   if (name.length < 3 || !/^[a-z][a-z0-9]*$/.test(name)) {
     throw trans.userNameNotAllowed(name);
-  }
-  if (realname === '') {
-    throw trans.userRealnameEmpty;
   }
   const transaction = await begin();
   if (await isReservedUserName(transaction, name)) {
@@ -66,8 +63,8 @@ export async function createUser(nodeId: number, expireAfter: Date | null,
       `insert into users (name, realname, snuid_bachelor, snuid_master, snuid_doctor,
        snuid_master_doctor, shell_id, timezone, blocked)
        values ($1, $2, $3, $4, $5, $6, $7, $8, false)`,
-       [name, realname, snuidBachelor, snuidMaster, snuidDoctor, snuidMasterDoctor, shellId,
-       timezone],
+       [name, en(realname), en(snuidBachelor), en(snuidMaster), en(snuidDoctor),
+        en(snuidMasterDoctor), shellId, en(timezone)],
     );
   } catch (e) {
     if (e.constraint === 'users_name_key') {

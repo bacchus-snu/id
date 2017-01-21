@@ -10,11 +10,6 @@ export function unknownError(error: Error): ErrorMessage {
   }, error);
 }
 
-export const userNameRegexError = new ErrorMessage({
-  en: 'Empty ID not allowed',
-  ko: 'ID는 비어있어서는 안 됩니다',
-});
-
 /**
  * ID constraint check failed.
  */
@@ -26,11 +21,6 @@ ID는 3자 이상의 소문자 또는 숫자로만 구성되며, 숫자로 시�
 ID should be at least 3 characters, with lowercase letters or digits. ID canot start with a digit.`,
   });
 }
-
-export const userRealnameEmpty = new ErrorMessage({
-  en: 'Empty realname not allowed',
-  ko: '이름은 비어있어서는 안 됩니다',
-});
 
 /**
  * ID in use
