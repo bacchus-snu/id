@@ -1,6 +1,6 @@
+import * as infos from './infos';
 import Conflict from './model/Conflict';
 import Node from './model/Node';
-import * as infos from './infos';
 import * as terms from './terms';
 
 /**
@@ -8,7 +8,7 @@ import * as terms from './terms';
  *   - Not exists -> Exists
  *     To create a user, a newly granted node is needed
  *   - Exists -> Not exists
- *     A user is completely deleted from the system when the valid set of the user becomes empty
+ *     A user is completely deleted from the system when the user loses all granted nodes.
  *   - Alive as an account <-> A ghost
  *     A user is alive as an account if and only if 'account' node is in valid set of the user.
  *     The system can retain personal information about the user only if the user is alive;
@@ -792,9 +792,9 @@ nodes.push(hasKofHome);
  * Clearing conflicts by revoking old nodes helps maintaining user database cleaner
  */
 export const conflicts: Array<Conflict> = [
-  { a:shared , b: individual },
-  { a:shared , b: staff },
-  { a:shared , b: admin },
+  { a: shared, b: individual },
+  { a: shared, b: staff },
+  { a: shared, b: admin },
   { a: ece, b: major },
   { a: ece, b: exchange },
   { a: ece, b: preliminary },

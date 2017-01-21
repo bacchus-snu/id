@@ -1,28 +1,21 @@
-import { begin, Transaction } from './utils';
-
-interface User {
-  userId?: number;
-  name?: string;
-  passwordDigest?: Buffer | null;
-  blocked?: boolean;
-  blockedExpireAfter?: Date | null;
-  realname?: string | null;
-  snuidBachelor?: string | null;
-  snuidMaster?: string | null;
-  snuidDoctor?: string | null;
-  resetToken?: string | null;
-  resetExpireAfter?: Date | null;
-  uid?: number | null;
-  shellId?: number | null;
-  timezone?: string | null;
-  primaryEmailAddressId?: number | null;
-}
+import { begin } from './utils';
 
 /**
- * Create a transaction object with users_closure lock on the specified user
+ * Create a user with granted node
+ * Returns userId of the created user
  */
-async function beginWithUserLock(userId: number): Promise<Transaction> {
-  const transaction: Transaction = await begin();
-  await transaction.query('SELECT pg_advisory_lock(userId) from users where userId = $1', [userId]);
-  return transaction;
+export async function createUser(nodeId: number, expireAfter: Date | null,
+  name: string, realname: string | null, snuidBachelor: number | null,
+  snuidMaster: number | null, snuidDoctor: number | null, snuidMasterDoctor: number | null,
+  shellId: number | null, timezone: string | null): Promise<number> {
+  const transaction = await begin();
+  await transaction.query(
+    `insert into users (name, realname, snuidBachelor, snuidMaster, snuidDoctor,
+     snuidMasterDoctor, shellId, timezone)
+     values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+     [name, realname, snuidBachelor, snuidMaster, snuidDoctor, snuidMasterDoctor, shellId,
+     timezone],
+  );
+  await transaction.commit();
+  return 1;
 }

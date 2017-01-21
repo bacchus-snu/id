@@ -76,6 +76,15 @@ export class Transaction extends Connection {
 }
 
 /**
+ * A PostgreSQL transaction with users_valids lock on the specified user
+ */
+export class TransactionWithLock extends Transaction {
+  constructor(client: pg.Client, done: (err?: any) => void, readonly userId: number) {
+    super(client, done);
+  }
+}
+
+/**
  * Create a new Connection object
  */
 export function connect(): Promise<Connection> {
@@ -107,4 +116,28 @@ export function begin(): Promise<Transaction> {
     return transaction.simpleQuery('BEGIN').then(result => Promise.resolve(transaction));
   });
   return promisedBegin;
+}
+
+/**
+ * Create a new TransactionWithLock
+ */
+export function beginWithLock(userId: number): Promise<TransactionWithLock> {
+  const promisedTransaction: Promise<TransactionWithLock> = new Promise((resolve, reject) => {
+    pool.connect((error, client, done) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(new TransactionWithLock(client, done, userId));
+      }
+    });
+  });
+  const promisedBegin: Promise<TransactionWithLock> = promisedTransaction.then(transaction => {
+    return transaction.simpleQuery('BEGIN').then(result => Promise.resolve(transaction));
+  });
+  const promisedLock: Promise<TransactionWithLock> = promisedBegin.then(transaction => {
+    return transaction.preparedQuery('users_valids_lock',
+      'select pg_advisory_lock(userId) from users where userId = $1', [userId])
+      .then(result => Promise.resolve(transaction));
+  });
+  return promisedLock;
 }

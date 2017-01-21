@@ -68,7 +68,7 @@ export const advancedTerm = {
   name: 'advanced-resource-guideline',
   title: {
     ko: '고급 실습 자원 이용규칙',
-    en: 'Guideline for advanced resources'
+    en: 'Guideline for advanced resources',
   },
   currentRevision: 0,
   contents: PLACEHOLDER,
@@ -90,7 +90,7 @@ export const pcTerm = {
   name: 'pc-guideline',
   title: {
     ko: 'PC 이용규칙',
-    en: 'Guideline for using PCs'
+    en: 'Guideline for using PCs',
   },
   currentRevision: 0,
   contents: PLACEHOLDER,
