@@ -19,8 +19,11 @@ export async function insert(name: string): Promise<QueryResult> {
   }
   const conn = await connect();
   try {
-    return await conn.query('insert into reserved_usernames (name) values ($1)', [name]);
+    const insert = await conn.query('insert into reserved_usernames (name) values ($1)', [name]);
+    conn.close();
+    return insert;
   } catch (e) {
+    conn.close();
     if (e.constraint === 'reserved_usernames_pkey') {
       throw trans.userNameDuplicate(name);
     }
@@ -37,6 +40,7 @@ export async function remove(name: string): Promise<QueryResult> {
   }
   const conn = await connect();
   const result = await conn.query('delete from reserved_usernames where name = $1', [name]);
+  conn.close();
   if (result.rowCount === 0) {
     throw trans.reservedUserNameNotFound(name);
   }

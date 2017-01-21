@@ -83,7 +83,7 @@ create table users_classes (
 );
 
 create table users_nodes (
-  user_id integer references users(user_id) not null,
+  user_id integer constraint users_nodes_user_id_fkey references users(user_id) not null,
   node_id integer not null,
   expire_after timestamp without time zone,
   accepted boolean not null,

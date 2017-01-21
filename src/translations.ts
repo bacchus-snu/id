@@ -43,7 +43,7 @@ export const reservedUserNameEmpty = new ErrorMessage({
 /**
  * No such ReservedUserName
  */
-export function reservedUserNameNotFound(name: string) {
+export function reservedUserNameNotFound(name: string): ErrorMessage {
   return new ErrorMessage({
     en: `No such reserved ID: ${name}`,
     ko: `예약된 ID가 없습니다: ${name}`,
@@ -57,5 +57,25 @@ export function invalidShellId(shellId: number | null): ErrorMessage {
   return new ErrorMessage({
     en: `Invalid shellId: ${shellId}`,
     ko: `잘못된 셸 ID: ${shellId}`,
+  });
+}
+
+/**
+ * No such node id
+ */
+export function invalidNodeId(nodeId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid nodeId: ${nodeId}`,
+    ko: `잘못된 노드ID: ${nodeId}`,
+  });
+}
+
+/**
+ * user id foreign constraint
+ */
+export function invalidUserId(userId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid userId: ${userId}`,
+    ko: `잘못된 userId: ${userId}`,
   });
 }
