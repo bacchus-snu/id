@@ -1,5 +1,5 @@
-import ErrorMessage from '../model/ErrorMessage';
 import { unknownError } from '../translations';
+import ErrorMessage from '../types/ErrorMessage';
 import log from './log';
 
 /**

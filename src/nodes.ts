@@ -1,7 +1,7 @@
 import * as infos from './infos';
-import Conflict from './model/Conflict';
-import Node from './model/Node';
 import * as terms from './terms';
+import Conflict from './types/Conflict';
+import Node from './types/Node';
 
 /**
  * 1. Lifecycle of users

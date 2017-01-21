@@ -1,4 +1,4 @@
-import ErrorMessage from './model/ErrorMessage';
+import ErrorMessage from './types/ErrorMessage';
 
 /**
  * Unknown error

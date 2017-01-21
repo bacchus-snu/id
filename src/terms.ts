@@ -1,4 +1,4 @@
-import Term from './model/Term';
+import Term from './types/Term';
 
 const PLACEHOLDER = {
   ko: 'PLACEHOLDER',
