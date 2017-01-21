@@ -19,7 +19,7 @@ create table shells (
 
 create table users (
   user_id serial primary key,
-  name text unique not null,
+  name text constraint users_name_key unique not null,
   password_digest bytea,
   blocked boolean not null,
   blocked_expire_after timestamp without time zone,

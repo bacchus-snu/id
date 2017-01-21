@@ -26,10 +26,20 @@ async function nameToUserId(connection: Connection, name: string): Promise<numbe
 }
 
 /**
+ * Check hosts and reserved_usernames tables
+ */
+async function isReservedUserName(conn: Connection, name: string): Promise<boolean> {
+  const sel = await conn.query(`select hostname as name from hosts where hostname = $1 union
+    select name from reserved_usernames where name = $1`, [name]);
+  return sel.rowCount !== 0;
+}
+
+/**
  * Grant a node to a user
  */
 async function grant(locked: TransactionWithLock, userId: number, nodeId: number,
     expireAfter: Date | null): Promise<null> {
+  // TODO
   return null;
 }
 
@@ -48,13 +58,23 @@ export async function createUser(nodeId: number, expireAfter: Date | null,
     throw trans.userRealnameEmpty;
   }
   const transaction = await begin();
-  await transaction.query(
-    `insert into users (name, realname, snuid_bachelor, snuid_master, snuid_doctor,
-     snuid_master_doctor, shell_id, timezone, blocked)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, false)`,
-     [name, realname, snuidBachelor, snuidMaster, snuidDoctor, snuidMasterDoctor, shellId,
-     timezone],
-  );
+  if (await isReservedUserName(transaction, name)) {
+    throw trans.userNameDuplicate(name);
+  }
+  try {
+    await transaction.query(
+      `insert into users (name, realname, snuid_bachelor, snuid_master, snuid_doctor,
+       snuid_master_doctor, shell_id, timezone, blocked)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, false)`,
+       [name, realname, snuidBachelor, snuidMaster, snuidDoctor, snuidMasterDoctor, shellId,
+       timezone],
+    );
+  } catch (e) {
+    if (e.constraint === 'users_name_key') {
+      throw trans.userNameDuplicate(name);
+    }
+    throw e;
+  }
   const userId = await nameToUserId(transaction, name);
   // Promote Transaction to TransactionWithLock
   await transaction.lock(userId);
