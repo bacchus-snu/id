@@ -8,7 +8,7 @@ import * as terms from './terms';
  *   - Not exists -> Exists
  *     To create a user, a newly granted node is needed
  *   - Exists -> Not exists
- *     A user is completely deleted from the system when the user loses all granted nodes.
+ *     A user is completely deleted from the system when the user loses all valid nodes.
  *   - Alive as an account <-> A ghost
  *     A user is alive as an account if and only if 'account' node is in valid set of the user.
  *     The system can retain personal information about the user only if the user is alive;
