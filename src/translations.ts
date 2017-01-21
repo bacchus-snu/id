@@ -39,3 +39,13 @@ export const reservedUserNameEmpty = new ErrorMessage({
   en: 'Cannot insert empty string as a reserved username',
   ko: '빈 문자열을 예약된 ID로 입력할 수 없습니다',
 });
+
+/**
+ * shell id foreign constraint
+ */
+export function invalidShellId(shellId: number | null): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid shellId: ${shellId}`,
+    ko: `잘못된 셸 ID: ${shellId}`,
+  });
+}

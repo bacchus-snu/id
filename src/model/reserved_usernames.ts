@@ -1,5 +1,5 @@
-import { connect, Connection, QueryResult } from './utils';
 import * as trans from '../translations';
+import { connect, Connection, QueryResult } from './utils';
 
 /**
  * Check hosts and reserved_usernames tables

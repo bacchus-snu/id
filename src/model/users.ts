@@ -39,7 +39,7 @@ async function grant(locked: TransactionWithLock, userId: number, nodeId: number
  * Create a user with granted node
  * Returns userId of the created user
  */
-export async function createUser(nodeId: number, expireAfter: Date | null,
+export async function create(nodeId: number, expireAfter: Date | null,
   name: string, realname: string | null, snuidBachelor: string | null,
   snuidMaster: string | null, snuidDoctor: string | null, snuidMasterDoctor: string | null,
   shellId: number | null, timezone: string | null): Promise<number> {
@@ -61,6 +61,9 @@ export async function createUser(nodeId: number, expireAfter: Date | null,
   } catch (e) {
     if (e.constraint === 'users_name_key') {
       throw trans.userNameDuplicate(name);
+    }
+    if (e.constraint === 'users_shell_id_fkey') {
+      throw trans.invalidShellId(shellId);
     }
     throw e;
   }

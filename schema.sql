@@ -31,7 +31,7 @@ create table users (
   reset_token text check (reset_token <> ''),
   reset_expire_after timestamp without time zone,
   uid integer unique,
-  shell_id integer references shells(shell_id),
+  shell_id integer constraint users_shell_id_fkey references shells(shell_id),
   timezone text check (timezone <> '')
 );
 
