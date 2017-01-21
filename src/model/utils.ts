@@ -26,7 +26,7 @@ export class Connection {
     return new Promise((resolve, reject) => {
       this.client.query(text, (error, result) => {
         if (error) {
-          reject(error);
+          this.abort().then(_ => { reject(error); });
         } else {
           resolve(result);
         }
@@ -38,7 +38,7 @@ export class Connection {
     return new Promise((resolve, reject) => {
       this.client.query(text, values, (error, result) => {
         if (error) {
-          reject(error);
+          this.abort().then(_ => { reject(error); });
         } else {
           resolve(result);
         }
@@ -50,7 +50,7 @@ export class Connection {
     return new Promise((resolve, reject) => {
       this.client.query({ name, text, values }, (error, result) => {
         if (error) {
-          reject(error);
+          this.abort().then(_ => { reject(error); });
         } else {
           resolve(result);
         }
@@ -63,6 +63,10 @@ export class Connection {
       this.done();
       resolve();
     });
+  }
+
+  public abort(): Promise<{}> {
+    return this.close();
   }
 }
 
@@ -92,6 +96,10 @@ export class Transaction extends Connection {
     await this.preparedQuery('users_valids_lock',
       'select pg_advisory_lock(user_id) from users where user_id = $1', [userId]);
     return this as TransactionWithLock;
+  }
+
+  public abort(): Promise<{}> {
+    return this.rollback();
   }
 }
 
