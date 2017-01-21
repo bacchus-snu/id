@@ -1,6 +1,6 @@
 import * as trans from '../translations';
 import * as reserved_usernames from './reserved_usernames';
-import { begin, Connection, en, TransactionWithLock } from './utils';
+import { begin, Connection, en } from './utils';
 
 /**
  * 1. Blocking a user
@@ -21,18 +21,9 @@ import { begin, Connection, en, TransactionWithLock } from './utils';
 async function nameToUserId(connection: Connection, name: string): Promise<number> {
   const select = await connection.query('select user_id from users where name = $1', [name]);
   if (select.rowCount === 0) {
-    throw new Error('No user with name \'' + name + '\'');
+    throw new Error(`No user with name '${name}'`);
   }
   return select.rows[0].user_id;
-}
-
-/**
- * Grant a node to a user
- */
-async function grant(locked: TransactionWithLock, userId: number, nodeId: number,
-    expireAfter: Date | null): Promise<null> {
-  // TODO
-  return null;
 }
 
 /**
@@ -69,8 +60,8 @@ export async function create(nodeId: number, expireAfter: Date | null,
   }
   const userId = await nameToUserId(transaction, name);
   // Promote Transaction to TransactionWithLock
-  const locked = await transaction.lock(userId);
-  await grant(locked, userId, nodeId, expireAfter);
+  // const locked = await transaction.lock(userId);
+  // TODO await grant(locked, userId, nodeId, expireAfter);
   await transaction.commit();
   return userId;
 }

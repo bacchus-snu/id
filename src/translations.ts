@@ -36,9 +36,19 @@ export function userNameDuplicate(name: string): ErrorMessage {
  * ReservedUserName emptyString
  */
 export const reservedUserNameEmpty = new ErrorMessage({
-  en: 'Cannot insert empty string as a reserved username',
-  ko: '빈 문자열을 예약된 ID로 입력할 수 없습니다',
+  en: 'An empty string cannot be a reserved ID',
+  ko: '빈 문자열은 예약된 ID일 수 없습니다',
 });
+
+/**
+ * No such ReservedUserName
+ */
+export function reservedUserNameNotFound(name: string) {
+  return new ErrorMessage({
+    en: `No such reserved ID: ${name}`,
+    ko: `예약된 ID가 없습니다: ${name}`,
+  });
+}
 
 /**
  * shell id foreign constraint

@@ -27,3 +27,18 @@ export async function insert(name: string): Promise<QueryResult> {
     throw e;
   }
 }
+
+/**
+ * Delete
+ */
+export async function remove(name: string): Promise<QueryResult> {
+  if (name === '') {
+    throw trans.reservedUserNameEmpty;
+  }
+  const conn = await connect();
+  const result = await conn.query('delete from reserved_usernames where name = $1', [name]);
+  if (result.rowCount === 0) {
+    throw trans.reservedUserNameNotFound(name);
+  }
+  return result;
+}
