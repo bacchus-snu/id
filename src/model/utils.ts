@@ -63,15 +63,23 @@ export class Connection {
  */
 export class Transaction extends Connection {
   public async commit(): Promise<QueryResult> {
-    const result = await this.simpleQuery('COMMIT');
+    const result = await this.simpleQuery('commit');
     await this.close();
     return result;
   }
 
   public async rollback(): Promise<QueryResult> {
-    const result = await this.simpleQuery('ROLLBACK');
+    const result = await this.simpleQuery('rollback');
     await this.close();
     return result;
+  }
+
+  /**
+   * Acquires users_valids lock
+   */
+  public async lock(userId: number): Promise<QueryResult> {
+    return await this.preparedQuery('users_valids_lock',
+      'select pg_advisory_lock(user_id) from users where user_id = $1', [userId]);
   }
 }
 
@@ -79,9 +87,6 @@ export class Transaction extends Connection {
  * A PostgreSQL transaction with users_valids lock on the specified user
  */
 export class TransactionWithLock extends Transaction {
-  constructor(client: pg.Client, done: (err?: any) => void, readonly userId: number) {
-    super(client, done);
-  }
 }
 
 /**
@@ -113,7 +118,7 @@ export function begin(): Promise<Transaction> {
     });
   });
   const promisedBegin: Promise<Transaction> = promisedTransaction.then(transaction => {
-    return transaction.simpleQuery('BEGIN').then(result => Promise.resolve(transaction));
+    return transaction.simpleQuery('begin').then(result => Promise.resolve(transaction));
   });
   return promisedBegin;
 }
@@ -127,17 +132,15 @@ export function beginWithLock(userId: number): Promise<TransactionWithLock> {
       if (error) {
         reject(error);
       } else {
-        resolve(new TransactionWithLock(client, done, userId));
+        resolve(new TransactionWithLock(client, done));
       }
     });
   });
   const promisedBegin: Promise<TransactionWithLock> = promisedTransaction.then(transaction => {
-    return transaction.simpleQuery('BEGIN').then(result => Promise.resolve(transaction));
+    return transaction.simpleQuery('begin').then(result => Promise.resolve(transaction));
   });
   const promisedLock: Promise<TransactionWithLock> = promisedBegin.then(transaction => {
-    return transaction.preparedQuery('users_valids_lock',
-      'select pg_advisory_lock(userId) from users where userId = $1', [userId])
-      .then(result => Promise.resolve(transaction));
+    return transaction.lock(userId).then(result => Promise.resolve(transaction));
   });
   return promisedLock;
 }

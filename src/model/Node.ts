@@ -1,6 +1,6 @@
-import I18N from './I18N';
 import Info from './Info';
 import Term from './Term';
+import Translation from './Translation';
 
 /**
  * An entity that represents a property, qualification, or privilege that users may own.
@@ -65,7 +65,7 @@ interface Node {
   // This value is used as identifier for this node. (for URI or third party apps)
   name: string;
   // Description of this node for human.
-  description: I18N;
+  description: Translation;
   // Association of this node with a user implies associations of all implied nodes with the user.
   implies: Array<Node>;
   // When all the 'impliedBy' nodes are associated with a user,

@@ -1,9 +1,9 @@
 /**
  * Maps ISO 639-1 langauge code with corresponding text.
  */
-interface I18N {
+interface Translation {
   ko: string;
   en: string;
 }
 
-export default I18N;
+export default Translation;

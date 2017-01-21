@@ -1,4 +1,4 @@
-import I18N from './I18N';
+import Translation from './Translation';
 
 /**
  * A rule between service providers and users,
@@ -25,11 +25,11 @@ interface Term {
   // This value is used as identifier for this term. (for URI or third party apps)
   name: string;
   // Title of this term.
-  title: I18N;
+  title: Translation;
   // Current revision number of this term.
   currentRevision: number;
   // Contents of the current revision of this term.
-  contents: I18N;
+  contents: Translation;
 }
 
 export default Term;
