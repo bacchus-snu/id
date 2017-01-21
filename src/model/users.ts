@@ -1,4 +1,5 @@
 import * as trans from '../translations';
+import * as reserved_usernames from './reserved_usernames';
 import { begin, Connection, en, TransactionWithLock } from './utils';
 
 /**
@@ -26,15 +27,6 @@ async function nameToUserId(connection: Connection, name: string): Promise<numbe
 }
 
 /**
- * Check hosts and reserved_usernames tables
- */
-async function isReservedUserName(conn: Connection, name: string): Promise<boolean> {
-  const sel = await conn.query(`select hostname as name from hosts where hostname = $1 union
-    select name from reserved_usernames where name = $1`, [name]);
-  return sel.rowCount !== 0;
-}
-
-/**
  * Grant a node to a user
  */
 async function grant(locked: TransactionWithLock, userId: number, nodeId: number,
@@ -55,7 +47,7 @@ export async function createUser(nodeId: number, expireAfter: Date | null,
     throw trans.userNameNotAllowed(name);
   }
   const transaction = await begin();
-  if (await isReservedUserName(transaction, name)) {
+  if (await reserved_usernames.isReservedUserName(transaction, name)) {
     throw trans.userNameDuplicate(name);
   }
   try {

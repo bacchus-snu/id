@@ -124,5 +124,5 @@ create table hosts (
 );
 
 create table reserved_usernames (
-  name text primary key check (name <> '')
+  name text constraint reserved_usernames_pkey primary key check (name <> '')
 );

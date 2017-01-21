@@ -31,3 +31,11 @@ export function userNameDuplicate(name: string): ErrorMessage {
     ko: `ID '${name}': 이미 사용중입니다`,
   });
 }
+
+/**
+ * ReservedUserName emptyString
+ */
+export const reservedUserNameEmpty = new ErrorMessage({
+  en: 'Cannot insert empty string as a reserved username',
+  ko: '빈 문자열을 예약된 ID로 입력할 수 없습니다',
+});

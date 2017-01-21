@@ -1,7 +1,7 @@
 import * as pg from 'pg';
 import config from '../config';
 
-type QueryResult = pg.QueryResult;
+export type QueryResult = pg.QueryResult;
 const pool = new pg.Pool(config.postgres);
 
 /**
