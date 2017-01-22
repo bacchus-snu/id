@@ -33,7 +33,7 @@ async function nameToUserId(connection: Connection, name: string): Promise<numbe
 export async function create(transaction: Transaction, nodeId: number, expireAfter: Date | null,
   name: string, realname: string | null, snuidBachelor: string | null,
   snuidMaster: string | null, snuidDoctor: string | null, snuidMasterDoctor: string | null,
-  shellId: number | null, timezone: string | null): Promise<number> {
+  shellId: number | null, language: string | null, timezone: string | null): Promise<number> {
   if (name.length < 3 || !/^[a-z][a-z0-9]*$/.test(name)) {
     throw trans.userNameNotAllowed(name);
   }
@@ -43,10 +43,10 @@ export async function create(transaction: Transaction, nodeId: number, expireAft
   try {
     await transaction.query(
       `insert into users (name, realname, snuid_bachelor, snuid_master, snuid_doctor,
-       snuid_master_doctor, shell_id, timezone, blocked)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, false)`,
+       snuid_master_doctor, shell_id, language, timezone, blocked)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, false)`,
        [name, en(realname), en(snuidBachelor), en(snuidMaster), en(snuidDoctor),
-        en(snuidMasterDoctor), shellId, en(timezone)],
+        en(snuidMasterDoctor), shellId, en(language), en(timezone)],
     );
   } catch (e) {
     if (e.constraint === 'users_name_key') {

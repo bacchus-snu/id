@@ -32,6 +32,7 @@ create table users (
   reset_expire_after timestamp without time zone,
   uid integer unique,
   shell_id integer constraint users_shell_id_fkey references shells(shell_id),
+  language varchar(2),
   timezone text check (timezone <> '')
 );
 
@@ -62,7 +63,7 @@ create table classes (
 
 create table class_names (
   class_id integer references classes(class_id) not null,
-  language_code varchar(2) not null,
+  language varchar(2) not null,
   name text not null check (name <> ''),
   primary key(class_id, language_code)
 );

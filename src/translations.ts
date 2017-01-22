@@ -113,9 +113,9 @@ export function nodeNameNotFound(name: string): ErrorMessage {
 /**
  * users_nodes.modify error
  */
-export function grantRevokeOverlap(nodeId: number): ErrorMessage {
+export function grantRemoveOverlap(nodeId: number): ErrorMessage {
   return new ErrorMessage({
-    en: `Cannot grant and revoke simultaneously. nodeId: ${nodeId}`,
-    ko: `노드를 동시에 부여하고 회수할 수 없습니다. nodeId: ${nodeId}`,
+    en: `Cannot grant and remove simultaneously. nodeId: ${nodeId}`,
+    ko: `노드를 동시에 부여하고 삭제할 수 없습니다. nodeId: ${nodeId}`,
   });
 }

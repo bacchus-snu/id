@@ -12,7 +12,10 @@ import Node from './types/Node';
  *   - Alive as an account <-> A ghost
  *     A user is alive as an account if and only if 'account' node is in valid set of the user.
  *     The system can retain personal information about the user only if the user is alive;
- *     the system must drop all personal information when the user loses 'account' node.
+ *     the system must drop personal information and password when the user loses 'account' node.
+ *     (except for email addresses)
+ *     Dead accounts can be revived if the user obtains 'account' node again. Users must reset
+ *     their passwords using their email addresses.
  *
  * 2. Implementation of lifecycle policy of individual accounts
  * Newly registered individual users are granted with 'individual-account' node. This enables

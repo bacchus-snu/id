@@ -1,5 +1,6 @@
 import * as pg from 'pg';
 import config from '../config';
+import u from '../log/exception';
 
 export type QueryResult = pg.QueryResult;
 const pool = new pg.Pool(config.postgres);
@@ -122,7 +123,7 @@ export async function connect<T>(func: (conn: Connection) => Promise<T>): Promis
     return result;
   } catch (e) {
     await connection.close();
-    throw e;
+    throw u(e);
   }
 }
 
@@ -137,12 +138,12 @@ export async function begin<T>(func: (tr: Transaction) => Promise<T>): Promise<T
     return result;
   } catch (e) {
     await transaction.rollback();
-    throw e;
+    throw u(e);
   }
 }
 
 /**
- * Do things with transaction
+ * Do things with transaction with lock
  */
 export async function beginWithLock<T>(userId: number,
     func: (trw: TransactionWithLock) => Promise<T>): Promise<T> {
@@ -153,7 +154,7 @@ export async function beginWithLock<T>(userId: number,
     return result;
   } catch (e) {
     await locked.rollback();
-    throw e;
+    throw u(e);
   }
 }
 
@@ -210,4 +211,11 @@ function doBeginWithLock(userId: number): Promise<TransactionWithLock> {
   const promisedLock: Promise<TransactionWithLock> = promisedBegin.then(transaction =>
     transaction.lock(userId));
   return promisedLock;
+}
+
+/**
+ * Set difference
+ */
+export function difference<T>(a: Set<T>, b: Set<T>): Set<T> {
+  return new Set([...a].filter(x => !b.has(x)));
 }
