@@ -18,14 +18,15 @@ interface UsersNodesModifyResult {
 /**
  * Select granted set for users_valids calculation
  * Warning: this function does not check the validity of userId
+ * This function is in users_valids calculation chain: using preparedQuery
  */
 export function select(conn: Connection, userId: number): Promise<QueryResult> {
-  return conn.query('select node_id from users_nodes where user_id = $1 and accepted = true',
-    [userId]);
+  return conn.preparedQuery('users_nodes_select',
+    'select node_id from users_nodes where user_id = $1 and accepted = true', [userId]);
 }
 
 /**
- * Add a request
+ * Add a request or modify existing request
  */
 export async function request(locked: TransactionWithLock, userId: number, nodeId: number,
   expireAfter: Date | null, requestText: string | null): Promise<QueryResult> {
@@ -52,6 +53,7 @@ export async function request(locked: TransactionWithLock, userId: number, nodeI
 
 /**
  * Grant or remove(= revoke+reject) node for user
+ * This function is for administrators and the system only
  */
 export async function modify(locked: TransactionWithLock, userId: number, grants: Array<Grant>,
   inputRemoves: Array<number>): Promise<UsersNodesModifyResult> {
