@@ -14,6 +14,9 @@ interface NodesByName {
 }
 
 interface LoadedNodes {
+  // list of nodes
+  list: Array<Node>;
+
   // can index a node by its nodeId
   byId: Array<Node>;
 
@@ -108,7 +111,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
     closureAck(node.requiredTerms, node, acks[node.nodeId], ackTs[node.nodeId]);
   }
 
-  return { byId, byName, hasImpliedBy, conflicts, conflictIds, closures, acks, ackTs };
+  return { list, byId, byName, hasImpliedBy, conflicts, conflictIds, closures, acks, ackTs };
 }
 
 /**
