@@ -23,12 +23,22 @@ ID should be at least 3 characters, with lowercase letters or digits. ID canot s
 }
 
 /**
- * ID in use
+ * username in use
  */
 export function userNameDuplicate(name: string): ErrorMessage {
   return new ErrorMessage({
     en: `ID '${name}' is already registered`,
     ko: `ID '${name}': 이미 사용중입니다`,
+  });
+}
+
+/**
+ * reserved username in use
+ */
+export function reservedUserNameDuplicate(name: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `Reserved ID '${name}' is already registered`,
+    ko: `예약된 ID '${name}': 이미 사용중입니다`,
   });
 }
 

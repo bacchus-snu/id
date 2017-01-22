@@ -22,7 +22,7 @@ export async function insert(conn: Connection, name: string): Promise<QueryResul
     return insert;
   } catch (e) {
     if (e.constraint === 'reserved_usernames_pkey') {
-      throw trans.userNameDuplicate(name);
+      throw trans.reservedUserNameDuplicate(name);
     }
     throw e;
   }
