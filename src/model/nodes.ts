@@ -185,6 +185,28 @@ export function getByName(name: string): Node {
 }
 
 /**
+ * Get conflicting nodes
+ */
+export function getConflicts(nodeId: number): Set<Node> {
+  const conflicts = loadedNodes.conflicts[nodeId];
+  if (conflicts === undefined) {
+    throw trans.invalidNodeId(nodeId);
+  }
+  return conflicts;
+}
+
+/**
+ * Get conflicting nodeIds
+ */
+export function getConflictIds(nodeId: number): Set<number> {
+  const conflicts = loadedNodes.conflictIds[nodeId];
+  if (conflicts === undefined) {
+    throw trans.invalidNodeId(nodeId);
+  }
+  return conflicts;
+}
+
+/**
  * Get associated set from approved set
  */
 export function associated(approved: Set<Node>): Set<Node> {
