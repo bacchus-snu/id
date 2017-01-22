@@ -5,16 +5,18 @@ import log from './log';
 /**
  * Catches unhandled exception and converts it into appropriate message
  */
-function u<T>(promise: Promise<T>): Promise<T> {
-  return promise.catch(error => {
-    // handled exception
-    if (error instanceof ErrorMessage) {
-      return Promise.reject(error);
-    }
-    // unhandled exception
-    log(error);
-    return Promise.reject(unknownError(error));
-  });
+export function wrapPromise<T>(promise: Promise<T>): Promise<T> {
+  return promise.catch(error => Promise.reject(wrapError(error)));
 }
 
-export default u;
+/**
+ * Wrap unhandled error
+ * Log the error and coverts it into an error message
+ */
+export function wrapError(error: Error): ErrorMessage {
+  if (error instanceof ErrorMessage) {
+    return error;
+  }
+  log(error);
+  return unknownError(error);
+}

@@ -1,6 +1,6 @@
 import * as pg from 'pg';
 import config from '../config';
-import u from '../log/exception';
+import { wrapError } from '../log/exception';
 
 export type QueryResult = pg.QueryResult;
 const pool = new pg.Pool(config.postgres);
@@ -123,7 +123,7 @@ export async function connect<T>(func: (conn: Connection) => Promise<T>): Promis
     return result;
   } catch (e) {
     await connection.close();
-    throw u(e);
+    throw wrapError(e);
   }
 }
 
@@ -138,7 +138,7 @@ export async function begin<T>(func: (tr: Transaction) => Promise<T>): Promise<T
     return result;
   } catch (e) {
     await transaction.rollback();
-    throw u(e);
+    throw wrapError(e);
   }
 }
 
@@ -154,7 +154,7 @@ export async function beginWithLock<T>(userId: number,
     return result;
   } catch (e) {
     await locked.rollback();
-    throw u(e);
+    throw wrapError(e);
   }
 }
 

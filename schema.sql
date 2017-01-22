@@ -65,7 +65,7 @@ create table class_names (
   class_id integer references classes(class_id) not null,
   language varchar(2) not null,
   name text not null check (name <> ''),
-  primary key(class_id, language_code)
+  primary key(class_id, language)
 );
 
 create table class_implies (
