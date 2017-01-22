@@ -13,7 +13,13 @@
     "noImplicitThis": true,
     "noUnusedParameters": false,
     "noUnusedLocals": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "lib": [
+      "DOM",
+      "ES7",
+      "DOM.Iterable",
+      "ScriptHost"
+    ]
   },
   "include": [
     "src/**/*.ts"
