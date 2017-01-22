@@ -1,6 +1,6 @@
 import * as trans from '../translations';
 import { checkNodeId, checkNodeIds, getConflictIds } from './nodes';
-import { Connection, en, QueryResult, TransactionWithLock } from './utils';
+import { Connection, en, placeholders, QueryResult, TransactionWithLock } from './utils';
 
 interface Grant {
   nodeId: number;
@@ -16,12 +16,12 @@ interface UsersNodesModifyResult {
 }
 
 /**
- * Select granted set
+ * Select granted set for users_valids calculation
  * Warning: this function does not check the validity of userId
  */
 export function select(conn: Connection, userId: number): Promise<QueryResult> {
-  return conn.query(`select node_id, expire_after, accepted from users_nodes
-    where user_id = $1`, [userId]);
+  return conn.query('select node_id from users_nodes where user_id = $1 and accepted = true',
+    [userId]);
 }
 
 /**
@@ -67,7 +67,8 @@ export async function modify(locked: TransactionWithLock, userId: number, grants
   }
 
   // Get current granted set
-  const granted = (await select(locked, userId)).rows;
+  const granted = (await locked.query(`select node_id, expire_after, accepted from users_nodes
+    where user_id = $1`, [userId])).rows;
   const grantedByNodeId: Array<any> = [];
   const granteds: Set<number> = new Set();
   for (const g of granted) {
@@ -171,12 +172,4 @@ export async function modify(locked: TransactionWithLock, userId: number, grants
   // TODO: invoke users_valids.calculate to regenerate valids table
   // TODO: mail to users
   return result;
-}
-
-/**
- * Translate [a, b, c] into '($i, $(i+1), $(i+2), ...)'
- */
-function placeholders(i: number, length: number): string {
-  const idx: Array<string> = [...Array(length).keys()].map(x => '\$' + (x + i));
-  return '(' + idx.join(',') + ')';
 }

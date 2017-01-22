@@ -219,3 +219,11 @@ function doBeginWithLock(userId: number): Promise<TransactionWithLock> {
 export function difference<T>(a: Set<T>, b: Set<T>): Set<T> {
   return new Set([...a].filter(x => !b.has(x)));
 }
+
+/**
+ * Translate [a, b, c] into '($i, $(i+1), $(i+2), ...)'
+ */
+export function placeholders(i: number, length: number): string {
+  const idx: Array<string> = [...Array(length).keys()].map(x => '\$' + (x + i));
+  return '(' + idx.join(',') + ')';
+}
