@@ -58,7 +58,8 @@ create table classes (
   request_text text check (request_text <> ''),
   enroll_secret text check (enroll_secret <> ''),
   enroll_secret_expire_after timestamp without time zone,
-  enroll_auto boolean not null
+  enroll_auto boolean not null,
+  recalculating boolean not null
 );
 
 create table class_names (
@@ -71,6 +72,7 @@ create table class_names (
 create table class_implies (
   class_id integer references classes(class_id) not null,
   node_id integer not null,
+  accepted boolean not null,
   primary key(class_id, node_id)
 );
 

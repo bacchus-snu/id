@@ -143,10 +143,39 @@ export async function begin<T>(func: (tr: Transaction) => Promise<T>): Promise<T
 }
 
 /**
- * Do things with transaction with lock
+ * A mapping with an userId and the corresponding Promises to acquire advisory lock
  */
-export async function beginWithLock<T>(userId: number,
-    func: (trw: TransactionWithLock) => Promise<T>): Promise<T> {
+const queues: Array<Promise<any>> = [];
+
+export function queue<T>(userId: number, func: (trw: TransactionWithLock) => Promise<T>):
+  Promise<T> {
+  let kernel: Promise<T>;
+  if (queues[userId] === undefined) {
+    // no other routine is in queue
+    kernel = beginWithLock(userId, func);
+  } else {
+    // Promise 'queues[userId]' is right in front of me
+    const kernelContinuation = _ => beginWithLock(userId, func);
+    kernel = queues[userId].then(kernelContinuation, kernelContinuation);
+  }
+  // delete promise from queues if no other routine is behind me
+  const purgeContinuation = _ => {
+    if (queues[userId] === kernel) {
+      queues.splice(userId, 1);
+    }
+  };
+  kernel.then(purgeContinuation, purgeContinuation);
+  // now I'm the last one in the queue
+  queues[userId] = kernel;
+  return kernel;
+}
+
+/**
+ * Do things with transaction with lock
+ * TODO: queueing
+ */
+async function beginWithLock<T>(userId: number,
+  func: (trw: TransactionWithLock) => Promise<T>): Promise<T> {
   const locked: TransactionWithLock = await doBeginWithLock(userId);
   try {
     const result: T = await func(locked);
