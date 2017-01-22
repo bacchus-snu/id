@@ -89,3 +89,13 @@ export function invalidUserId(userId: number): ErrorMessage {
     ko: `잘못된 userId: ${userId}`,
   });
 }
+
+/**
+ * No such nodeName
+ */
+export function nodeNameNotFound(name: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `No such node: ${name}`,
+    ko: `그런 이름의 노드가 없습니다: ${name}`,
+  });
+}

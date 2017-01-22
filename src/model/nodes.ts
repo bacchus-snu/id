@@ -4,13 +4,14 @@
  * Guarantee unique nodeId and name
  */
 
-import { nodes, conflicts } from '../nodes';
+import { conflicts, nodes } from '../nodes';
+import * as trans from '../translations';
 import Conflict from '../types/Conflict';
-import Term from '../types/Term';
 import Node from '../types/Node';
+import Term from '../types/Term';
 
 interface NodesByName {
-  [nodeName: string]: Node;
+  [nodeName: string]: Node | undefined;
 }
 
 interface LoadedNodes {
@@ -54,7 +55,7 @@ interface LoadedNodes {
 function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
   // Nodes by ID
   const byId: Array<Node> = [];
-  for (let node of list) {
+  for (const node of list) {
     if (byId[node.nodeId] !== undefined) {
       throw new Error('Duplicate nodeId ' + node.nodeId);
     }
@@ -63,7 +64,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
 
   // Nodes by Name
   const byName: NodesByName = {};
-  for (let node of list) {
+  for (const node of list) {
     if (byName[node.name] !== undefined) {
       throw new Error('Duplicate nodeName ' + node.name);
     }
@@ -72,7 +73,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
 
   // hasImpliedBy
   const hasImpliedBy: Array<Node> = [];
-  for (let node of list) {
+  for (const node of list) {
     if (node.impliedBy.length !== 0) {
       hasImpliedBy.push(node);
     }
@@ -80,10 +81,10 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
 
   // Conflict map
   const conflicts: Array<Set<Node>> = [];
-  for (let node of list) {
+  for (const node of list) {
     conflicts[node.nodeId] = new Set();
   }
-  for (let conflict of conflictList) {
+  for (const conflict of conflictList) {
     if (conflict.a === conflict.b) {
       throw new Error('Self-conflict: ' + conflict.a.nodeId);
     }
@@ -93,9 +94,9 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
 
   // Conflicting nodes
   const conflictIds: Array<Array<number>> = [];
-  for (let node of list) {
+  for (const node of list) {
     conflictIds[node.nodeId] = [];
-    for (let conflictNode of conflicts[node.nodeId]) {
+    for (const conflictNode of conflicts[node.nodeId]) {
       conflictIds[node.nodeId].push(conflictNode.nodeId);
     }
   }
@@ -104,7 +105,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
   const closures: Array<Set<Node>> = [];
   const acks: Array<Set<Node>> = [];
   const ackTs: Array<Set<Node>> = [];
-  for (let node of list) {
+  for (const node of list) {
     closures[node.nodeId] = closure(node, new Set());
     acks[node.nodeId] = new Set();
     ackTs[node.nodeId] = new Set();
@@ -122,7 +123,7 @@ function closure(node: Node, set: Set<Node>): Set<Node> {
   set.add(node);
 
   // nodes that associated nodes imply are also associated
-  for (let implied of node.implies) {
+  for (const implied of node.implies) {
     if (!set.has(implied)) {
       closure(implied, set);
     }
@@ -137,7 +138,7 @@ function closure(node: Node, set: Set<Node>): Set<Node> {
 function closureAck(accepted: Array<Term>, node: Node, set: Set<Node>, t: Set<Node>): void {
   // check whether or not term acceptance is fuilfilled by the given information
   let ok = true;
-  for (let term of node.requiredTerms) {
+  for (const term of node.requiredTerms) {
     if (!accepted.includes(term)) {
       ok = false;
       break;
@@ -154,7 +155,7 @@ function closureAck(accepted: Array<Term>, node: Node, set: Set<Node>, t: Set<No
   set.add(node);
 
   // implied
-  for (let implied of node.implies) {
+  for (const implied of node.implies) {
     if (!set.has(implied) && !t.has(implied)) {
       closureAck(accepted, implied, set, t);
     }
@@ -166,7 +167,21 @@ const loadedNodes = load(nodes, conflicts);
 /**
  * Get node by nodeId
  */
-export async function getById(nodeId: number): Promise<null> {
-  // TODO: throw an ErrorMessage if not found
-  return null;
+export function getById(nodeId: number): Node {
+  const node = loadedNodes.byId[nodeId];
+  if (node === undefined) {
+    throw trans.invalidNodeId(nodeId);
+  }
+  return node;
+}
+
+/**
+ * Get node by name
+ */
+export function getByName(name: string): Node {
+  const node = loadedNodes.byName[name];
+  if (node === undefined) {
+    throw trans.nodeNameNotFound(name);
+  }
+  return node;
 }
