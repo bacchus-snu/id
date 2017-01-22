@@ -131,7 +131,7 @@ export async function modify(locked: TransactionWithLock, userId: number, grants
   }
   // do update expire
   for (const update of grantUpdateExpire) {
-    await locked.query(`update users_nodes set accepted = true and expire_after = $1 where
+    await locked.query(`update users_nodes set accepted = true, expire_after = $1 where
       user_id = $2 and node_id = $3`, [update.expireAfter, userId, update.nodeId]);
   }
   // do remove
