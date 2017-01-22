@@ -101,7 +101,7 @@ export class Transaction extends Connection {
    */
   public async lock(userId: number): Promise<TransactionWithLock> {
     await this.preparedQuery('users_valids_lock',
-      'select pg_advisory_lock(user_id) from users where user_id = $1', [userId]);
+      'select pg_advisory_xact_lock(user_id) from users where user_id = $1', [userId]);
     return this as TransactionWithLock;
   }
 }
@@ -143,10 +143,16 @@ export async function begin<T>(func: (tr: Transaction) => Promise<T>): Promise<T
 }
 
 /**
- * A mapping with an userId and the corresponding Promises to acquire advisory lock
+ * A mapping with an userId and the corresponding Promises.
+ * Each element is the last routine of the queue.
  */
 const queues: Array<Promise<any>> = [];
 
+/**
+ * Arrange beginWithLocks with same userId in queue
+ * This is important since multiple outstanding lock requests on same userId may lead to
+ * connection pool exhaustion.
+ */
 export function queue<T>(userId: number, func: (trw: TransactionWithLock) => Promise<T>):
   Promise<T> {
   let kernel: Promise<T>;
@@ -158,6 +164,8 @@ export function queue<T>(userId: number, func: (trw: TransactionWithLock) => Pro
     const kernelContinuation = _ => beginWithLock(userId, func);
     kernel = queues[userId].then(kernelContinuation, kernelContinuation);
   }
+  // now I'm the last one in the queue
+  queues[userId] = kernel;
   // delete promise from queues if no other routine is behind me
   const purgeContinuation = _ => {
     if (queues[userId] === kernel) {
@@ -165,14 +173,11 @@ export function queue<T>(userId: number, func: (trw: TransactionWithLock) => Pro
     }
   };
   kernel.then(purgeContinuation, purgeContinuation);
-  // now I'm the last one in the queue
-  queues[userId] = kernel;
   return kernel;
 }
 
 /**
  * Do things with transaction with lock
- * TODO: queueing
  */
 async function beginWithLock<T>(userId: number,
   func: (trw: TransactionWithLock) => Promise<T>): Promise<T> {
