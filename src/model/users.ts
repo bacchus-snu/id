@@ -1,5 +1,6 @@
 import * as trans from '../translations';
 import * as reserved_usernames from './reserved_usernames';
+import { modify } from './users_nodes';
 import { Connection, en, Transaction } from './utils';
 
 /**
@@ -59,7 +60,7 @@ export async function create(transaction: Transaction, nodeId: number, expireAft
   }
   const userId = await nameToUserId(transaction, name);
   // Promote Transaction to TransactionWithLock
-  // const locked = await transaction.lock(userId);
-  // TODO await grant(locked, userId, nodeId, expireAfter);
+  const locked = await transaction.lock(userId);
+  await modify(locked, userId, [{ nodeId, expireAfter }], []);
   return userId;
 }
