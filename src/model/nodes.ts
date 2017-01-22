@@ -163,6 +163,11 @@ function fulfilled(node: Node, accepted: Array<Term>): boolean {
 const loadedNodes = load(nodes, conflicts);
 
 /**
+ * Set of nodes
+ */
+export const get = loadedNodes.nodes;
+
+/**
  * Get node by nodeId
  */
 export function getById(nodeId: number): Node {
