@@ -15,8 +15,8 @@ interface NodesByName {
 }
 
 interface LoadedNodes {
-  // list of nodes
-  list: Array<Node>;
+  // set of nodes
+  nodes: Set<Node>;
 
   // can index a node by its nodeId
   byId: Array<Node>;
@@ -25,13 +25,13 @@ interface LoadedNodes {
   byName: NodesByName;
 
   // list of nodes that has 'impliedBy'
-  hasImpliedBy: Array<Node>;
+  hasImpliedBy: Set<Node>;
 
   // set of conflicting nodes by nodeId
   conflicts: Array<Set<Node>>;
 
   // set of nodeIds of conflicting nodes by nodeId
-  conflictIds: Array<Array<number>>;
+  conflictIds: Array<Set<number>>;
 
   // Maximal set of associated nodes, given an associated node
   // closures[nodeX.nodeId] = {nodeA, nodeB, nodeC, ...};
@@ -72,10 +72,10 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
   }
 
   // hasImpliedBy
-  const hasImpliedBy: Array<Node> = [];
+  const hasImpliedBy: Set<Node> = new Set();
   for (const node of list) {
     if (node.impliedBy.length !== 0) {
-      hasImpliedBy.push(node);
+      hasImpliedBy.add(node);
     }
   }
 
@@ -93,11 +93,11 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
   }
 
   // Conflicting nodes
-  const conflictIds: Array<Array<number>> = [];
+  const conflictIds: Array<Set<number>> = [];
   for (const node of list) {
-    conflictIds[node.nodeId] = [];
+    conflictIds[node.nodeId] = new Set();
     for (const conflictNode of conflicts[node.nodeId]) {
-      conflictIds[node.nodeId].push(conflictNode.nodeId);
+      conflictIds[node.nodeId].add(conflictNode.nodeId);
     }
   }
 
@@ -112,7 +112,8 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
     closureAck(node.requiredTerms, node, acks[node.nodeId], ackTs[node.nodeId]);
   }
 
-  return { list, byId, byName, hasImpliedBy, conflicts, conflictIds, closures, acks, ackTs };
+  return { nodes: new Set(list), byId, byName, hasImpliedBy, conflicts, conflictIds, closures,
+    acks, ackTs };
 }
 
 /**
@@ -184,4 +185,41 @@ export function getByName(name: string): Node {
     throw trans.nodeNameNotFound(name);
   }
   return node;
+}
+
+/**
+ * Get associated set from approved set
+ */
+export function associated(approved: Set<Node>): Set<Node> {
+  let associated: Set<Node> = new Set();
+  let addings: Set<Node>;
+
+  // Any approved nodes are also associated;
+  addings = approved;
+
+  while (addings.size !== 0) {
+    // Nodes that any associated nodes 'imply' are also associated to the user
+    // associated([A, B]) = associated([A]) union associated([B]), except for 'impliedBy'
+    for (const adding of addings) {
+      associated = new Set([...associated, ...(loadedNodes.closures[adding.nodeId])]);
+    }
+
+    // check nodes that have impliedBy and see whether we can add them to associated set
+    addings = new Set();
+    HasImpliedBy:
+    for (const hasImpliedBy of loadedNodes.hasImpliedBy) {
+      if (associated.has(hasImpliedBy)) {
+        continue;
+      }
+      for (const implication of hasImpliedBy.impliedBy) {
+        if (!associated.has(implication)) {
+          continue HasImpliedBy;
+        }
+      }
+      addings.add(hasImpliedBy);
+    }
+  }
+
+  // There's nothing to add to the associated set
+  return associated;
 }
