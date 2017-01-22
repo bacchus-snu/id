@@ -119,3 +119,13 @@ export function grantRemoveOverlap(nodeId: number): ErrorMessage {
     ko: `노드를 동시에 부여하고 삭제할 수 없습니다. nodeId: ${nodeId}`,
   });
 }
+
+/**
+ * users_nodes.apply: already granted
+ */
+export function nodeAlreadyGranted(userId: number, nodeId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Node ${nodeId} already granted to user ${userId}`,
+    ko: `${nodeId}번 노드는 이미 ${userId}번 사용자에게 부여되었습니다`,
+  });
+}

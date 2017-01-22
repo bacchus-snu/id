@@ -311,8 +311,15 @@ export function setNodes(nodeIds: Array<number>): Set<Node> {
  */
 export function checkNodeIds(nodeIds: Iterable<number>): void {
   for (const nodeId of nodeIds) {
-    if (!loadedNodes.ids.has(nodeId)) {
-      throw trans.invalidNodeId(nodeId);
-    }
+    checkNodeId(nodeId);
+  }
+}
+
+/**
+ * Checks validity of nodeId
+ */
+export function checkNodeId(nodeId: number): void {
+  if (!loadedNodes.ids.has(nodeId)) {
+    throw trans.invalidNodeId(nodeId);
   }
 }

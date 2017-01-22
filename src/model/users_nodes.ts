@@ -1,6 +1,6 @@
 import * as trans from '../translations';
-import { checkNodeIds, getConflictIds } from './nodes';
-import { Connection, QueryResult, TransactionWithLock } from './utils';
+import { checkNodeId, checkNodeIds, getConflictIds } from './nodes';
+import { Connection, en, QueryResult, TransactionWithLock } from './utils';
 
 interface Grant {
   nodeId: number;
@@ -22,6 +22,32 @@ interface UsersNodesModifyResult {
 export function select(conn: Connection, userId: number): Promise<QueryResult> {
   return conn.query(`select node_id, expire_after, accepted from users_nodes
     where user_id = $1`, [userId]);
+}
+
+/**
+ * Add a request
+ */
+export async function request(locked: TransactionWithLock, userId: number, nodeId: number,
+  expireAfter: Date | null, requestText: string | null): Promise<QueryResult> {
+  checkNodeId(nodeId);
+  // delete allows users to modify 'expireAfter' or 'requestText'
+  await locked.query(`delete from users_nodes where user_id = $1 and node_id = $2
+    accepted = false`, [userId, nodeId]);
+  try {
+    return await locked.query(`insert into users_nodes (user_id, node_id, expire_after, accepted,
+      request_text) values ($1, $2, $3, false, $4)`, [userId, nodeId, expireAfter,
+      en(requestText)]);
+  } catch (e) {
+    if (e.constraint === 'users_nodes_user_id_fkey') {
+      throw trans.invalidUserId(userId);
+    }
+    // because of 'delete' query, violation of users_nodes_pkey means the node is already
+    // granted (accepted = true) to the user
+    if (e.constraint === 'users_nodes_pkey') {
+      throw trans.nodeAlreadyGranted(userId, nodeId);
+    }
+    throw e;
+  }
 }
 
 /**

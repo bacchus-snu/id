@@ -89,7 +89,7 @@ create table users_nodes (
   expire_after timestamp without time zone,
   accepted boolean not null,
   request_text text check (request_text <> ''),
-  primary key(user_id, node_id)
+  constraint users_nodes_pkey primary key(user_id, node_id)
 );
 
 create table users_terms (
