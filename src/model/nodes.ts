@@ -1,9 +1,3 @@
-/**
- * TODO
- * Complete conflict map: a conflict b implies b conflict a
- * Guarantee unique nodeId and name
- */
-
 import { conflicts, nodes } from '../nodes';
 import * as trans from '../translations';
 import Conflict from '../types/Conflict';
@@ -137,17 +131,8 @@ function closure(node: Node, set: Set<Node>): Set<Node> {
  * Calcualte acknowledged closure
  */
 function closureAck(accepted: Array<Term>, node: Node, set: Set<Node>, t: Set<Node>): void {
-  // check whether or not term acceptance is fuilfilled by the given information
-  let ok = true;
-  for (const term of node.requiredTerms) {
-    if (!accepted.includes(term)) {
-      ok = false;
-      break;
-    }
-  }
-
-  // not fuilfilled => add to t
-  if (!ok) {
+  // not fulfilled => add to t
+  if (!fulfilled(node, accepted)) {
     t.add(node);
     return;
   }
@@ -155,12 +140,24 @@ function closureAck(accepted: Array<Term>, node: Node, set: Set<Node>, t: Set<No
   // fuilfilled
   set.add(node);
 
-  // implied
+  // include the implied
   for (const implied of node.implies) {
     if (!set.has(implied) && !t.has(implied)) {
       closureAck(accepted, implied, set, t);
     }
   }
+}
+
+/**
+ * Checks whether or not term acceptance is fulfilled
+ */
+function fulfilled(node: Node, accepted: Array<Term>): boolean {
+  for (const term of node.requiredTerms) {
+    if (!accepted.includes(term)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 const loadedNodes = load(nodes, conflicts);
@@ -194,7 +191,7 @@ export function associated(approved: Set<Node>): Set<Node> {
   let associated: Set<Node> = new Set();
   let addings: Set<Node>;
 
-  // Any approved nodes are also associated;
+  // Any approved nodes are also associated
   addings = approved;
 
   while (addings.size !== 0) {
@@ -205,21 +202,66 @@ export function associated(approved: Set<Node>): Set<Node> {
     }
 
     // check nodes that have impliedBy and see whether we can add them to associated set
-    addings = new Set();
-    HasImpliedBy:
-    for (const hasImpliedBy of loadedNodes.hasImpliedBy) {
-      if (associated.has(hasImpliedBy)) {
-        continue;
-      }
-      for (const implication of hasImpliedBy.impliedBy) {
-        if (!associated.has(implication)) {
-          continue HasImpliedBy;
-        }
-      }
-      addings.add(hasImpliedBy);
-    }
+    addings = addingImpliedByNodes(associated);
   }
 
   // There's nothing to add to the associated set
   return associated;
+}
+
+/**
+ * Get acknowledged set from approved set and accepted terms
+ */
+export function acknowledged(approved: Set<Node>, accepted: Array<Term>): Set<Node> {
+  let acknowledged: Set<Node> = new Set();
+  let addings: Set<Node> = new Set();
+
+  // an approved node is acknowledged if acceptance status of all requiredTerms are ok
+  for (const appr of approved) {
+    if (fulfilled(appr, accepted)) {
+      addings.add(appr);
+    }
+  }
+
+  while (addings.size !== 0) {
+    for (const adding of addings) {
+      const ack = loadedNodes.acks[adding.nodeId];
+      const ackTs = loadedNodes.ackTs[adding.nodeId];
+
+      // A node that anyone of acknowledged nodes implies and which requires subset of the
+      // requiredTerm of acknowledged node is also an acknowledged node
+      acknowledged = new Set([...acknowledged, ...ack]);
+
+      // Nodes may be included in acknowledged set
+      for (const ackT of ackTs) {
+        if (fulfilled(ackT, accepted)) {
+          acknowledged.add(ackT);
+        }
+      }
+    }
+    addings = addingImpliedByNodes(acknowledged);
+  }
+
+  return acknowledged;
+}
+
+/**
+ * check nodes that have impliedBy and see whether we can add them to addings set
+ */
+function addingImpliedByNodes(set: Set<Node>): Set<Node> {
+  const addings = new Set();
+
+  HasImpliedBy:
+  for (const hasImpliedBy of loadedNodes.hasImpliedBy) {
+    if (set.has(hasImpliedBy)) {
+      continue;
+    }
+    for (const implication of hasImpliedBy.impliedBy) {
+      if (!set.has(implication)) {
+        continue HasImpliedBy;
+      }
+    }
+    addings.add(hasImpliedBy);
+  }
+  return addings;
 }
