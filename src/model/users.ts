@@ -1,6 +1,6 @@
 import * as trans from '../translations';
 import * as reserved_usernames from './reserved_usernames';
-import { begin, Connection, en } from './utils';
+import { Connection, en, Transaction } from './utils';
 
 /**
  * 1. Blocking a user
@@ -30,14 +30,13 @@ async function nameToUserId(connection: Connection, name: string): Promise<numbe
  * Create a user with granted node
  * Returns userId of the created user
  */
-export async function create(nodeId: number, expireAfter: Date | null,
+export async function create(transaction: Transaction, nodeId: number, expireAfter: Date | null,
   name: string, realname: string | null, snuidBachelor: string | null,
   snuidMaster: string | null, snuidDoctor: string | null, snuidMasterDoctor: string | null,
   shellId: number | null, timezone: string | null): Promise<number> {
   if (name.length < 3 || !/^[a-z][a-z0-9]*$/.test(name)) {
     throw trans.userNameNotAllowed(name);
   }
-  const transaction = await begin();
   if (await reserved_usernames.isReservedUserName(transaction, name)) {
     throw trans.userNameDuplicate(name);
   }
@@ -62,6 +61,5 @@ export async function create(nodeId: number, expireAfter: Date | null,
   // Promote Transaction to TransactionWithLock
   // const locked = await transaction.lock(userId);
   // TODO await grant(locked, userId, nodeId, expireAfter);
-  await transaction.commit();
   return userId;
 }

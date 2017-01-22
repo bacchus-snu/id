@@ -7,7 +7,7 @@ export function unknownError(error: Error): ErrorMessage {
   return new ErrorMessage({
     en: 'Unknown error',
     ko: '알 수 없는 오류가 발생했습니다',
-  }, error);
+  }, error, 500);
 }
 
 /**
@@ -97,5 +97,15 @@ export function nodeNameNotFound(name: string): ErrorMessage {
   return new ErrorMessage({
     en: `No such node: ${name}`,
     ko: `그런 이름의 노드가 없습니다: ${name}`,
+  });
+}
+
+/**
+ * users_nodes.modify error
+ */
+export function grantRevokeOverlap(nodeId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Cannot grant and revoke simultaneously. nodeId: ${nodeId}`,
+    ko: `노드를 동시에 부여하고 회수할 수 없습니다. nodeId: ${nodeId}`,
   });
 }

@@ -12,6 +12,9 @@ interface LoadedNodes {
   // set of nodes
   nodes: Set<Node>;
 
+  // set of nodeIds
+  ids: Set<number>;
+
   // can index a node by its nodeId
   byId: Array<Node>;
 
@@ -47,6 +50,8 @@ interface LoadedNodes {
  * Load nodes and conflicts
  */
 function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
+  const ids: Set<number> = new Set();
+
   // Nodes by ID
   const byId: Array<Node> = [];
   for (const node of list) {
@@ -54,6 +59,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
       throw new Error('Duplicate nodeId ' + node.nodeId);
     }
     byId[node.nodeId] = node;
+    ids.add(node.nodeId);
   }
 
   // Nodes by Name
@@ -106,7 +112,7 @@ function load(list: Array<Node>, conflictList: Array<Conflict>): LoadedNodes {
     closureAck(node.requiredTerms, node, acks[node.nodeId], ackTs[node.nodeId]);
   }
 
-  return { nodes: new Set(list), byId, byName, hasImpliedBy, conflicts, conflictIds, closures,
+  return { nodes: new Set(list), ids, byId, byName, hasImpliedBy, conflicts, conflictIds, closures,
     acks, ackTs };
 }
 
@@ -291,4 +297,22 @@ function addingImpliedByNodes(set: Set<Node>): Set<Node> {
     addings.add(hasImpliedBy);
   }
   return addings;
+}
+
+/**
+ * Convert array of nodeIds to set of nodes
+ */
+export function setNodes(nodeIds: Array<number>): Set<Node> {
+  return new Set(nodeIds.map(n => getById(n)));
+}
+
+/**
+ * Checks validity of nodeIds
+ */
+export function checkNodeIds(nodeIds: Iterable<number>): void {
+  for (const nodeId of nodeIds) {
+    if (!loadedNodes.ids.has(nodeId)) {
+      throw trans.invalidNodeId(nodeId);
+    }
+  }
 }

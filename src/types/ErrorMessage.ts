@@ -4,18 +4,14 @@ import Translation from './Translation';
  * Error message for end users
  */
 class ErrorMessage extends Error {
+  public readonly statusCode: number;
+
   /**
    * Provided error means unhandled server-side exception.
    */
-  constructor(readonly msg: Translation, readonly error?: Error) {
+  constructor(readonly msg: Translation, readonly error?: Error, statusCode?: number) {
     super(msg.en);
-  }
-
-  /**
-   * Returns HTTP status code for this error
-   */
-  get statusCode(): number {
-    return this.error ? 500 : 400;
+    this.statusCode = statusCode === undefined ? 400 : statusCode;
   }
 }
 

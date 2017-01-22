@@ -1,43 +1,73 @@
 import * as trans from '../translations';
-import * as nodes from './nodes';
-import { QueryResult, TransactionWithLock } from './utils';
+import { Connection, QueryResult, TransactionWithLock } from './utils';
+
+interface Grant {
+  nodeId: number;
+  expireAfter: Date | null;
+}
 
 /**
- * Grant a node for a user
+ * Select granted set
+ * Warning: this function does not check the validity of userId
  */
-export async function grant(locked: TransactionWithLock, userId: number, nodeId: number,
-  expireAfter: Date | null): Promise<QueryResult> {
-  try {
-    nodes.getById(nodeId);
-  } catch (e) {
-    throw trans.invalidNodeId(nodeId);
-  }
+export async function select(conn: Connection, userId: number): Promise<QueryResult> {
+  return await conn.query(`select node_id, expire_after, accepted from users_nodes
+    where user_id = $1`, [userId]);
+}
 
-  // update1: accept pending request
-  const update1 = await locked.query(`update users_nodes set accepted = true, expire_after = $3
-    where user_id = $1 and node_id = $2 and accepted = false`, [userId, nodeId, expireAfter]);
-  if (update1.rowCount === 1) {
-    // TODO: update users_valids as well
-    return update1;
-  }
+/**
+ * Grant/revoke node for user
+ */
+export async function modify(locked: TransactionWithLock, userId: number, grants: Array<Grant>,
+  revokes: Array<number>): Promise<null> {
+  // Get current granted set
+  const granted = (await select(locked, userId)).rows;
 
-  // update2: update expireAfter on already granted node
-  const update2 = await locked.query(`update users_nodes set expire_after = $3
-    where user_id = $1 and node_id = $2`, [userId, nodeId, expireAfter]);
-  if (update2.rowCount === 1) {
-    return update2;
-  }
+  // calculate todos for grants
+  const grantUpdateExpire: Set<Grant> = new Set();
+  const grantAccept: Set<Grant> = new Set();
+  const grantInsert: Set<Grant> = new Set();
 
-  // insert
-  try {
-    const insert = await locked.query(`insert into users_nodes (user_id, node_id, expire_after,
-      accepted) values ($1, $2, $3, true)`, [userId, nodeId, expireAfter]);
-    // TODO: update users_valids as well
-    return insert;
-  } catch (e) {
-    if (e.constraint === 'users_nodes_user_id_fkey') {
-      throw trans.invalidUserId(userId);
+  Grant:
+  for (const grant of grants) {
+    if (revokes.includes(grant.nodeId)) {
+      throw trans.grantRevokeOverlap(grant.nodeId);
     }
-    throw e;
+    for (const g of granted) {
+      if (g.node_id !== grant.nodeId) {
+        continue;
+      }
+      if ((g.expire_after === null) !== (grant.expireAfter === null)) {
+        grantUpdateExpire.add(grant);
+        continue Grant;
+      }
+      if (grant.expireAfter !== null &&
+          (g.expire_after.getTime() !== grant.expireAfter.getTime())) {
+        grantUpdateExpire.add(grant);
+        continue Grant;
+      }
+      if (g.accepted === false) {
+        grantAccept.add(grant);
+        continue Grant;
+      }
+      continue Grant;
+    }
+    grantInsert.add(grant);
   }
+
+  // calculate todos for revoke
+  const revokeRemove: Set<number> = new Set();
+  Revoke:
+  for (const revoke of revokes) {
+    for (const g of granted) {
+      if (g.node_id !== revoke) {
+        continue;
+      }
+      revokeRemove.add(revoke);
+      continue Revoke;
+    }
+  }
+
+  // TODO
+  throw new Error();
 }
