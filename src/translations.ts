@@ -129,3 +129,23 @@ export function nodeAlreadyGranted(userId: number, nodeId: number): ErrorMessage
     ko: `${nodeId}번 노드는 이미 ${userId}번 사용자에게 부여되었습니다`,
   });
 }
+
+/**
+ * invalid emailAddressId
+ */
+export function invalidEmailAddressId(addressId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid emailAddressId: ${addressId}`,
+    ko: `잘못된 emailAddressId: ${addressId}`,
+  });
+}
+
+/**
+ * invalid classId
+ */
+export function invalidClassId(classId: number): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid classId: ${classId}`,
+    ko: `잘못된 classId: ${classId}`,
+  });
+}

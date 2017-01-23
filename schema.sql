@@ -51,15 +51,14 @@ alter table users add column primary_email_address_id integer references email_a
 
 create table classes (
   class_id serial primary key,
-  owner_id integer references users(user_id),
-  primary_contact_address_id integer references email_addresses(email_address_id),
+  owner_id integer constraint classes_owner_id_fkey references users(user_id),
+  primary_contact_address_id integer constraint classes_primary_contact_address_id_fkey references email_addresses(email_address_id),
   expire_after timestamp without time zone,
   accepted boolean not null,
   request_text text check (request_text <> ''),
   enroll_secret text check (enroll_secret <> ''),
   enroll_secret_expire_after timestamp without time zone,
-  enroll_auto boolean not null,
-  recalculating boolean not null
+  enroll_auto boolean not null
 );
 
 create table class_names (
@@ -114,7 +113,8 @@ create table users_valids (
   node_id integer not null,
   term_ok boolean not null,
   term_semi boolean not null,
-  primary key(user_id, node_id)
+  primary key(user_id, node_id),
+  check((not term_ok) or term_semi)
 );
 
 create table hosts (

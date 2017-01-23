@@ -41,14 +41,16 @@ export async function create(transaction: Transaction, nodeId: number, expireAft
   if (await reserved_usernames.isReservedUserName(transaction, name)) {
     throw trans.userNameDuplicate(name);
   }
+  let userId: number;
   try {
-    await transaction.query(
+    const insert = await transaction.query(
       `insert into users (name, realname, snuid_bachelor, snuid_master, snuid_doctor,
        snuid_master_doctor, shell_id, language, timezone, blocked)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, false)`,
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, false) returning user_id`,
        [name, en(realname), en(snuidBachelor), en(snuidMaster), en(snuidDoctor),
         en(snuidMasterDoctor), shellId, en(language), en(timezone)],
     );
+    userId = insert.rows[0].user_id;
   } catch (e) {
     if (e.constraint === 'users_name_key') {
       throw trans.userNameDuplicate(name);
@@ -58,9 +60,8 @@ export async function create(transaction: Transaction, nodeId: number, expireAft
     }
     throw e;
   }
-  const userId = await nameToUserId(transaction, name);
   // Promote Transaction to TransactionWithLock
-  const locked = await transaction.lock(userId);
+  const locked = await transaction.userLock(userId);
   await modify(locked, userId, [{ nodeId, expireAfter }], []);
   return userId;
 }
