@@ -175,3 +175,7 @@ export async function modify(locked: TransactionWithLock, userId: number, grants
   // TODO: mail to users
   return result;
 }
+
+export async function removeUserId(conn: Connection, userId: number): Promise<QueryResult> {
+  throw new Error('Not implemented');
+}
