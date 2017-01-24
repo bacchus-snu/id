@@ -1,6 +1,7 @@
 import * as trans from '../translations';
-import { checkNodeId, checkNodeIds, getConflictIds } from './nodes';
+import { byId, checkNodeId, checkNodeIds, getConflictIds } from './nodes';
 import { Connection, en, placeholders, QueryResult, TransactionWithLock } from './utils';
+import Node from '../types/Node';
 
 interface Grant {
   nodeId: number;
@@ -20,9 +21,14 @@ interface UsersNodesModifyResult {
  * Warning: this function does not check the validity of userId
  * This function is in users_valids calculation chain: using preparedQuery
  */
-export function select(conn: Connection, userId: number): Promise<QueryResult> {
-  return conn.preparedQuery('users_nodes_select',
+export async function select(conn: Connection, userId: number): Promise<Set<Node>> {
+  const select = await conn.preparedQuery('users_nodes_select',
     'select node_id from users_nodes where user_id = $1 and accepted = true', [userId]);
+  const set: Set<Node> = new Set();
+  for (let i = 0; i < select.rowCount; i++) {
+    set.add(byId(select.rows[i].node_id));
+  }
+  return set;
 }
 
 /**

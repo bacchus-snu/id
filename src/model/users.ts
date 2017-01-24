@@ -2,6 +2,7 @@ import config from '../config';
 import * as classes from './classes';
 import * as email_addresses from './email_addresses';
 import * as trans from '../translations';
+import * as nodes from './nodes';
 import * as reserved_usernames from './reserved_usernames';
 import * as users_classes from './users_classes';
 import * as users_nodes from './users_nodes';
@@ -105,19 +106,10 @@ export async function remove(tr: Transaction, userId: number): Promise<UserLegac
  * By using token, grant a node to the user
  */
 export async function recover(locked: TransactionWithUserLock, userId: number, nodeId: number,
-  expireAfter: Date | null, token: string): Promise<QueryResult> {
-  const select = await locked.query(`select reset_recovery_token, token_expire_after,
-    is_reset_token from users where user_id = $1`, [userId]);
-  if (select.rowCount === 0) {
-    throw trans.invalidUserId(userId);
-  }
-  const u = select.rows[0];
-  if (u.is_reset_token === true) {
-    throw trans.invalidToken;
-  }
-  testToken(u.reset_recovery_token, u.token_expire_after, token);
-  await nullToken(locked, userId);
-  return await users_nodes.modify(locked, userId, [{ nodeId, expireAfter }], []);
+  expireAfter: Date | null, password: string, token: string): Promise<QueryResult> {
+  await checkToken(locked, userId, token, false);
+  await users_nodes.modify(locked, userId, [{ nodeId, expireAfter }], []);
+  return await updatePassword(locked, userId, password);
 }
 
 /**
@@ -138,9 +130,13 @@ export async function requestRecovery(tr: Transaction, local: string, domain: st
 /**
  * Nullify token
  */
-function nullToken(conn: Connection, userId: number): Promise<QueryResult> {
-  return conn.query(`update users set reset_recovery_token = null, token_expire_after = null,
-    is_reset_token = false where user_id = $1`, [userId]);
+async function nullToken(conn: Connection, userId: number): Promise<QueryResult> {
+  const update = await conn.query(`update users set reset_recovery_token = null,
+    token_expire_after = null, is_reset_token = false where user_id = $1`, [userId]);
+  if (update.rowCount === 0) {
+    throw trans.invalidUserId(userId);
+  }
+  return update;
 }
 
 /**
@@ -149,9 +145,32 @@ function nullToken(conn: Connection, userId: number): Promise<QueryResult> {
 async function generateToken(conn: Connection, userId: number, expireAfter: Date | null,
   isResetToken: boolean): Promise<string> {
   const token = await password.random();
-  await conn.query(`update users set reset_recovery_token = $1, token_expire_after = $2,
-    is_reset_token = $3 where user_id = $4`, [token, expireAfter, isResetToken, userId]);
+  const update = await conn.query(`update users set reset_recovery_token = $1,
+    token_expire_after = $2, is_reset_token = $3 where user_id = $4`,
+    [token, expireAfter, isResetToken, userId]);
+  if (update.rowCount === 0) {
+    throw trans.invalidUserId(userId);
+  }
   return token;
+}
+
+/**
+ * Check token
+ */
+async function checkToken(tr: Transaction, userId: number, token: string, isResetToken: boolean):
+  Promise<QueryResult> {
+  const select = await locked.query(`select reset_recovery_token, token_expire_after,
+    is_reset_token from users where user_id = $1`, [userId]);
+  if (select.rowCount === 0) {
+    throw trans.invalidUserId(userId);
+  }
+  const u = select.rows[0];
+  if (u.is_reset_token !== isResetToken) {
+    throw trans.invalidToken;
+  }
+  testToken(u.reset_recovery_token, u.token_expire_after, token);
+  await nullToken(locked, userId);
+  return select;
 }
 
 /**
@@ -161,7 +180,7 @@ async function generateToken(conn: Connection, userId: number, expireAfter: Date
 /**
  * Get UID. Generate UID if needed
  */
-export async getUid(tr: Transaction, userId: number): Promise<number> {
+export async function getUid(tr: Transaction, userId: number): Promise<number> {
   const select = await tr.query(`select uid from users where user_id = $1`, [userId]);
   if (select.rows[0].uid !== null) {
     return select.rows[0].uid;
@@ -174,29 +193,68 @@ export async getUid(tr: Transaction, userId: number): Promise<number> {
 }
 
 /**
- * Update user details
- * TODO: split. updatePIIs(TODO: check 'account' node exists)/updateAdditionals
+ * Operations on personally identifiable information
  */
-export async function update(conn: Connection, userId: number, realname: string | null,
-  snuidBachelor: string | null, snuidMaster: string | null, snuidDoctor: string | null,
-  snuidMasterDoctor: string | null, shellId: number | null, language: string | null,
-  timezone: string | null): Promise<QueryResult> {
-  let update: QueryResult;
-  try {
-    update = await conn.query(`update users set realname = $1, snuid_bachelor = $2,
-      snuid_master = $3, snuid_doctor = $4, snuid_master_doctor = $5, shell_id = $6, language = $7,
-      timezone = $8 where user_id = $9`, [en(realname), en(snuidBachelor), en(snuidMaster),
-      en(snuidDoctor), en(snuidMasterDoctor), shellId, en(language), en(timezone), userId]);
-  } catch (e) {
-    if (e.constraint === 'users_shell_id_fkey') {
-      throw trans.invalidShellId(shellId);
-    }
-    throw e;
-  }
-  if (update.rowCount === 0) {
+
+/**
+ * Get PIIs
+ */
+export async function getPIIs(conn: Connection, userId: number): Promise<PIIs> {
+  const select = await conn.query(`select realname, snuid_bachelor, snuid_master, snuid_doctor,
+    snuid_master_doctor from users where user_id = $1`, [userId]);
+  if (select.rowCount === 0) {
     throw trans.invalidUserId(userId);
   }
-  return update;
+  const u = select.rows[0];
+  return {
+    realname: u.realname,
+    snuidBachelor: u.snuid_bachelor,
+    snuidMaster: u.snuid_master,
+    snuidDoctor: u.snuid_doctor,
+    snuidMasterDoctor: u.snuid_master_doctor,
+  };
+}
+
+/**
+ * Update user PIIs
+ */
+export async function updatePIIs(tr: Transaction, userId: number, piis: PIIs):
+  Promise<QueryResult> {
+  await users_valids.checkNotGhost(tr, userId);
+
+  // get list of piis that should be immutable
+  const granted = users_nodes.select(tr, userId);
+  const immutable: Set<string> = new Set();
+  for (let node of granted) {
+    for (let pii of node.requiredPIIs.users) {
+      immutable.add(pii);
+    }
+  }
+
+  const select = await tr.query(`select realname, snuid_bachelor, snuid_master, snuid_doctor,
+    snuid_master_doctor from users where user_id = $1`, [userId]);
+  if (select.rowCount === 0) {
+    throw trans.invalidUserId(userId);
+  }
+  const u = select.rows[0];
+
+  checkMutability(immutable, 'realname', u.realname === en(piis.realname));
+  checkMutability(immutable, 'snuid_bachelor', u.snuid_bachelor === en(piis.snuidBachelor));
+  checkMutability(immutable, 'snuid_master', u.snuid_master === en(piis.snuidMaster));
+  checkMutability(immutable, 'snuid_doctor', u.snuid_doctor === en(piis.snuidDoctor));
+  checkMutability(immutable, 'snuid_master_doctor',
+    u.snuid_master_doctor === en(piis.snuidMasterDoctor));
+
+  return await conn.query(`update users set realname = $1, snuid_bachelor = $2,
+    snuid_master = $3, snuid_doctor = $4, snuid_master_doctor = $5 where user_id = $6`,
+    [en(realname), en(piis.snuidBachelor), en(piis.snuidMaster), en(piis.snuidDoctor),
+    en(piis.snuidMasterDoctor), userId]);
+}
+
+function checkMutability(immutable: Set<string>, pii: string, equals: boolean) {
+  if (immutable.has(pii) && !equals) {
+    throw trans.immutablePII(pii);
+  }
 }
 
 /**
@@ -212,7 +270,7 @@ export async function removePIIsAndPassword(tr: Transaction, userId: number): Pr
   await conn.query(`update users set password_digest = null, realname = null, snuid_bachelor = null,
     snuid_master = null, snuid_doctor = null, snuid_master_doctor = null where user_id = $1`,
     [userId]);
-  const contact = getContactAddress(tr, userId);
+  const contact = await getContactAddress(tr, userId);
   return {
     contact,
     name: u.name,
@@ -223,35 +281,52 @@ export async function removePIIsAndPassword(tr: Transaction, userId: number): Pr
 }
 
 /**
+ * Operations on password
+ */
+
+/**
  * Check password
  */
-export async checkPassword(conn: Connection, userId: number, password: string): Promise<boolean> {
+export async function checkPassword(conn: Connection, userId: number, password: string):
+  Promise<boolean> {
   throw new Error('Not implemented');
 }
 
 /**
  * Update password
  */
-export async updatePassword(conn: Connection, userId: number, input: string): Promise<QueryResult> {
+export async function updatePassword(tr: Transaction, userId: number, input: string):
+  Promise<QueryResult> {
+  await users_valids.checkNotGhost(tr, userId);
   throw new Error('Not implemented');
 }
 
 /**
  * Check and use password reset token
  */
-export async reset(tr: Transaction, userId: number, token: string, password: string):
+export async function reset(tr: Transaction, userId: number, token: string, password: string):
   Promise<QueryResult> {
-  // TODO check reset_expire_after
-  // TODO drop token if token is correct
-  throw new Error('Not implemented');
+  await checkToken(tr, userId, token, true);
+  return await updatePassword(tr, userId, password);
+}
+
+/**
+ * Request reset
+ */
+export async function requestReset(tr: Transaction, local: string, domain: string,
+  tokenExpireAfter: Date | null): Promise<string> {
+  const userId = await email_addresses.byAddress(tr, local, domain);
+  const token = await generateToken(tr, userId, tokenExpireAfter, true);
+  // API server now have to send token via email
+  return token;
 }
 
 /**
  * Block/unblock
  */
-export async block(conn: Connection, userId: number, block: boolean, expireAfter: Date | null):
-  Promise<QueryResult> {
-  const update = await conn.query(`update users set block = $1, expire_after = $2
+export async function block(conn: Connection, userId: number, block: boolean,
+  expireAfter: Date | null): Promise<QueryResult> {
+  const update = await conn.query(`update users set block = $1, blocked_expire_after = $2
     where user_id = $3`, [block, expireAfter, userId]);
   if (update.rowCount === 0) {
     throw trans.invalidUserId(userId);
@@ -262,19 +337,15 @@ export async block(conn: Connection, userId: number, block: boolean, expireAfter
 /**
  * Set specific shellId to null
  */
-export nullShellId(conn: Connection, shellId: number): Promise<QueryResult> {
+export function nullShellId(conn: Connection, shellId: number): Promise<QueryResult> {
   return conn.query('update users set shell_id = null where shell_id = $1 returning user_id',
     [shellId]);
 }
 
 /**
- * Password
- */
-
-/**
  * update primary contact id
  */
-export async updateContactId(tr: Transaction, userId: number, contactId: number):
+export async function updateContactId(tr: Transaction, userId: number, contactId: number):
   Promise<QueryResult> {
   await email_addresses.check(tr, userId, contactId);
   return await tr.query('update users set primary_email_address_id = $1 where user_id = $2',
@@ -298,5 +369,3 @@ async function getContactAddress(conn: Connection, userId: number):
     domain: select.rows[0].address_domain,
   };
 }
-
-

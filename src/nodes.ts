@@ -1,4 +1,3 @@
-import * as piis from './piis';
 import * as terms from './terms';
 import Conflict from './types/Conflict';
 import Node from './types/Node';
@@ -42,6 +41,33 @@ import Node from './types/Node';
 export const nodes: Array<Node> = [];
 const snu = 'snu.ac.kr';
 const bacchus = 'bacchus.snucse.org';
+const piis = {
+  realname: {
+    users: 'realname',
+    classes: 'require_realname',
+    users_classes: 'provided_realname',
+  },
+  snuidBachelor: {
+    users: 'snuid_bachelor',
+    classes: 'require_snuid_bachelor',
+    users_classes: 'provided_snuid_bachelor',
+  },
+  snuidMaster: {
+    users: 'snuid_master',
+    classes: 'require_snuid_master',
+    users_classes: 'provided_snuid_master',
+  },
+  snuidDoctor: {
+    users: 'snuid_doctor',
+    classes: 'require_snuid_doctor',
+    users_classes: 'provided_snuid_doctor',
+  },
+  snuidMasterDoctor: {
+    users: 'snuid_master_doctor',
+    classes: 'require_snuid_master_doctor',
+    users_classes: 'provided_snuid_master_doctor',
+  },
+};
 
 /**
  * Node 0~8: Basic user category definition.

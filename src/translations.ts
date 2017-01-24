@@ -1,4 +1,5 @@
 import ErrorMessage from './types/ErrorMessage';
+import Node from './types/Node';
 
 /**
  * Unknown error
@@ -179,5 +180,19 @@ export function invalidEmailAddress(local: string, domain: string): ErrorMessage
   return new ErrorMessage({
     en: `Invalid email address: ${local}@${domain}`,
     ko: `잘못된 전자우편 주소: ${local}@${domain}`,
+  });
+}
+
+export function ghostUser(userId: number, node: Node): ErrorMessage {
+  return new ErrorMessage({
+    en: `User ${userId} does not have the following node: ${node.description.en}`,
+    ko: `사용자 ${userId}번에 다음 노드가 없어서 처리가 불가합니다: ${node.description.ko}`,
+  });
+}
+
+export function immutablePII(pii: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `Due to granted nodes, personally identifiable information '${pii}' cannot be modified`,
+    ko: `부여된 권한 때문에 다음 개인정보는 변경이 불가합니다: ${pii}`,
   });
 }

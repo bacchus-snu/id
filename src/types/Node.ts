@@ -1,4 +1,3 @@
-import PII from './PII';
 import Term from './Term';
 import Translation from './Translation';
 
@@ -75,6 +74,7 @@ interface Node {
   // user must accept all the specified terms.
   requiredTerms: Array<Term>;
   // List of required information for this node to be granted
+  // Also, being granted with this node will disable users from modify or delete listed PIIs
   requiredPIIs: Array<PII>;
   // List of domains of verified email addresses that is required for this node to be granted
   requiredVerifiedEmail: Array<string>;
@@ -86,6 +86,18 @@ interface Node {
   validAdded?: Translation;
   // Removed from valid set
   validRemoved?: Translation;
+}
+
+/**
+ * A designator for one pii
+ */
+interface PII {
+  // relevant column name in users table
+  users: string;
+  // on classes table
+  classes: string;
+  // on users_classes table
+  users_classes: string;
 }
 
 export default Node;

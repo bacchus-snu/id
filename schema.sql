@@ -40,7 +40,7 @@ create table users (
   snuid_doctor text check (snuid_doctor <> ''),
   snuid_master_doctor text check (snuid_master_doctor <> ''),
 
-  -- Additional info from user column
+  -- Preference info from user column
   shell_id integer constraint users_shell_id_fkey references shells(shell_id),
   language varchar(2),
   timezone text check (timezone <> '')

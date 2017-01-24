@@ -176,7 +176,7 @@ export const get = loadedNodes.nodes;
 /**
  * Get node by nodeId
  */
-export function getById(nodeId: number): Node {
+export function byId(nodeId: number): Node {
   const node = loadedNodes.byId[nodeId];
   if (node === undefined) {
     throw trans.invalidNodeId(nodeId);
@@ -187,7 +187,7 @@ export function getById(nodeId: number): Node {
 /**
  * Get node by name
  */
-export function getByName(name: string): Node {
+export function byName(name: string): Node {
   const node = loadedNodes.byName[name];
   if (node === undefined) {
     throw trans.nodeNameNotFound(name);
@@ -303,7 +303,7 @@ function addingImpliedByNodes(set: Set<Node>): Set<Node> {
  * Convert array of nodeIds to set of nodes
  */
 export function setNodes(nodeIds: Array<number>): Set<Node> {
-  return new Set(nodeIds.map(n => getById(n)));
+  return new Set(nodeIds.map(n => byId(n)));
 }
 
 /**

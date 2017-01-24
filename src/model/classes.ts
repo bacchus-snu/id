@@ -1,5 +1,5 @@
 import * as trans from '../translations';
-import { Connection, en, placeholders, QueryResult, TransactionWithUserLock } from './utils';
+import { Connection, en, QueryResult, Transaction } from './utils';
 
 // delete (cascade)
 // generateEnrollSecret
@@ -25,10 +25,10 @@ export async function create(tr: Transaction, ownerId: number | null, contactId:
     classId = insert.rows[0].class_id;
   } catch (e) {
     if (e.constraint === 'classes_owner_id_fkey') {
-      throw trans.invalidUserId(ownerId);
+      throw trans.invalidUserId(ownerId as number);
     }
     if (e.constraint === 'classes_primary_contact_address_id_fkey') {
-      throw trans.invalidEmailAddressId(contactId);
+      throw trans.invalidEmailAddressId(contactId as number);
     }
     throw e;
   }
@@ -87,10 +87,10 @@ export async function update(tr: Transaction, classId: number, ownerId: number |
        recalculationNeeded ? true : c.recalculating, classId]);
   } catch (e) {
     if (e.constraint === 'classes_owner_id_fkey') {
-      throw trans.invalidUserId(ownerId);
+      throw trans.invalidUserId(ownerId as number);
     }
     if (e.constraint === 'classes_primary_contact_address_id_fkey') {
-      throw trans.invalidEmailAddressId(contactId);
+      throw trans.invalidEmailAddressId(contactId as number);
     }
     throw e;
   }

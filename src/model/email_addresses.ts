@@ -19,7 +19,7 @@ export async function byAddress(conn: Connection, local: string, domain: string)
  * Add email address
  * Returns verifyToken
  */
-export async requestVerification(tr: Transaction, local: string, domain: string,
+export async function requestVerification(tr: Transaction, local: string, domain: string,
   expireAfter: Date | null): Promise<string> {
   if (local === '' || domain === '') {
     throw trans.invalidEmailAddress(local, domain);
@@ -45,7 +45,7 @@ export async requestVerification(tr: Transaction, local: string, domain: string,
 /**
  * Verify email address with the given token
  */
-export async verify(tr: Transaction, addressId: number, userId: number, token: string):
+export async function verify(tr: Transaction, addressId: number, userId: number, token: string):
   Promise<QueryResult> {
   await test(tr, addressId, token);
   return await verified(tr, addressId, userId);
@@ -55,7 +55,8 @@ export async verify(tr: Transaction, addressId: number, userId: number, token: s
  * Just test the token
  * Warning: this function does not discard verify_token after successful check
  */
-export async test(conn: Connection, addressId: number, token: string): Promise<QueryResult> {
+export async function test(conn: Connection, addressId: number, token: string):
+  Promise<QueryResult> {
   const select = await conn.query(`select verify_token, verify_expire_after from email_addresses
     where email_address_id = $1`, [addressId]);
   if (select.rowCount === 0) {
@@ -69,7 +70,7 @@ export async test(conn: Connection, addressId: number, token: string): Promise<Q
 /**
  * Set as verified
  */
-export async verified(conn: Connection, addressId: number, userId: number) {
+export async function verified(conn: Connection, addressId: number, userId: number) {
   let update: QueryResult;
   try {
     update = await conn.query(`update email_addresses set user_id = $1, verify_token = null,
