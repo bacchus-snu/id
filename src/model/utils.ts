@@ -3,6 +3,11 @@ import config from '../config';
 import { wrapError } from '../log/exception';
 
 export type QueryResult = pg.QueryResult;
+const poolConfig = config.postgres;
+if (poolConfig.parseInputDatesAsUTC === false) {
+  throw new Error('parseInputDatesAsUTC must be true');
+}
+poolConfig.parseInputDatesAsUTC = true;
 const pool = new pg.Pool(config.postgres);
 
 /**
@@ -281,4 +286,17 @@ export function en(text: string | null): string | null {
     return null;
   }
   return text;
+}
+
+/**
+ * Compare token
+ */
+export function testToken(storedToken: string, storedExpire: Date | null, inputToken: string):
+  void {
+  if (storedExpire !== null && storedExpire < new Date()) {
+    throw trans.invalidToken;
+  }
+  if (storedToken !== inputToken) {
+    throw trans.invalidToken;
+  }
 }

@@ -1,4 +1,4 @@
-import * as infos from './infos';
+import * as piis from './piis';
 import * as terms from './terms';
 import Conflict from './types/Conflict';
 import Node from './types/Node';
@@ -6,7 +6,7 @@ import Node from './types/Node';
 /**
  * 1. Lifecycle of users
  *   - Not exists -> Exists
- *     To create a user, a newly granted node is needed
+ *     To create a user, a newly granted node and a verified email address is needed
  *   - Exists -> Not exists
  *     A user is completely deleted from the system when the user loses all valid nodes.
  *   - Alive as an account <-> A ghost
@@ -17,12 +17,12 @@ import Node from './types/Node';
  *     Dead accounts can be revived if the user obtains 'account' node again. Users must reset
  *     their passwords using their email addresses.
  *
- * 2. Implementation of lifecycle policy of individual accounts
- * Newly registered individual users are granted with 'individual-account' node. This enables
+ * 2. Implementation of lifecycle policy of accounts
+ * Newly registered users are granted with 'account' node. This enables
  * new users to navigate id.snucse.org system and take appropriate actions such as requesting
  * for nodes, applying for classes, accepting terms, or providing their personal information.
  *
- * This basic 'indiviual-account' node is not eternal. This node will expire after the specified
+ * This basic 'account' node is not eternal. This node will expire after the specified
  * duration from the time when the user is created. Users must obtain other valid nodes
  * to prevent their account from deleted. This enables stale accounts to be deleted.
  *
@@ -48,6 +48,7 @@ const bacchus = 'bacchus.snucse.org';
  */
 
 // This node enables storing privacy information of the user
+// This node enables users to logi in to id.snucse.org
 const account: Node = {
   nodeId: 0,
   name: 'account',
@@ -58,12 +59,11 @@ const account: Node = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(account);
 
-// Users with this node in valid set can log in to id.snucse.org
 const individual: Node = {
   nodeId: 1,
   name: 'individual-account',
@@ -74,12 +74,12 @@ const individual: Node = {
   implies: [account],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(individual);
 
-// Shared accounts bypass term acceptance checks.
+// Users with this node in valid set cannot log in to id.snucse.org
 const shared = {
   nodeId: 2,
   name: 'shared-account',
@@ -90,7 +90,7 @@ const shared = {
   implies: [account],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(shared);
@@ -108,7 +108,7 @@ const staff = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(staff);
@@ -128,7 +128,7 @@ const admin = {
   implies: [staff],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [bacchus],
 };
 nodes.push(admin);
@@ -155,7 +155,7 @@ const snucse = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.snucseTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucse);
@@ -170,7 +170,7 @@ const snucseFull = {
   implies: [snucse],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseFull);
@@ -185,7 +185,7 @@ const snucseProfile = {
   implies: [snucse],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseProfile);
@@ -200,7 +200,7 @@ const thirdPartyApps = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(thirdPartyApps);
@@ -215,7 +215,7 @@ const publishApps = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.appDevTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(publishApps);
@@ -230,7 +230,7 @@ const snucseEmail = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.emailTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseEmail);
@@ -245,7 +245,7 @@ const createClass = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.classTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(createClass);
@@ -260,7 +260,7 @@ const advancedResourceQualification = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResourceQualification);
@@ -275,7 +275,7 @@ const advancedResourceRequested = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.advancedTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResourceRequested);
@@ -290,7 +290,7 @@ const advancedResource = {
   implies: [],
   impliedBy: [advancedResourceQualification, advancedResourceRequested],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResource);
@@ -305,7 +305,7 @@ const martini = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(martini);
@@ -320,7 +320,7 @@ const mimosa = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(mimosa);
@@ -335,7 +335,7 @@ const sync = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(sync);
@@ -350,7 +350,7 @@ const software = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(software);
@@ -365,7 +365,7 @@ const hardware = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hardware);
@@ -380,7 +380,7 @@ const loungeLab = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(loungeLab);
@@ -395,7 +395,7 @@ const loungeWin = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(loungeWin);
@@ -429,7 +429,7 @@ const cse = {
   ],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(cse);
@@ -444,7 +444,7 @@ const ece = {
   implies: [individual, snucseFull],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(ece);
@@ -459,7 +459,7 @@ const preliminary = {
   implies: [individual, snucseProfile],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(preliminary);
@@ -474,7 +474,7 @@ const club = {
   implies: [shared],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(club);
@@ -496,7 +496,7 @@ const major = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(major);
@@ -511,7 +511,7 @@ const doub = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(doub);
@@ -526,7 +526,7 @@ const minor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(minor);
@@ -541,7 +541,7 @@ const combined = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(combined);
@@ -556,7 +556,7 @@ const extended = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(extended);
@@ -571,7 +571,7 @@ const exchange = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(exchange);
@@ -586,7 +586,7 @@ const undergraduateAlumni = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidBachelor],
+  requiredPIIs: [piis.realname, piis.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(undergraduateAlumni);
@@ -601,7 +601,7 @@ const graduateAlumni = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(graduateAlumni);
@@ -616,7 +616,7 @@ const master = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidMaster],
+  requiredPIIs: [piis.realname, piis.snuidMaster],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(master);
@@ -631,7 +631,7 @@ const doctor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidDoctor],
+  requiredPIIs: [piis.realname, piis.snuidDoctor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(doctor);
@@ -646,7 +646,7 @@ const masterDoctor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname, infos.snuidMasterDoctor],
+  requiredPIIs: [piis.realname, piis.snuidMasterDoctor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(masterDoctor);
@@ -661,7 +661,7 @@ const office = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(office);
@@ -676,7 +676,7 @@ const professor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredInfo: [infos.realname],
+  requiredPIIs: [piis.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(professor);
@@ -695,7 +695,7 @@ const usedSNUCSE = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(usedSNUCSE);
@@ -710,7 +710,7 @@ const usedThirdPartyApp = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(usedThirdPartyApp);
@@ -725,7 +725,7 @@ const hasSNUCSEEmail = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasSNUCSEEmail);
@@ -740,7 +740,7 @@ const hasMartiniHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasMartiniHome);
@@ -755,7 +755,7 @@ const hasMimosaHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasMimosaHome);
@@ -770,7 +770,7 @@ const hasSherryHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasSherryHome);
@@ -785,7 +785,7 @@ const hasKofHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredInfo: [],
+  requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasKofHome);

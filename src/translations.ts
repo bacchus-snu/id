@@ -43,12 +43,29 @@ export function reservedUserNameDuplicate(name: string): ErrorMessage {
 }
 
 /**
+ * address in use
+ */
+export function emailAddressDuplicate(local: string, domain: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `Email address ${local}@${domain} is already registered`,
+    ko: `전자우편 주소 ${local}@${domain}: 이미 사용중입니다`,
+  });
+}
+
+/**
  * username not found
  */
 export function userNameNotFound(name: string): ErrorMessage {
   return new ErrorMessage({
     en: `ID '${name}' not found`,
     ko: `ID '${name}': 없습니다`,
+  });
+}
+
+export function emailAddressNotFound(local: string, domain: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `Email address ${local}@${domain} not found`,
+    ko: `전자우편 주소 ${local}@${domain}: 없습니다`,
   });
 }
 
@@ -147,5 +164,20 @@ export function invalidClassId(classId: number): ErrorMessage {
   return new ErrorMessage({
     en: `Invalid classId: ${classId}`,
     ko: `잘못된 classId: ${classId}`,
+  });
+}
+
+/**
+ * Invalid token
+ */
+export const invalidToken = new ErrorMessage({
+  en: 'Invalid token',
+  ko: '잘못된 토큰입니다',
+});
+
+export function invalidEmailAddress(local: string, domain: string): ErrorMessage {
+  return new ErrorMessage({
+    en: `Invalid email address: ${local}@${domain}`,
+    ko: `잘못된 전자우편 주소: ${local}@${domain}`,
   });
 }

@@ -18,36 +18,52 @@ create table shells (
 );
 
 create table users (
+  -- Basic column
   user_id serial primary key,
   name text constraint users_name_key unique not null check (name <> ''),
+
+  -- Reset token/recovery token
+  reset_recovery_token text check (reset_recovery_token <> ''),
+  token_expire_after timestamp without time zone,
+  is_reset_token boolean not null,
+
+  -- POSIX uid
+  uid integer unique,
+
+  -- Password
   password_digest bytea,
-  blocked boolean not null,
-  blocked_expire_after timestamp without time zone,
+
+  -- Personally identifiable information
   realname text check (realname <> ''),
   snuid_bachelor text check (snuid_bachelor <> ''),
   snuid_master text check (snuid_master <> ''),
   snuid_doctor text check (snuid_doctor <> ''),
   snuid_master_doctor text check (snuid_master_doctor <> ''),
-  reset_token text check (reset_token <> ''),
-  reset_expire_after timestamp without time zone,
-  uid integer unique,
+
+  -- Additional info from user column
   shell_id integer constraint users_shell_id_fkey references shells(shell_id),
   language varchar(2),
   timezone text check (timezone <> '')
+
+  -- Blocked
+  blocked boolean not null,
+  blocked_expire_after timestamp without time zone,
+
+  -- primary_email_address_id integer references email_addresses(email_address_id) not null unique
 );
 
 create table email_addresses (
   email_address_id serial primary key,
-  user_id integer references users(user_id) not null,
+  -- user_id = null means not verified email address
+  user_id integer constraint email_addresses_user_id_fkey references users(user_id) on delete cascade,
   address_local text not null check (address_local <> ''),
   address_domain text not null check (address_domain <> ''),
-  verified boolean not null,
   verify_token text check (verify_token <> ''),
   verify_expire_after timestamp without time zone,
   unique(address_local, address_domain)
 );
 
-alter table users add column primary_email_address_id integer references email_addresses(email_address_id);
+alter table users add column primary_email_address_id integer references email_addresses(email_address_id) not null unique;
 
 create table classes (
   class_id serial primary key,
@@ -58,7 +74,13 @@ create table classes (
   request_text text check (request_text <> ''),
   enroll_secret text check (enroll_secret <> ''),
   enroll_secret_expire_after timestamp without time zone,
-  enroll_auto boolean not null
+  enroll_auto boolean not null,
+  require_realname boolean not null,
+  require_snuid_bachelor boolean not null,
+  require_snuid_master boolean not null,
+  require_snuid_doctor boolean not null,
+  require_snuid_master_doctor boolean not null,
+  require_primary_email_address boolean not null
 );
 
 create table class_names (
@@ -81,7 +103,13 @@ create table users_classes (
   expire_after timestamp without time zone,
   accepted boolean not null,
   request_text text check (request_text <> ''),
-  primary key(user_id, class_id)
+  primary key(user_id, class_id),
+  provided_realname boolean not null,
+  provided_snuid_bachelor boolean not null,
+  provided_snuid_master boolean not null,
+  provided_snuid_doctor boolean not null,
+  provided_snuid_master_doctor boolean not null,
+  provided_primary_email_address boolean not null
 );
 
 create table users_nodes (
