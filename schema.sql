@@ -33,7 +33,7 @@ create table users (
   -- Password
   password_digest bytea,
 
-  -- Personally identifiable information
+  -- Fields
   realname text check (realname <> ''),
   snuid_bachelor text check (snuid_bachelor <> ''),
   snuid_master text check (snuid_master <> ''),
