@@ -8,20 +8,20 @@ import Node from './types/Node';
  *     To create a user, a newly granted node and a verified email address is needed
  *   - Exists -> Not exists
  *     A user is completely deleted from the system when the user loses all valid nodes.
- *   - Alive as an account <-> A ghost
- *     A user is alive as an account if and only if 'account' node is in valid set of the user.
- *     The system can retain personal information about the user only if the user is alive;
- *     the system must drop personal information and password when the user loses 'account' node.
- *     (except for email addresses)
- *     Dead accounts can be revived if the user obtains 'account' node again. Users must reset
- *     their passwords using their email addresses.
+ *   - Storing personally identifiable information and password
+ *     Personally identifiable information and password of a user can be stored only during
+ *     the user has valid 'store-fields-and-password' node. The system must drop all fields
+ *     and password when the user loses 'store-fields-and-password' node.
+ *     (note that email addresses are not included in fields)
+ *     Account recovery process is resetting a user's password using the verified email address
+ *     and granting a node so that user has valid 'store-fields-and-password' node again.
  *
  * 2. Implementation of lifecycle policy of accounts
- * Newly registered users are granted with 'account' node. This enables
+ * Newly registered users are granted with 'individual-account' node. This enables
  * new users to navigate id.snucse.org system and take appropriate actions such as requesting
  * for nodes, applying for classes, accepting terms, or providing their personal information.
  *
- * This basic 'account' node is not eternal. This node will expire after the specified
+ * This basic 'individual-account' node is not eternal. This node will expire after the specified
  * duration from the time when the user is created. Users must obtain other valid nodes
  * to prevent their account from deleted. This enables stale accounts to be deleted.
  *
@@ -90,12 +90,12 @@ const id = {
 nodes.push(id);
 
 // This node enables storing privacy information of the user
-const storePIIs = {
+const storeFieldPassword = {
   nodeId: 6,
-  name: 'store-piis',
+  name: 'store-fields-and-password',
   description: {
-    ko: '개인정보를 id.snucse.org에 저장할 수 있음',
-    en: 'Can store personally identifiable information to id.snucse.org',
+    ko: '개인정보와 패스워드를를 id.snucse.org에 저장할 수 있음',
+    en: 'Can store personally identifiable information and password to id.snucse.org',
   },
   implies: [],
   impliedBy: [],
@@ -103,7 +103,7 @@ const storePIIs = {
   requiredPIIs: [],
   requiredVerifiedEmail: [],
 };
-nodes.push(storePIIs);
+nodes.push(storeFieldPassword);
 
 // This node enables users to change their password
 const changePassword = {
@@ -128,7 +128,7 @@ const account: Node = {
     ko: '계정',
     en: 'Account',
   },
-  implies: [storePIIs],
+  implies: [storeFieldPassword],
   impliedBy: [],
   requiredTerms: [],
   requiredPIIs: [],
