@@ -70,11 +70,57 @@ const piis = {
 };
 
 /**
- * Node 0~8: Basic user category definition.
+ * Node 0~9: Basic user category definition.
  */
 
+// This node enables users to log in to id.snucse.org
+const id = {
+  nodeId: 5,
+  name: 'use-id-service',
+  description: {
+    ko: 'id.snucse.org 사용',
+    en: 'Use id.snucse.org',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+  requiredPIIs: [],
+  requiredVerifiedEmail: [],
+};
+nodes.push(id);
+
 // This node enables storing privacy information of the user
-// This node enables users to logi in to id.snucse.org
+const storePIIs = {
+  nodeId: 6,
+  name: 'store-piis',
+  description: {
+    ko: '개인정보를 id.snucse.org에 저장할 수 있음',
+    en: 'Can store personally identifiable information to id.snucse.org',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+  requiredPIIs: [],
+  requiredVerifiedEmail: [],
+};
+nodes.push(storePIIs);
+
+// This node enables users to change their password
+const changePassword = {
+  nodeId: 7,
+  name: 'can-change-password',
+  description: {
+    ko: '패스워드 변경 가능',
+    en: 'Can change password',
+  },
+  implies: [],
+  impliedBy: [],
+  requiredTerms: [],
+  requiredPIIs: [],
+  requiredVerifiedEmail: [],
+};
+nodes.push(changePassword);
+
 const account: Node = {
   nodeId: 0,
   name: 'account',
@@ -82,7 +128,7 @@ const account: Node = {
     ko: '계정',
     en: 'Account',
   },
-  implies: [],
+  implies: [storePIIs],
   impliedBy: [],
   requiredTerms: [],
   requiredPIIs: [],
@@ -97,7 +143,7 @@ const individual: Node = {
     ko: '개인 계정',
     en: 'Individual account',
   },
-  implies: [account],
+  implies: [account, id, changePassword],
   impliedBy: [],
   requiredTerms: [terms.privacy],
   requiredPIIs: [piis.realname],
@@ -427,11 +473,11 @@ const loungeWin = {
 nodes.push(loungeWin);
 
 /**
- * Node 0~8: Basic user category definition. (cont'd)
+ * Node 0~9: Basic user category definition. (cont'd)
  */
 
 const cse = {
-  nodeId: 5,
+  nodeId: 8,
   name: 'cse-member',
   description: {
     ko: '컴퓨터공학부 구성원',
@@ -461,7 +507,7 @@ const cse = {
 nodes.push(cse);
 
 const ece = {
-  nodeId: 6,
+  nodeId: 9,
   name: 'ece-from-cse',
   description: {
     ko: '전기·정보공학부로 전공진입한 컴반',
@@ -475,41 +521,12 @@ const ece = {
 };
 nodes.push(ece);
 
-const preliminary = {
-  nodeId: 7,
-  name: 'preliminary',
-  description: {
-    ko: '예비 새내기',
-    en: 'Undergraduate preliminary',
-  },
-  implies: [individual, snucseProfile],
-  impliedBy: [],
-  requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
-  requiredVerifiedEmail: [],
-};
-nodes.push(preliminary);
-
-const club = {
-  nodeId: 8,
-  name: 'club',
-  description: {
-    ko: '동아리',
-    en: 'Student club',
-  },
-  implies: [shared],
-  impliedBy: [],
-  requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
-  requiredVerifiedEmail: [],
-};
-nodes.push(club);
-
 /**
  * Node 10~29: CSE membership
  *   - 1x: undergraduate
  *   - 2x: graduate
  *   - 3x: others
+ *   - 4x: Not a regular CSE member
  */
 
 const major = {
@@ -706,6 +723,21 @@ const professor = {
   requiredVerifiedEmail: [],
 };
 nodes.push(professor);
+
+const preliminary = {
+  nodeId: 40,
+  name: 'preliminary',
+  description: {
+    ko: '예비 새내기',
+    en: 'Undergraduate preliminary',
+  },
+  implies: [individual, snucseProfile],
+  impliedBy: [],
+  requiredTerms: [terms.privacy],
+  requiredPIIs: [piis.realname],
+  requiredVerifiedEmail: [],
+};
+nodes.push(preliminary);
 
 /**
  * 2xx: Traces
