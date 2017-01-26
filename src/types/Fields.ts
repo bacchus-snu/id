@@ -1,4 +1,4 @@
-interface PIIs {
+interface Fields {
   realname: string | null;
   snuidBachelor: string | null;
   snuidMaster: string | null;
@@ -6,4 +6,4 @@ interface PIIs {
   snuidMasterDoctor: string | null;
 };
 
-export default PIIs;
+export default Fields;

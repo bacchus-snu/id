@@ -10,7 +10,7 @@ import Translation from './Translation';
  *   - Records in users_nodes table represents one of the granted nodes (if accepted is true),
  *     or requests by users for the node that has not been granted. (if accepted is false)
  * When a node is being granted, any granted nodes that conflicts with the node must be revoked.
- * When requesting for a node to be granted, users must have been submitted all 'requiredPII'
+ * When requesting for a node to be granted, users must have been submitted all 'requiredField'
  * of the node
  *
  * 2. Approved
@@ -74,8 +74,8 @@ interface Node {
   // user must accept all the specified terms.
   requiredTerms: Array<Term>;
   // List of required information for this node to be granted
-  // Also, being granted with this node will disable users from modify or delete listed PIIs
-  requiredPIIs: Array<PII>;
+  // Also, being granted with this node will disable users from modify or delete listed Fields
+  requiredFields: Array<Field>;
   // List of domains of verified email addresses that is required for this node to be granted
   requiredVerifiedEmail: Array<string>;
   // On granted message (for email notification)
@@ -89,9 +89,9 @@ interface Node {
 }
 
 /**
- * A designator for one pii
+ * A designator for one field
  */
-interface PII {
+interface Field {
   // relevant column name in users table
   users: string;
   // on classes table

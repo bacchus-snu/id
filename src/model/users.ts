@@ -197,9 +197,9 @@ export async function getUid(tr: Transaction, userId: number): Promise<number> {
  */
 
 /**
- * Get PIIs
+ * Get Fields
  */
-export async function getPIIs(conn: Connection, userId: number): Promise<PIIs> {
+export async function getFields(conn: Connection, userId: number): Promise<Fields> {
   const select = await conn.query(`select realname, snuid_bachelor, snuid_master, snuid_doctor,
     snuid_master_doctor from users where user_id = $1`, [userId]);
   if (select.rowCount === 0) {
@@ -216,18 +216,18 @@ export async function getPIIs(conn: Connection, userId: number): Promise<PIIs> {
 }
 
 /**
- * Update user PIIs
+ * Update user Fields
  */
-export async function updatePIIs(tr: Transaction, userId: number, piis: PIIs):
+export async function updateFields(tr: Transaction, userId: number, fields: Fields):
   Promise<QueryResult> {
   await users_valids.checkNotGhost(tr, userId);
 
-  // get list of piis that should be immutable
+  // get list of fields that should be immutable
   const granted = users_nodes.select(tr, userId);
   const immutable: Set<string> = new Set();
   for (let node of granted) {
-    for (let pii of node.requiredPIIs.users) {
-      immutable.add(pii);
+    for (let field of node.requiredFields.users) {
+      immutable.add(field);
     }
   }
 
@@ -238,29 +238,29 @@ export async function updatePIIs(tr: Transaction, userId: number, piis: PIIs):
   }
   const u = select.rows[0];
 
-  checkMutability(immutable, 'realname', u.realname === en(piis.realname));
-  checkMutability(immutable, 'snuid_bachelor', u.snuid_bachelor === en(piis.snuidBachelor));
-  checkMutability(immutable, 'snuid_master', u.snuid_master === en(piis.snuidMaster));
-  checkMutability(immutable, 'snuid_doctor', u.snuid_doctor === en(piis.snuidDoctor));
+  checkMutability(immutable, 'realname', u.realname === en(fields.realname));
+  checkMutability(immutable, 'snuid_bachelor', u.snuid_bachelor === en(fields.snuidBachelor));
+  checkMutability(immutable, 'snuid_master', u.snuid_master === en(fields.snuidMaster));
+  checkMutability(immutable, 'snuid_doctor', u.snuid_doctor === en(fields.snuidDoctor));
   checkMutability(immutable, 'snuid_master_doctor',
-    u.snuid_master_doctor === en(piis.snuidMasterDoctor));
+    u.snuid_master_doctor === en(fields.snuidMasterDoctor));
 
   return await conn.query(`update users set realname = $1, snuid_bachelor = $2,
     snuid_master = $3, snuid_doctor = $4, snuid_master_doctor = $5 where user_id = $6`,
-    [en(realname), en(piis.snuidBachelor), en(piis.snuidMaster), en(piis.snuidDoctor),
-    en(piis.snuidMasterDoctor), userId]);
+    [en(realname), en(fields.snuidBachelor), en(fields.snuidMaster), en(fields.snuidDoctor),
+    en(fields.snuidMasterDoctor), userId]);
 }
 
-function checkMutability(immutable: Set<string>, pii: string, equals: boolean) {
-  if (immutable.has(pii) && !equals) {
-    throw trans.immutablePII(pii);
+function checkMutability(immutable: Set<string>, field: string, equals: boolean) {
+  if (immutable.has(field) && !equals) {
+    throw trans.immutableField(field);
   }
 }
 
 /**
  * Drop all personal informations
  */
-export async function removePIIsAndPassword(tr: Transaction, userId: number): Promise<UserLegacy> {
+export async function removeFieldsAndPassword(tr: Transaction, userId: number): Promise<UserLegacy> {
   const select = await conn.query(`select name, realname, language, timezone from users
     where user_id = $1`, [userId]);
   if (select.rowCount === 0) {

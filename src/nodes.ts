@@ -41,7 +41,7 @@ import Node from './types/Node';
 export const nodes: Array<Node> = [];
 const snu = 'snu.ac.kr';
 const bacchus = 'bacchus.snucse.org';
-const piis = {
+const fields = {
   realname: {
     users: 'realname',
     classes: 'require_realname',
@@ -84,7 +84,7 @@ const id = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(id);
@@ -100,7 +100,7 @@ const storeFieldPassword = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(storeFieldPassword);
@@ -116,7 +116,7 @@ const changePassword = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(changePassword);
@@ -131,7 +131,7 @@ const account: Node = {
   implies: [storeFieldPassword],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(account);
@@ -146,7 +146,7 @@ const individual: Node = {
   implies: [account, id, changePassword],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(individual);
@@ -162,7 +162,7 @@ const shared = {
   implies: [account],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(shared);
@@ -180,7 +180,7 @@ const staff = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(staff);
@@ -200,7 +200,7 @@ const admin = {
   implies: [staff],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [bacchus],
 };
 nodes.push(admin);
@@ -227,7 +227,7 @@ const snucse = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.snucseTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucse);
@@ -242,7 +242,7 @@ const snucseFull = {
   implies: [snucse],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseFull);
@@ -257,7 +257,7 @@ const snucseProfile = {
   implies: [snucse],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseProfile);
@@ -272,7 +272,7 @@ const thirdPartyApps = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(thirdPartyApps);
@@ -287,7 +287,7 @@ const publishApps = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.appDevTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(publishApps);
@@ -302,7 +302,7 @@ const snucseEmail = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.emailTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(snucseEmail);
@@ -317,7 +317,7 @@ const createClass = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.classTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(createClass);
@@ -332,7 +332,7 @@ const advancedResourceQualification = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResourceQualification);
@@ -347,7 +347,7 @@ const advancedResourceRequested = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.advancedTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResourceRequested);
@@ -362,7 +362,7 @@ const advancedResource = {
   implies: [],
   impliedBy: [advancedResourceQualification, advancedResourceRequested],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(advancedResource);
@@ -377,7 +377,7 @@ const martini = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(martini);
@@ -392,7 +392,7 @@ const mimosa = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.serverTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(mimosa);
@@ -407,7 +407,7 @@ const sync = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(sync);
@@ -422,7 +422,7 @@ const software = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(software);
@@ -437,7 +437,7 @@ const hardware = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hardware);
@@ -452,7 +452,7 @@ const loungeLab = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(loungeLab);
@@ -467,7 +467,7 @@ const loungeWin = {
   implies: [],
   impliedBy: [],
   requiredTerms: [terms.pcTerm],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(loungeWin);
@@ -501,7 +501,7 @@ const cse = {
   ],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(cse);
@@ -516,7 +516,7 @@ const ece = {
   implies: [individual, snucseFull],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(ece);
@@ -539,7 +539,7 @@ const major = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(major);
@@ -554,7 +554,7 @@ const doub = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(doub);
@@ -569,7 +569,7 @@ const minor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(minor);
@@ -584,7 +584,7 @@ const combined = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(combined);
@@ -599,7 +599,7 @@ const extended = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(extended);
@@ -614,7 +614,7 @@ const exchange = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(exchange);
@@ -629,7 +629,7 @@ const undergraduateAlumni = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidBachelor],
+  requiredFields: [fields.realname, fields.snuidBachelor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(undergraduateAlumni);
@@ -644,7 +644,7 @@ const graduateAlumni = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(graduateAlumni);
@@ -659,7 +659,7 @@ const master = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidMaster],
+  requiredFields: [fields.realname, fields.snuidMaster],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(master);
@@ -674,7 +674,7 @@ const doctor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidDoctor],
+  requiredFields: [fields.realname, fields.snuidDoctor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(doctor);
@@ -689,7 +689,7 @@ const masterDoctor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname, piis.snuidMasterDoctor],
+  requiredFields: [fields.realname, fields.snuidMasterDoctor],
   requiredVerifiedEmail: [snu],
 };
 nodes.push(masterDoctor);
@@ -704,7 +704,7 @@ const office = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(office);
@@ -719,7 +719,7 @@ const professor = {
   implies: [cse],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(professor);
@@ -734,7 +734,7 @@ const preliminary = {
   implies: [individual, snucseProfile],
   impliedBy: [],
   requiredTerms: [terms.privacy],
-  requiredPIIs: [piis.realname],
+  requiredFields: [fields.realname],
   requiredVerifiedEmail: [],
 };
 nodes.push(preliminary);
@@ -753,7 +753,7 @@ const usedSNUCSE = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(usedSNUCSE);
@@ -768,7 +768,7 @@ const usedThirdPartyApp = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(usedThirdPartyApp);
@@ -783,7 +783,7 @@ const hasSNUCSEEmail = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasSNUCSEEmail);
@@ -798,7 +798,7 @@ const hasMartiniHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasMartiniHome);
@@ -813,7 +813,7 @@ const hasMimosaHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasMimosaHome);
@@ -828,7 +828,7 @@ const hasSherryHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasSherryHome);
@@ -843,7 +843,7 @@ const hasKofHome = {
   implies: [],
   impliedBy: [],
   requiredTerms: [],
-  requiredPIIs: [],
+  requiredFields: [],
   requiredVerifiedEmail: [],
 };
 nodes.push(hasKofHome);

@@ -190,9 +190,9 @@ export function ghostUser(userId: number, node: Node): ErrorMessage {
   });
 }
 
-export function immutablePII(pii: string): ErrorMessage {
+export function immutableField(field: string): ErrorMessage {
   return new ErrorMessage({
-    en: `Due to granted nodes, personally identifiable information '${pii}' cannot be modified`,
-    ko: `부여된 권한 때문에 다음 개인정보는 변경이 불가합니다: ${pii}`,
+    en: `Due to granted nodes, personally identifiable information '${field}' cannot be modified`,
+    ko: `부여된 권한 때문에 다음 개인정보는 변경이 불가합니다: ${field}`,
   });
 }
