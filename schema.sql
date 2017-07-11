@@ -31,7 +31,7 @@ create table users (
   uid integer unique,
 
   -- Password
-  password_digest bytea,
+  password_digest text,
 
   -- Fields
   realname text check (realname <> ''),
