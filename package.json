@@ -15,6 +15,7 @@
     "ldapjs": "^1.0.2"
   },
   "devDependencies": {
+    "@types/bunyan": "^1.8.4",
     "typescript": "^2.9.2"
   }
 }
