@@ -1,16 +1,17 @@
-# Dependencies
-node_modules/
-
 # Build
 dist/
 
 # Logs
 *.log
 
+# Dependencies
+node_modules/
+
 # System Files
 .DS_Store
 Thumbs.db
 
-# Editors
+# Editors & IDEs
 .*.swp
 .*.swo
+.vscode/
