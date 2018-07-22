@@ -1,0 +1,15 @@
+{
+  "name": "bacchus-id-front",
+  "version": "0.0.1-dev",
+  "description": "Identity service for SNUCSE - front",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bacchus-snu/id.git"
+  },
+  "author": "Bacchus <contact@bacchus.snucse.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bacchus-snu/id/issues"
+  },
+  "homepage": "https://github.com/bacchus-snu/id#readme"
+}
