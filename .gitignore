@@ -1,11 +1,8 @@
-# Configuration
-/config.json
-
 # Dependencies
-/node_modules/
+node_modules/
 
 # Build
-/dist/
+dist/
 
 # Logs
 *.log
