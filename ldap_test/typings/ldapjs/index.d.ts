@@ -34,6 +34,7 @@ declare module 'ldapjs' {
     dn: DN,
     filter: Filter,
     credentials: string,
+    scope: 'base' | 'one' | 'sub'
   }
 
   export interface Res {
