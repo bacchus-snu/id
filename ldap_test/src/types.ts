@@ -13,20 +13,22 @@
  * Note back that in RFC2037 'gecos' and 'loginShell' are optional attributes.
  * Also, some attributes defined in RFCs, namely 'userPassword', 'description',
  * 'seeAlso', 'l', 'o', 'ou', and 'host', are omitted.
+ *
+ * Array types are for multi-valued attributes.
  */
 export interface PosixAccount {
   /**
-   * Object class attribute (multi-valued attribute).
+   * Object class attribute.
    */
   objectClass: string | Array<string>,
 
   /**
-   * X.500 commonName attribute. Typically the person's full name (multi-valued attribute).
+   * X.500 commonName attribute. Typically the person's full name.
    */
   cn: string | Array<string>,
 
   /**
-   * The login name for the account (multi-valued attribute).
+   * The login name for the account.
    * Corresponds to the first column of passwd(5) file.
    */
   uid: string | Array<string>,
@@ -71,20 +73,22 @@ export interface PosixAccount {
  * An object which is a member of RFC4519 'organizationalUnit', and RFC2256 'top'.
  *
  * Note back that all optional attributes except for 'description' are omitted.
+ *
+ * Array types are for multi-valued attributes.
  */
 export interface OrganizationalUnit {
   /**
-   * Object class attribute (multi-valued attribute).
+   * Object class attribute.
    */
   objectClass: string | Array<string>,
 
   /**
-   * Name of the organizational unit (multi-valued attribute).
+   * Name of the organizational unit.
    */
   ou: string | Array<string>,
 
   /**
-   * Human-readable description for the object (multi-valued attribute).
+   * Human-readable description for the object.
    */
   description?: string | Array<string>,
 }
@@ -92,6 +96,8 @@ export interface OrganizationalUnit {
 /**
  * Attributes for the root DSA-Specific entry.
  * This is not an exhaustive definition for RootDSE. Refer to the Section 3.4 of RFC2251.
+ *
+ * Array types are for multi-valued attributes.
  */
 export interface RootDSE {
   /**
