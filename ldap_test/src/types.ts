@@ -48,7 +48,7 @@ export interface PosixAccount {
   gidNumber: number,
 
   /**
-   * The 'GECOS' field for common name or comment.
+   * The 'GECOS' attribute. Typically used for common name or comment.
    * Corresponds to the fifth column of passwd(5) file.
    */
   gecos: string,

@@ -55,3 +55,5 @@ server.search('cn=bacchus,ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   res.end()
   return next()
 })
+
+export default server

@@ -42,7 +42,7 @@ declare module 'ldapjs' {
   }
 
   export interface Entity<T> {
-    dn: string,
+    dn: DN | string,
     attributes: T,
   }
 
