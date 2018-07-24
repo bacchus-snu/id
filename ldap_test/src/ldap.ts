@@ -1,7 +1,8 @@
 import * as ldap from 'ldapjs'
+import { PosixAccount, posixAccount } from './types'
 
 const server = ldap.createServer()
-const users: Array<ldap.Entity> = [
+const users: Array<ldap.Entity<PosixAccount>> = [
   {
     dn: 'cn=bacchus,ou=cseusers,dc=snucse,dc=org',
     attributes: {
@@ -10,20 +11,21 @@ const users: Array<ldap.Entity> = [
       gecos: 'AdminDescription',
       homeDirectory: '/home/bacchus',
       loginShell: '/bin/bash',
-      objectclass: 'posixAccount',
+      objectClass: posixAccount,
       uidNumber: 10000,
-      gidNumber: 1004,
+      gidNumber: 10004,
     }
   }, {
     dn: 'cn=master,ou=cseusers,dc=snucse,dc=org',
     attributes: {
       cn: 'master',
-      uid: 10001,
-      gid: 10001,
-      description: 'Admin2',
-      homedirectory: '/home/master',
-      shell: '/bin/bash',
-      objectclass: 'unixUser',
+      uid: 'master',
+      gecos: 'hello',
+      homeDirectory: '/home/master',
+      loginShell: '/bin/bash',
+      objectClass: posixAccount,
+      uidNumber: 10001,
+      gidNumber: 10005,
     }
   }
 ]
@@ -40,6 +42,7 @@ server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
 server.search('ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   if (req.dn.toString() === 'ou=cseusers, dc=snucse, dc=org') {
     res.send(users[0])
+    res.send(users[1])
   }
   res.end()
   return next()

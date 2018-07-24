@@ -2,6 +2,16 @@
  * Commonly used type definitions.
  */
 
+ /**
+  * String literal 'posixAccount'.
+  */
+ export const posixAccount = 'posixAccount'
+
+ /**
+  * String literal type for objectClass attribute in 'posixAccount' objects.
+  */
+type PosixAccountObjectClass = 'posixAccount'
+
 /**
  * Represents a RFC2307 'posixAccount' object.
  *
@@ -9,6 +19,11 @@
  * Also, 'userPassword' and 'description' attributes are omitted.
  */
 export interface PosixAccount {
+  /**
+   * Object class attribute. Inherited from 'top' object class.
+   */
+  objectClass: PosixAccountObjectClass,
+
   /**
    * X.500 commonName attribute. Typically the person's full name.
    */

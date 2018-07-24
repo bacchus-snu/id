@@ -38,12 +38,12 @@ declare module 'ldapjs' {
 
   export interface Res {
     end(): void,
-    send(entity: Entity): void
+    send(entity: Entity<object>): void
   }
 
-  export interface Entity {
+  export interface Entity<T> {
     dn: string,
-    attributes: object,
+    attributes: T,
   }
 
   export interface Filter {
