@@ -1,5 +1,5 @@
 import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccount } from './types'
+import { PosixAccount, posixAccountObjectClass } from './types'
 
 const server = ldap.createServer()
 const users: Array<ldap.Entity<PosixAccount>> = [
@@ -11,7 +11,7 @@ const users: Array<ldap.Entity<PosixAccount>> = [
       gecos: 'AdminDescription',
       homeDirectory: '/home/bacchus',
       loginShell: '/bin/bash',
-      objectClass: posixAccount,
+      objectClass: posixAccountObjectClass,
       uidNumber: 10000,
       gidNumber: 10004,
     }
@@ -23,7 +23,7 @@ const users: Array<ldap.Entity<PosixAccount>> = [
       gecos: 'hello',
       homeDirectory: '/home/master',
       loginShell: '/bin/bash',
-      objectClass: posixAccount,
+      objectClass: posixAccountObjectClass,
       uidNumber: 10001,
       gidNumber: 10005,
     }
@@ -48,9 +48,17 @@ server.search('ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   return next()
 })
 
-server.search('cn=bacchus,ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
+server.search('cn=bacchus, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   if (req.dn.toString() === 'cn=bacchus, ou=cseusers, dc=snucse, dc=org') {
     res.send(users[0])
+  }
+  res.end()
+  return next()
+})
+
+server.search('cn=master, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
+  if (req.dn.toString() === 'cn=master, ou=cseusers, dc=snucse, dc=org') {
+    res.send(users[1])
   }
   res.end()
   return next()

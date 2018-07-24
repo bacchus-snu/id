@@ -3,26 +3,22 @@
  */
 
  /**
-  * String literal 'posixAccount'.
+  * Array literal for 'posixAccount', 'account', and 'top'.
   */
- export const posixAccount = 'posixAccount'
-
- /**
-  * String literal type for objectClass attribute in 'posixAccount' objects.
-  */
-type PosixAccountObjectClass = 'posixAccount'
+ export const posixAccountObjectClass = ['posixAccount', 'account', 'top']
 
 /**
- * Represents a RFC2307 'posixAccount' object.
+ * An object which is a member of RFC2307 'posixAccount', RFC4524 'account', and RFC2256 'top'.
  *
  * Note back that in RFC2037 'gecos' and 'loginShell' are optional attributes.
- * Also, 'userPassword' and 'description' attributes are omitted.
+ * Also, some attributes defined in RFCs, namely 'userPassword', 'description',
+ * 'seeAlso', 'l', 'o', 'ou', and 'host', are omitted.
  */
 export interface PosixAccount {
   /**
-   * Object class attribute. Inherited from 'top' object class.
+   * Object class attribute.
    */
-  objectClass: PosixAccountObjectClass,
+  objectClass: Array<string>,
 
   /**
    * X.500 commonName attribute. Typically the person's full name.
