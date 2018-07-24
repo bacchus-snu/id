@@ -93,8 +93,53 @@ export interface OrganizationalUnit {
   description?: string | Array<string>,
 }
 
+ /**
+  * Array literal for 'subschema', 'subentry', and 'top'.
+  */
+ export const subschemaObjectClass = ['subschema', 'subentry', 'top']
+
 /**
- * Attributes for the root DSA-Specific entry.
+ * An object which is a member of RFC4512 'subschema', RFC3672 'subentry', and RFC2256 'top'.
+ * Provides schema definition.
+ *
+ * Note back that some optional attributes for 'subschema' are omitted.
+ *
+ * Array types are for multi-valued attributes.
+ */
+export interface Subschema {
+  /**
+   * Object class attribute.
+   */
+  objectClass: string | Array<string>,
+
+  /**
+   * Common name.
+   */
+  cn: string | Array<string>,
+
+  /**
+   * Specifies subet of entries in DIT, onto which this subentry is effective.
+   */
+  subtreeSpecification: string,
+
+  /**
+   * Provides definitions for object classes.
+   */
+  objectClasses?: string | Array<string>,
+
+  /**
+   * Provides definitions for attribute types.
+   */
+  attributeTypes?: string | Array<string>,
+
+  /**
+   * Provides definitions for matching rules.
+   */
+  matchingRules?: string | Array<string>,
+}
+
+/**
+ * Attributes for the root DSA-Specific entry. In other words, metadata for the LDAP server itself.
  * This is not an exhaustive definition for RootDSE. Refer to the Section 3.4 of RFC2251.
  *
  * Array types are for multi-valued attributes.
@@ -102,8 +147,14 @@ export interface OrganizationalUnit {
 export interface RootDSE {
   /**
    * All DNs that serve as naming contexts for the DITs in this server.
+   * In other words, DNs of the entries which act as 'root' in the information hierarchy.
    */
   namingContexts: string | Array<string>,
+
+  /**
+   * Subschema subentires known by this server.
+   */
+  subschemaSubentry: string | Array<string>,
 
   /**
    * Supported LDAP version as integer.

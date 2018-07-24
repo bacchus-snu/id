@@ -2,8 +2,17 @@ import * as ldap from 'ldapjs'
 import { PosixAccount, posixAccountObjectClass } from './types'
 import { OrganizationalUnit, organizationalUnitObjectClass } from './types'
 import { RootDSE } from './types'
+import { Subschema, subschemaObjectClass } from './types'
 
 const server = ldap.createServer()
+const subschema: ldap.Entity<Subschema> = {
+  dn: 'cn=subschema,dc=snucse,dc=org',
+  attributes: {
+    objectClass: subschemaObjectClass,
+    cn: 'subschema',
+    subtreeSpecification: '{ base "ou=cseusers,dc=snucse,dc=org" }',
+  },
+}
 const users: Array<ldap.Entity<PosixAccount>> = [
   {
     dn: 'cn=bacchus,ou=cseusers,dc=snucse,dc=org',
@@ -45,6 +54,7 @@ const rootDSE: ldap.Entity<RootDSE> = {
   dn: '',
   attributes: {
     namingContexts: 'ou=cseusers,dc=snucse,dc=org',
+    subschemaSubentry: 'cn=subschema,dc=snucse,dc=org',
     supportedLDAPVersion: 3,
   },
 }
@@ -61,6 +71,13 @@ server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
 server.search('', (req, res, next) => {
   if (req.dn.toString() === '' && req.scope === 'base') {
     res.send(rootDSE)
+  }
+  res.end()
+  return next()
+})
+server.search('cn=subschema, dc=snucse, dc=org', (req, res, next) => {
+  if (req.dn.toString() === 'cn=subschema, dc=snucse, dc=org' && req.scope === 'base') {
+    res.send(subschema)
   }
   res.end()
   return next()
