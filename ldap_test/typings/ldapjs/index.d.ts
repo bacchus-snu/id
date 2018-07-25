@@ -107,7 +107,7 @@ declare module 'ldapjs' {
   }
 
   /**
-   * Provides access to the next handler in the chain, and allows specifying an error during the operation.
+   * Provides access to the next handler in the chain, and allows specifying an error occurred during the operation.
    * @param error an error during the operation
    */
   export type Next = (error?: Error) => void
@@ -254,10 +254,10 @@ declare module 'ldapjs' {
    */
   export interface Filter {
     /**
-     * @param entry the entry to test against
-     * @returns true if the entry matches with the filter, false otherwise
+     * @param obj the object to test against
+     * @returns true if the object matches with the filter, false otherwise
      */
-    matches(entry: SearchEntry<object>): boolean
+    matches(obj: object): boolean
   }
 
   /**

@@ -61,7 +61,6 @@ const rootDSE: ldap.SearchEntry<RootDSE> = {
 
 server.listen(389, '127.0.0.1', () => console.log('Connected'))
 server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
-  console.log(req)
   if (req.dn.toString() === 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' && req.credentials === 'bpassword') {
     res.end()
     return next()
@@ -87,20 +86,15 @@ server.search('cn=subschema, dc=snucse, dc=org', (req, res, next) => {
   return next()
 })
 server.search('ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
-  //
-  // TODO: check req against the type definition
-  // console.log(req)
-  //
   if (req.dn.toString() === 'ou=cseusers, dc=snucse, dc=org') {
     if (req.scope === 'base') {
       res.send(cseusers)
     } else {
       // Same results for 'one' and 'sub'
-      console.log(req.filter)
-      if (req.filter.matches(users[0])) {
+      if (req.filter.matches(users[0].attributes)) {
         res.send(users[0])
       }
-      if (req.filter.matches(users[1])) {
+      if (req.filter.matches(users[1].attributes)) {
         res.send(users[1])
       }
     }
