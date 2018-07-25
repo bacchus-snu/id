@@ -60,60 +60,67 @@ const rootDSE: ldap.SearchEntry<RootDSE> = {
 }
 
 server.listen(389, '127.0.0.1', () => console.log('Connected'))
+
+// Non-anonymous bind.
 server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
-  if (req.dn.toString() === 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' && req.credentials === 'bpassword') {
+  if (req.dn.rdns.length === 0 || req.dn.rdns[0].attrs['cn'] == null) {
+    return next(new ldap.InvalidCredentialsError())
+  }
+  const cn = req.dn.rdns[0].attrs['cn'].value
+  if (cn === 'bacchus' && req.credentials === 'bpassword') {
     res.end()
     return next()
   }
-  if (req.dn.toString() === 'cn=master, ou=cseusers, dc=snucse, dc=org' && req.credentials === 'mpassword') {
+  if (cn === 'master' && req.credentials === 'bmaster') {
     res.end()
     return next()
   }
   return next(new ldap.InvalidCredentialsError())
 })
+
+// Root DSE.
 server.search('', (req, res, next) => {
-  if (req.dn.toString() === '' && req.scope === 'base') {
+  if (req.dn.rdns.length === 0 && req.scope === 'base') {
     res.send(rootDSE)
   }
   res.end()
   return next()
 })
+
+// Subschema subentry.
 server.search('cn=subschema, dc=snucse, dc=org', (req, res, next) => {
-  if (req.dn.toString() === 'cn=subschema, dc=snucse, dc=org' && req.scope === 'base') {
+  if (req.dn.equals(ldap.parseDN('cn=subschema, dc=snucse, dc=org')) && req.scope === 'base') {
     res.send(subschema)
   }
   res.end()
   return next()
 })
+
+const cseusersDN = ldap.parseDN('ou=cseusers, dc=snucse, dc=org')
+
+// Account lookups.
 server.search('ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
-  if (req.dn.toString() === 'ou=cseusers, dc=snucse, dc=org') {
+  const parentDN = req.dn.parent()
+  if (req.dn.equals(cseusersDN)) {
     if (req.scope === 'base') {
       res.send(cseusers)
     } else {
       // Same results for 'one' and 'sub'
-      if (req.filter.matches(users[0].attributes)) {
-        res.send(users[0])
-      }
-      if (req.filter.matches(users[1].attributes)) {
-        res.send(users[1])
+      for (const user of users) {
+        if (req.filter.matches(user.attributes)) {
+          res.send(user)
+        }
       }
     }
-  }
-  res.end()
-  return next()
-})
-
-server.search('cn=bacchus, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
-  if (req.dn.toString() === 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' && req.scope === 'base') {
-    res.send(users[0])
-  }
-  res.end()
-  return next()
-})
-
-server.search('cn=master, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
-  if (req.dn.toString() === 'cn=master, ou=cseusers, dc=snucse, dc=org' && req.scope === 'base') {
-    res.send(users[1])
+  } else if (parentDN != null && req.scope === 'base' && req.dn.rdns[0].attrs['cn'] != null) {
+    if (parentDN.equals(cseusersDN)) {
+      const wantedUid = req.dn.rdns[0].attrs['cn'].value
+      for (const user of users) {
+        if (user.attributes.uid === wantedUid) {
+          res.send(user)
+        }
+      }
+    }
   }
   res.end()
   return next()
