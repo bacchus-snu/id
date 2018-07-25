@@ -19,48 +19,48 @@ export interface PosixAccount {
   /**
    * Object class attribute.
    */
-  objectClass: string | Array<string>,
+  objectClass: string | Array<string>
 
   /**
    * The common name for the account.
    */
-  cn: string | Array<string>,
+  cn: string | Array<string>
 
   /**
    * The login name for the account.
    * Corresponds to the first column of passwd(5) file.
    */
-  uid: string | Array<string>,
+  uid: string | Array<string>
 
   /**
    * Integer identifier for the account.
    * Corresponds to the third column of passwd(5) file.
    */
-  uidNumber: number,
+  uidNumber: number
 
   /**
    * Integer identifier for the primary group this account belongs to.
    * Corresponds to the fourth column of passwd(5) file.
    */
-  gidNumber: number,
+  gidNumber: number
 
   /**
    * The 'GECOS' attribute. Typically used for common name or comment.
    * Corresponds to the fifth column of passwd(5) file.
    */
-  gecos?: string,
+  gecos?: string
 
   /**
    * The absolute path to the home directory.
    * Corresponds to the sixth column of passwd(5) file.
    */
-  homeDirectory: string,
+  homeDirectory: string
 
   /**
    * The path to the login shell.
    * Corresponds to the seventh column of passwd(5) file.
    */
-  loginShell?: string,
+  loginShell?: string
 }
 
  /**
@@ -79,17 +79,17 @@ export interface OrganizationalUnit {
   /**
    * Object class attribute.
    */
-  objectClass: string | Array<string>,
+  objectClass: string | Array<string>
 
   /**
    * Name of the organizational unit.
    */
-  ou: string | Array<string>,
+  ou: string | Array<string>
 
   /**
    * Human-readable description for the object.
    */
-  description?: string | Array<string>,
+  description?: string | Array<string>
 }
 
  /**
@@ -109,32 +109,32 @@ export interface Subschema {
   /**
    * Object class attribute.
    */
-  objectClass: string | Array<string>,
+  objectClass: string | Array<string>
 
   /**
    * Common name.
    */
-  cn: string | Array<string>,
+  cn: string | Array<string>
 
   /**
    * Specifies subet of entries in DIT, onto which this subentry is effective.
    */
-  subtreeSpecification: string,
+  subtreeSpecification: string
 
   /**
    * Provides definitions for object classes.
    */
-  objectClasses?: string | Array<string>,
+  objectClasses?: string | Array<string>
 
   /**
    * Provides definitions for attribute types.
    */
-  attributeTypes?: string | Array<string>,
+  attributeTypes?: string | Array<string>
 
   /**
    * Provides definitions for matching rules.
    */
-  matchingRules?: string | Array<string>,
+  matchingRules?: string | Array<string>
 }
 
 /**
@@ -148,15 +148,15 @@ export interface RootDSE {
    * All DNs that serve as naming contexts for the DITs in this server.
    * In other words, DNs of the entries which act as 'root' in the information hierarchy.
    */
-  namingContexts: string | Array<string>,
+  namingContexts: string | Array<string>
 
   /**
    * Subschema subentires known by this server.
    */
-  subschemaSubentry: string | Array<string>,
+  subschemaSubentry: string | Array<string>
 
   /**
    * Supported LDAP version as integer.
    */
-  supportedLDAPVersion: number | Array<number>,
+  supportedLDAPVersion: number | Array<number>
 }
