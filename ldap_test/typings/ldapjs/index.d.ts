@@ -299,14 +299,14 @@ declare module 'ldapjs' {
     listen(port: number, host?: string, callback?: () => void): void
 
     /**
-     * Chain handler to bind operation
+     * Chain handler to bind operation.
      * @param name the DN to mount this handler
      * @param handlers handlers
      */
     bind(name: string, ...handlers: Array<BindHandler|Array<BindHandler>>): Server
 
     /**
-     * Chain handler to search operation
+     * Chain handler to search operation.
      * @param name the DN to mount this handler
      * @param handlers handlers
      */
