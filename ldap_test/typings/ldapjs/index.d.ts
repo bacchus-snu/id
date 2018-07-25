@@ -118,7 +118,7 @@ declare module 'ldapjs' {
    * @param res provides contexts and methods for making responses
    * @param next provides access to the next handler in the chain
    */
-  export type Handler<ReqType, ResType> = (req: ReqType, res: ResType, next: Next) => void
+  export type Handler<ReqT extends Req, ResT extends Res> = (req: ReqT, res: ResT, next: Next) => void
 
   /**
    * Handles bind requests.
