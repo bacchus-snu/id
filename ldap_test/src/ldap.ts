@@ -61,6 +61,7 @@ const rootDSE: ldap.Entity<RootDSE> = {
 
 server.listen(389, '127.0.0.1', () => console.log('Connected'))
 server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
+  console.log(req.dn)
   console.log(req.dn.toString())
   if (req.dn.toString() !== 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' || req.credentials !== 'password') {
     return next(new ldap.InvalidCredentialsError())
@@ -91,19 +92,9 @@ server.search('ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
       res.send(users[0])
     }
   }
-  res.end()
-  return next()
-})
-
-server.search('cn=bacchus, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   if (req.dn.toString() === 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' && req.scope === 'base') {
     res.send(users[0])
   }
-  res.end()
-  return next()
-})
-
-server.search('cn=master, ou=cseusers, dc=snucse, dc=org', (req, res, next) => {
   if (req.dn.toString() === 'cn=master, ou=cseusers, dc=snucse, dc=org' && req.scope === 'base') {
     res.send(users[1])
   }

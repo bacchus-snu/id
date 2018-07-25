@@ -10,8 +10,7 @@
 /**
  * An object which is a member of RFC2307 'posixAccount', RFC4524 'account', and RFC2256 'top'.
  *
- * Note back that in RFC2037 'gecos' and 'loginShell' are optional attributes.
- * Also, some attributes defined in RFCs, namely 'userPassword', 'description',
+ * Note back that some attributes defined in RFCs, namely 'userPassword', 'description',
  * 'seeAlso', 'l', 'o', 'ou', and 'host', are omitted.
  *
  * Array types are for multi-valued attributes.
@@ -23,7 +22,7 @@ export interface PosixAccount {
   objectClass: string | Array<string>,
 
   /**
-   * X.500 commonName attribute. Typically the person's full name.
+   * The common name for the account.
    */
   cn: string | Array<string>,
 
@@ -49,7 +48,7 @@ export interface PosixAccount {
    * The 'GECOS' attribute. Typically used for common name or comment.
    * Corresponds to the fifth column of passwd(5) file.
    */
-  gecos: string,
+  gecos?: string,
 
   /**
    * The absolute path to the home directory.
@@ -61,7 +60,7 @@ export interface PosixAccount {
    * The path to the login shell.
    * Corresponds to the seventh column of passwd(5) file.
    */
-  loginShell: string,
+  loginShell?: string,
 }
 
  /**
