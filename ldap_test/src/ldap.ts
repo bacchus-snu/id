@@ -61,7 +61,7 @@ const rootDSE: ldap.Entity<RootDSE> = {
 
 server.listen(389, '127.0.0.1', () => console.log('Connected'))
 server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
-  console.log(req.dn)
+  console.log(req)
   console.log(req.dn.toString())
   if (req.dn.toString() !== 'cn=bacchus, ou=cseusers, dc=snucse, dc=org' || req.credentials !== 'password') {
     return next(new ldap.InvalidCredentialsError())

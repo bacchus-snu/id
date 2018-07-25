@@ -27,7 +27,7 @@ declare module 'ldapjs' {
   }
 
   export interface ServerHandler {
-    (req: Req, res: Res, next: (error?: Error) => ServerHandler): void
+    (req: Req, res: Res, next: (error?: Error) => void): void
   }
 
   export interface Req {
