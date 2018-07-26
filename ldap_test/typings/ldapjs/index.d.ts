@@ -291,6 +291,11 @@ declare module 'ldapjs' {
    */
   export interface Server {
     /**
+     * Bunyan instance for logging.
+     */
+    log: Bunyan
+
+    /**
      * Begin accepting connections on the given port and host.
      * @param port port to bind
      * @param host host to bind (default: any IPv4 address)

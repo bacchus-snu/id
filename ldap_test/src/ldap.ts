@@ -3,8 +3,12 @@ import { PosixAccount, posixAccountObjectClass } from './types'
 import { OrganizationalUnit, organizationalUnitObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
+import * as bunyan from 'bunyan'
 
 const server = ldap.createServer()
+if (server.log.level() <= bunyan.DEBUG) {
+  throw new Error(`The log level for LDAP server (${server.log.level()}) is too fine. Passwords can be logged.`)
+}
 const subschema: ldap.SearchEntry<Subschema> = {
   dn: 'cn=subschema,dc=snucse,dc=org',
   attributes: {
