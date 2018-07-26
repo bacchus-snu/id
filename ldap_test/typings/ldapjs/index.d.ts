@@ -7,11 +7,11 @@ declare module 'ldapjs' {
   import * as Bunyan from 'bunyan'
 
   /**
-   * Optioins to provide on server creation.
+   * Options to provide on server creation.
    */
   export interface ServerOptions {
     /**
-     * A bunyan instance to be used for logging.
+     * A Bunyan instance to be used for logging.
      */
     log?: Bunyan
 
@@ -108,7 +108,7 @@ declare module 'ldapjs' {
 
   /**
    * Provides access to the next handler in the chain, and allows specifying an error occurred during the operation.
-   * @param error an error during the operation
+   * @param error an error occurred during the operation
    */
   export type Next = (error?: Error) => void
 
@@ -150,7 +150,7 @@ declare module 'ldapjs' {
     dn: DN
 
     /**
-     * Unique identifier for the connection-request pair.
+     * Unique identifier for the (connection, request) pair.
      */
     logId: string
 
