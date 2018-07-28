@@ -1,27 +1,16 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
     "outDir": "dist",
-    "sourceMap": false,
-    "removeComments": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedParameters": false,
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
     "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "lib": [
-      "DOM",
-      "ES7",
-      "DOM.Iterable",
-      "ScriptHost"
-    ]
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "typeRoots": ["./node_modules/@types", "./typings"]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*"
   ]
 }

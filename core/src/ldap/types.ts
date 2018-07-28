@@ -5,7 +5,7 @@
  /**
   * Array literal for 'posixAccount', 'account', and 'top'.
   */
- export const posixAccountObjectClass = ['posixAccount', 'account', 'top']
+export const posixAccountObjectClass = ['posixAccount', 'account', 'top']
 
 /**
  * An object which is a member of RFC2307 'posixAccount', RFC4524 'account', and RFC2256 'top'.
@@ -66,7 +66,7 @@ export interface PosixAccount {
  /**
   * Array literal for 'organizationalUnit', and 'top'.
   */
- export const organizationalUnitObjectClass = ['organizationalUnit', 'top']
+export const organizationalUnitObjectClass = ['organizationalUnit', 'top']
 
 /**
  * An object which is a member of RFC4519 'organizationalUnit', and RFC2256 'top'.
@@ -95,7 +95,7 @@ export interface OrganizationalUnit {
  /**
   * Array literal for 'subschema', 'subentry', and 'top'.
   */
- export const subschemaObjectClass = ['subschema', 'subentry', 'top']
+export const subschemaObjectClass = ['subschema', 'subentry', 'top']
 
 /**
  * An object which is a member of RFC4512 'subschema', RFC3672 'subentry', and RFC2256 'top'.
