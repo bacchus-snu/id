@@ -2,6 +2,11 @@
   "name": "bacchus-id",
   "version": "0.0.1-dev",
   "description": "Identity management service for SNUCSE",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc",
+    "lint": "tslint --project ./tsconfig.json",
+    "start": "node dist/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bacchus-snu/id.git"
