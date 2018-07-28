@@ -9,5 +9,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "typeRoots": ["./node_modules/@types", "./typings"]
-  }
+  },
+  "include": [
+    "src/**/*"
+  ]
 }
