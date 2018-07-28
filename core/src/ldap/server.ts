@@ -66,10 +66,10 @@ const createServer = () => {
 
   // Non-anonymous bind.
   server.bind('ou=cseusers,dc=snucse,dc=org', (req, res, next) => {
-    if (req.dn.rdns.length === 0 || req.dn.rdns[0].attrs['cn'] == null) {
+    if (req.dn.rdns.length === 0 || req.dn.rdns[0].attrs.cn == null) {
       return next(new ldap.InvalidCredentialsError())
     }
-    const cn = req.dn.rdns[0].attrs['cn'].value
+    const cn = req.dn.rdns[0].attrs.cn.value
     if (cn === 'bacchus' && req.credentials === 'bpassword') {
       res.end()
       return next()
@@ -115,9 +115,9 @@ const createServer = () => {
           }
         }
       }
-    } else if (parentDN != null && req.scope === 'base' && req.dn.rdns[0].attrs['cn'] != null) {
+    } else if (parentDN != null && req.scope === 'base' && req.dn.rdns[0].attrs.cn != null) {
       if (parentDN.equals(cseusersDN)) {
-        const wantedUid = req.dn.rdns[0].attrs['cn'].value
+        const wantedUid = req.dn.rdns[0].attrs.cn.value
         for (const user of users) {
           if (user.attributes.uid === wantedUid) {
             res.send(user)
