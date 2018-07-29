@@ -4,21 +4,21 @@ import Users from './users'
 export default class Model {
   public readonly users: Users
   private readonly pgConfig: pg.PoolConfig
-  private pgClientInternal: pg.PoolClient | null
+  private _pgClient: pg.PoolClient | null
   private pgPool: pg.Pool | null
 
   public get pgClient(): pg.PoolClient {
-    if (this.pgClientInternal === null) {
+    if (this._pgClient === null) {
       throw new Error('Transaction not ready')
     } else {
-      return this.pgClientInternal
+      return this._pgClient
     }
   }
 
   constructor(postgresConfig: pg.PoolConfig) {
     this.pgConfig = postgresConfig
     this.pgPool = null
-    this.pgClientInternal = null
+    this._pgClient = null
 
     this.users = new Users(this)
   }
@@ -31,18 +31,18 @@ export default class Model {
         throw e
       }
     }
-    this.pgClientInternal = await this.pgPool.connect()
+    this._pgClient = await this.pgPool.connect()
     try {
-      await this.pgClientInternal.query('BEGIN')
+      await this._pgClient.query('BEGIN')
       const result = await query()
-      await this.pgClientInternal.query('COMMIT')
+      await this._pgClient.query('COMMIT')
       return result
     } catch (e) {
-      await this.pgClientInternal.query('ROLLBACK')
+      await this._pgClient.query('ROLLBACK')
       throw e
     } finally {
-      this.pgClientInternal.release()
-      this.pgClientInternal = null
+      this._pgClient.release()
+      this._pgClient = null
     }
   }
 }

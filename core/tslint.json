@@ -12,7 +12,8 @@
     "ordered-imports": false,
     "array-type": [true, "generic"],
     "interface-name": false,
-    "arrow-parens": [true, "ban-single-arg-parens"]
+    "arrow-parens": [true, "ban-single-arg-parens"],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
   },
   "rulesDirectory": []
 }
