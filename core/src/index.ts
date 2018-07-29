@@ -15,6 +15,6 @@ const model = new Model({
   password: 'idpass',
   port: 3321,
 })
-const result: Promise<void> = model.pgDo(() => model.users.create('bacchus', 'Bacchus', 'bacchuspassword'))
-result.then(() => log.info('Query OK'))
-result.catch(e => log.error(e, 'Query fail'))
+model.pgDo(() => model.users.create('bacchus', 'Bacchus', 'bacchuspassword'))
+  .then(() => log.info('Query OK'))
+  .catch(e => log.error(e, 'Query fail'))
