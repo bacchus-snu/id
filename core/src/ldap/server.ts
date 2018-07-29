@@ -4,9 +4,10 @@ import { OrganizationalUnit, organizationalUnitObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
 import * as bunyan from 'bunyan'
+import Model from '../model/model'
 
-const createServer = () => {
-  const server = ldap.createServer()
+const createServer = (options: ldap.ServerOptions, _model: Model) => {
+  const server = ldap.createServer(options)
   if (server.log.level() <= bunyan.DEBUG) {
     throw new Error(`The log level for LDAP server (${server.log.level()}) is too fine. Passwords can be logged.`)
   }
