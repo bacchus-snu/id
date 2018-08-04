@@ -36,6 +36,9 @@ export default class Model {
         throw e
       }
     }
+    if (this._pgClient !== null) {
+      throw new Error('A transaction already in progress')
+    }
     this._pgClient = await this.pgPool.connect()
     try {
       await this._pgClient.query('BEGIN')
