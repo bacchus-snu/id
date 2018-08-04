@@ -40,6 +40,15 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
+  public async getByUserIdx(client: PoolClient, userIdx: number): Promise<User> {
+    const query = 'SELECT user_idx, username, name, uid, shell FROM users WHERE user_idx = $1'
+    const result = await client.query(query, [userIdx])
+    if (result.rows.length !== 1) {
+      throw new NoSuchEntryError()
+    }
+    return this.rowToUser(result.rows[0])
+  }
+
   public async authenticate(client: PoolClient, username: string, passwordDigest: string): Promise<User> {
     const query = 'SELECT user_idx FROM users WHERE username = $1 and password_digest = $2'
     const result = await client.query(query, [username, passwordDigest])
@@ -47,6 +56,18 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     return this.rowToUser(result.rows[0])
+  }
+
+  public async assignAndGetUid(client: PoolClient, userIdx: number, minUid: number): Promise<number> {
+    const user = await this.getByUserIdx(client, userIdx)
+    if (user.uid !== null) {
+      return user.uid
+    }
+    const getNewUidResult = await client.query('SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN' +
+      'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL ORDER BY b.uid LIMIT 1')
+    const newUid = getNewUidResult.rows.length === 0 ? minUid : getNewUidResult.rows[0].uid
+    const assignResult = await client.query('UPDATE users SET uid = $1 WHERE user_idx = $2', [newUid, user.user_idx])
+    return newUid
   }
 
   private rowToUser(row: any): User {
