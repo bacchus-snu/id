@@ -87,7 +87,7 @@ export default class UserAdminTable extends Vue {
       this.$notify.error('Request error!')
     }
 
-    await this.fetchUsers()
+    this.userData = await this.fetchUsers()
   }
 
   clearFields() {
