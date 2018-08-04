@@ -14,7 +14,7 @@ const model = new Model({
   database: config.postgresql.database,
   password: config.postgresql.password,
   port: config.postgresql.port,
-})
+}, log)
 const ldapServer = createLDAPServer({log}, model)
 ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
   () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))

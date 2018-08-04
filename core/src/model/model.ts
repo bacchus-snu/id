@@ -1,6 +1,7 @@
 import * as pg from 'pg'
 import Users from './users'
 import EmailAddresses from './email_addresses'
+import * as Bunyan from 'bunyan'
 
 export default class Model {
   public readonly users: Users
@@ -18,7 +19,7 @@ export default class Model {
     }
   }
 
-  constructor(postgresConfig: pg.PoolConfig) {
+  constructor(postgresConfig: pg.PoolConfig, public readonly log: Bunyan) {
     this.pgConfig = postgresConfig
     this.pgPool = null
     this._pgClient = null
