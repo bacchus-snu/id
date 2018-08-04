@@ -1,5 +1,8 @@
 {
   "name": "bacchus-id-front",
+  "description": "Identity management service for SNUCSE - Front",
+  "author": "Bacchus <contact@bacchus.snucse.org>",
+  "license": "MIT",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
