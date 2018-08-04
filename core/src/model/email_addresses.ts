@@ -1,6 +1,10 @@
+import Model from './model'
 import { PoolClient } from 'pg'
 
 export default class EmailAddresses {
+  constructor(private readonly model: Model) {
+  }
+
   /**
    * Create an email address record.
    * @param client provides access to the database

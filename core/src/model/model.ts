@@ -14,8 +14,8 @@ export default class Model {
     this.pgConfig = postgresConfig
     this.pgPool = new pg.Pool(this.pgConfig)
 
-    this.users = new Users()
-    this.emailAddresses = new EmailAddresses()
+    this.users = new Users(this)
+    this.emailAddresses = new EmailAddresses(this)
   }
 
   public async pgDo<T>(query: (client: pg.PoolClient) => Promise<T>): Promise<T> {
