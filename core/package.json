@@ -20,6 +20,7 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "koa": "^2.5.2",
+    "koa-bodyparser": "^4.2.1",
     "ldapjs": "^1.0.2",
     "pg": "^7.4.3"
   },
