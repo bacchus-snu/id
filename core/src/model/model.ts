@@ -1,8 +1,11 @@
 import * as pg from 'pg'
 import Users from './users'
+import EmailAddresses from './email_addresses'
 
 export default class Model {
   public readonly users: Users
+  public readonly emailAddresses: EmailAddresses
+
   private readonly pgConfig: pg.PoolConfig
   private _pgClient: pg.PoolClient | null
   private pgPool: pg.Pool | null
@@ -21,6 +24,7 @@ export default class Model {
     this._pgClient = null
 
     this.users = new Users(this)
+    this.emailAddresses = new EmailAddresses(this)
   }
 
   public async pgDo<T>(query: () => Promise<T>): Promise<T> {
