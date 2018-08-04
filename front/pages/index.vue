@@ -1,18 +1,16 @@
 <template>
-  <section>
-    <div>
-      <test-component></test-component>
-    </div>
-  </section>
+  <div>
+    <user-admin-table/>
+  </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
-import TestComponent from '~/components/TestComponent.vue';
+import { Component, Vue } from 'nuxt-property-decorator'
+import UserAdminTable from '~/components/UserAdminTable.vue'
 
 @Component({
   components: {
-    'test-component': TestComponent,
+    'user-admin-table': UserAdminTable,
   }
 })
 export default class extends Vue {
