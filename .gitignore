@@ -3,6 +3,7 @@ config.json
 
 # Build
 dist/
+.nuxt/
 
 # Logs
 *.log

@@ -23,7 +23,7 @@ create table users (
 
   -- posixAccount
   uid integer unique,
-  shell text references shells(shell)
+  shell text not null references shells(shell)
 
   -- primary_email_address_idx integer not null unique references email_addresses(email_address_idx)
 );

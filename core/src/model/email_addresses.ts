@@ -1,6 +1,10 @@
+import Model from './model'
 import { PoolClient } from 'pg'
 
 export default class EmailAddresses {
+  constructor(private readonly model: Model) {
+  }
+
   /**
    * Create an email address record.
    * @param client provides access to the database
@@ -13,5 +17,10 @@ export default class EmailAddresses {
       'RETURNING email_address_idx'
     const result = await client.query(query, [local, domain])
     return result.rows[0].email_address_idx
+  }
+
+  public async validate(client: PoolClient, userIdx: number, emailAddressIdx: number): Promise<void> {
+    const query = 'UPDATE email_address SET owner_idx = $1 WHERE email_address_idx = $2'
+    await client.query(query, [userIdx, emailAddressIdx])
   }
 }
