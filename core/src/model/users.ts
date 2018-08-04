@@ -58,16 +58,12 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
-  public async assignAndGetUid(client: PoolClient, userIdx: number, minUid: number): Promise<number> {
-    const user = await this.getByUserIdx(client, userIdx)
-    if (user.uid !== null) {
-      return user.uid
-    }
+  public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<void> {
     const getNewUidResult = await client.query('SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN' +
       'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL ORDER BY b.uid LIMIT 1')
     const newUid = getNewUidResult.rows.length === 0 ? minUid : getNewUidResult.rows[0].uid
-    const assignResult = await client.query('UPDATE users SET uid = $1 WHERE user_idx = $2', [newUid, user.user_idx])
-    return newUid
+    const assignResult = await client.query('UPDATE users SET uid = $1 WHERE user_idx = $2 AND uid IS NULL',
+      [newUid, userIdx])
   }
 
   private rowToUser(row: any): User {

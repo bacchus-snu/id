@@ -7,6 +7,7 @@ import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
+import { NoSuchEntryError } from '../model/errors';
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
@@ -125,13 +126,19 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     } else if (parentDN != null && req.scope === 'base' && req.dn.rdns[0].attrs.cn != null) {
       if (parentDN.equals(parsedUsersDN)) {
         const wantedUid = req.dn.rdns[0].attrs.cn.value
-        const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-        // TODO: do not asssign uid if the user is not capable to sign in to the LDAP host.
-        if (user.uid === null) {
-          await model.pgDo(c => model.users.assignAndGetUid(c, user.user_idx, config.posix.minUid))
-          res.send(userToPosixAccount(await model.pgDo(c => model.users.getByUserIdx(c, user.user_idx))))
-        } else {
-          res.send(userToPosixAccount(user))
+        try {
+          const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
+          // TODO: do not asssign uid if the user is not capable to sign in to the LDAP host.
+          if (user.uid === null) {
+            await model.pgDo(c => model.users.assignUid(c, user.user_idx, config.posix.minUid))
+            res.send(userToPosixAccount(await model.pgDo(c => model.users.getByUserIdx(c, user.user_idx))))
+          } else {
+            res.send(userToPosixAccount(user))
+          }
+        } catch (e) {
+          if (!(e instanceof NoSuchEntryError)) {
+            throw e
+          }
         }
       }
     }
