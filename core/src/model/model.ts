@@ -2,6 +2,7 @@ import * as pg from 'pg'
 import Users from './users'
 import EmailAddresses from './email_addresses'
 import * as Bunyan from 'bunyan'
+import { ControllableError } from './errors'
 
 export default class Model {
   public readonly users: Users
@@ -27,7 +28,10 @@ export default class Model {
       return result
     } catch (e) {
       await client.query('ROLLBACK')
-      this.log.error(e)
+      if (!(e instanceof ControllableError)) {
+        // Controllable errors are properly handled by API implementations.
+        this.log.error(e)
+      }
       throw e
     } finally {
       client.release()
