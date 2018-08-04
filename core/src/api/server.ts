@@ -11,15 +11,21 @@ const createServer = (log: Bunyan, model: Model) => {
   app.use(bodyParser())
 
   router.post('/api/user', async (ctx, next) => {
-    let body
+    let body: any = ctx.request.body
+
+    if (body == null || typeof body !== 'string') {
+      ctx.status = 400
+      return
+    }
+
     try {
-      body = JSON.parse(ctx.request.body)
+      body = JSON.parse(body)
     } catch (e) {
       ctx.status = 400
       return
     }
 
-    let { username, name, password } = body
+    const { username, name, password } = body
 
     model.pgDo(c => model.users.create(c, username, name, password ))
     ctx.status = 201
