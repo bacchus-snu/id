@@ -117,7 +117,14 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       } else {
         // Same results for 'one' and 'sub'
         const users = await model.pgDo(c => model.users.getAll(c))
-        usersToPosixAccounts(users).forEach(account => {
+        // TODO: assign uid to the account that matches the filter only
+        // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
+        for (const user of users) {
+          if (user.uid === null) {
+            await model.pgDo(c => model.users.assignUid(c, user.user_idx, config.posix.minUid))
+          }
+        }
+        usersToPosixAccounts(await model.pgDo(c => model.users.getAll(c))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
           }
@@ -128,7 +135,6 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
           const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-          // TODO: do not asssign uid if the user is not capable to sign in to the LDAP host.
           if (user.uid === null) {
             await model.pgDo(c => model.users.assignUid(c, user.user_idx, config.posix.minUid))
             res.send(userToPosixAccount(await model.pgDo(c => model.users.getByUserIdx(c, user.user_idx))))
