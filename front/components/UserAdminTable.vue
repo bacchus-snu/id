@@ -18,16 +18,30 @@
         </el-col>
         <el-col :span="12">
           <el-card>
-            <span>username</span>
-            <el-input v-model="username" size="small"/>
-            <span>name</span>
-            <el-input v-model="name" size="small"/>
-            <span>password</span>
-            <el-input v-model="password" size="small"/>
-            <span>emailLocal</span>
-            <el-input v-model="emailLocal" size="small"/>
-            <span>emailDomain</span>
-            <el-input v-model="emailDomain" size="small"/>
+            <div class="input-container">
+              <span>username</span>
+              <el-input v-model="username" size="small"/>
+            </div>
+
+            <div class="input-container">
+              <span>name</span>
+              <el-input v-model="name" size="small"/>
+            </div>
+
+            <div class="input-container">
+              <span>password</span>
+              <el-input v-model="password" size="small"/>
+            </div>
+
+            <div class="input-container">
+              <span>emailLocal</span>
+              <el-input v-model="emailLocal" size="small"/>
+            </div>
+
+            <div class="input-container">
+              <span>emailDomain</span>
+              <el-input v-model="emailDomain" size="small"/>
+            </div>
           </el-card>
         </el-col>
       </el-row>
@@ -103,5 +117,9 @@ export default class UserAdminTable extends Vue {
 <style scoped>
 .button-container {
   margin-top: 20px;
+}
+
+.input-container {
+  margin: 15px;
 }
 </style>
