@@ -40,7 +40,7 @@ export default class Model {
     try {
       await this._pgClient.query('BEGIN')
       const result = await query()
-      await this._pgClient.query('COMMIT')
+      this.log.info(await this._pgClient.query('COMMIT'))
       return result
     } catch (e) {
       await this._pgClient.query('ROLLBACK')
