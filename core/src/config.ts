@@ -31,7 +31,7 @@ interface LDAPConfig {
 
   /**
    * DN for 'users' ou.
-   * e.g. ou=cseusers,dc=snucse,dc=org
+   * e.g. ou=users,dc=snucse,dc=org
    */
   usersDN: string
 

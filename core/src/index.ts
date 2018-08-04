@@ -16,7 +16,8 @@ const model = new Model({
   port: config.postgresql.port,
 })
 const ldapServer = createLDAPServer({log}, model)
-ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost, () => log.info('LDAP server listening'))
+ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
+  () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
 const apiServer = createAPIServer(log, model)
 apiServer.listen(config.api.listenPort, config.api.listenHost)
 model.pgDo(() => model.users.create('bacchus', 'Bacchus', 'bacchuspassword'))
