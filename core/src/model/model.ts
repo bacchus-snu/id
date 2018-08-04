@@ -47,6 +47,7 @@ export default class Model {
       return result
     } catch (e) {
       await this._pgClient.query('ROLLBACK')
+      this.log.error(e)
       throw e
     } finally {
       this._pgClient.release()
