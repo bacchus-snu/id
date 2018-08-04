@@ -70,5 +70,7 @@ module.exports = {
     "@nuxtjs/axios",
     "~/modules/typescript.js"
   ],
-  axios: {}
+  axios: {
+    // baseURL: 'http://id-dev.snucse.org:10101',
+  }
 }
