@@ -1,5 +1,6 @@
 import Model from '../../model/model'
 import { IMiddleware } from 'koa-router'
+import Config from '../../config'
 
 export function getUserList(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -16,7 +17,7 @@ export function getUserList(model: Model): IMiddleware {
   }
 }
 
-export function createUser(model: Model): IMiddleware {
+export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
 
@@ -34,7 +35,7 @@ export function createUser(model: Model): IMiddleware {
 
     await model.pgDo(async c => {
       const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx)
+      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx, config.posix.defaultShell)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
     })
     ctx.status = 201

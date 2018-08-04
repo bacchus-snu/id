@@ -1,5 +1,3 @@
-import * as fs from 'fs'
-
 /**
  * Configuration.
  */
@@ -7,7 +5,7 @@ import * as fs from 'fs'
 /**
  * PostgreSQL connection configuration.
  */
-interface PostgreSQLConfig {
+export interface PostgreSQLConfig {
   host: string
   port: number
   user: string
@@ -18,7 +16,7 @@ interface PostgreSQLConfig {
 /**
  * LDAP server configuration.
  */
-interface LDAPConfig {
+export interface LDAPConfig {
   /**
    * Host to listen on.
    */
@@ -30,16 +28,20 @@ interface LDAPConfig {
   listenPort: number
 
   /**
-   * DN for 'users' ou.
-   * e.g. ou=users,dc=snucse,dc=org
+   * Base DN.
+   * e.g. dc=snucse,dc=org
    */
-  usersDN: string
+  baseDN: string
 
   /**
-   * DN for 'groups' ou.
-   * e.g. ou=groups,dc=snucse,dc=org
+   * Name of the OU containing users.
    */
-  groupsDN: string
+  usersOU: string
+
+  /**
+   * Name of the OU containing groups.
+   */
+  groupsOU: string
 
   /**
    * DN for the subschema subentry.
@@ -51,7 +53,7 @@ interface LDAPConfig {
 /**
  * REST API server configuration.
  */
-interface APIConfig {
+export interface APIConfig {
   /**
    * Host to listen on.
    */
@@ -66,7 +68,7 @@ interface APIConfig {
 /**
  * Configurations for POSIX-compliant interface.
  */
-interface POSIXConfig {
+export interface PosixConfig {
   /**
    * Name of the primary group for the users.
    */
@@ -94,11 +96,17 @@ interface POSIXConfig {
 
   /**
    * Minimum value for uid.
+   * Note that this value is ignored when there are any UIDs below this limit.
    */
   minUid: number
+
+  /**
+   * Prefix for home directory.
+   */
+  homeDirectoryPrefix: string
 }
 
-interface Config {
+export default interface Config {
   /**
    * Name of this id core instance.
    */
@@ -127,10 +135,5 @@ interface Config {
   /**
    * POSIX configuration.
    */
-  posix: POSIXConfig
+  posix: PosixConfig
 }
-
-const configurationString = fs.readFileSync('config.json', {encoding: 'utf-8'})
-const configuration: Config = JSON.parse(configurationString)
-
-export default configuration
