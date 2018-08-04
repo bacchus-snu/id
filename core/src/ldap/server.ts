@@ -79,17 +79,9 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       return next(new ldap.InvalidCredentialsError())
     }
     const cn = req.dn.rdns[0].attrs.cn.value
-    /*
-    if (cn === 'bacchus' && req.credentials === 'bpassword') {
-      res.end()
-      return next()
-    }
-    if (cn === 'master' && req.credentials === 'bmaster') {
-      res.end()
-      return next()
-    }
-    */
-    return next(new ldap.InvalidCredentialsError())
+    model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
+      .catch(_ => next(new ldap.InvalidCredentialsError()))
+      .then(_ => res.end()).then(_ => next())
   })
 
   // Root DSE.

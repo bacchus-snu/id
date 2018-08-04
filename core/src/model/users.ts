@@ -3,9 +3,8 @@ import { PoolClient } from 'pg'
 import { NoSuchEntryError } from './errors'
 
 export interface User {
-  idx: number
+  user_idx: number
   username: string | null
-  passwordDigest: string | null
   name: string
   uid: number | null
   shell: string
@@ -25,7 +24,7 @@ export default class Users {
   }
 
   public async getAll(client: PoolClient): Promise<Array<User>> {
-    const query = 'SELECT * FROM users'
+    const query = 'SELECT user_idx, username, name, uid, shell FROM users'
     const result = await client.query(query)
     const users: Array<User> = []
     result.rows.forEach(row => users.push(this.rowToUser(row)))
@@ -33,8 +32,17 @@ export default class Users {
   }
 
   public async getByUsername(client: PoolClient, username: string): Promise<User> {
-    const query = 'SELECT * FROM users WHERE username = $1'
+    const query = 'SELECT user_idx, username, name, uid, shell FROM users WHERE username = $1'
     const result = await client.query(query, [username])
+    if (result.rows.length !== 1) {
+      throw new NoSuchEntryError()
+    }
+    return this.rowToUser(result.rows[0])
+  }
+
+  public async authenticate(client: PoolClient, username: string, passwordDigest: string): Promise<User> {
+    const query = 'SELECT user_idx FROM users WHERE username = $1 and password_digest = $2'
+    const result = await client.query(query, [username, passwordDigest])
     if (result.rows.length !== 1) {
       throw new NoSuchEntryError()
     }
@@ -43,9 +51,8 @@ export default class Users {
 
   private rowToUser(row: any): User {
     return {
-      idx: row.user_idx,
+      user_idx: row.user_idx,
       username: row.username,
-      passwordDigest: row.password_digest,
       name: row.name,
       uid: row.uid,
       shell: row.shell,

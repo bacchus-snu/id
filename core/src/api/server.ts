@@ -11,6 +11,19 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
 
   app.use(bodyParser())
 
+  router.get('/api/user', async (ctx, next) => {
+    let users
+
+    await model.pgDo(async c => {
+      users = await model.users.getAll(c)
+    })
+
+    ctx.response.status = 200
+    ctx.response.body = users
+
+    await next()
+  })
+
   router.post('/api/user', async (ctx, next) => {
     const body: any = ctx.request.body
 
