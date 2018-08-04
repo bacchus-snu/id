@@ -20,7 +20,7 @@ export default class EmailAddresses {
   }
 
   public async validate(client: PoolClient, userIdx: number, emailAddressIdx: number): Promise<void> {
-    const query = 'UPDATE email_address SET owner_idx = $1 WHERE email_address_idx = $2'
+    const query = 'UPDATE email_addresses SET owner_idx = $1 WHERE email_address_idx = $2'
     await client.query(query, [userIdx, emailAddressIdx])
   }
 }
