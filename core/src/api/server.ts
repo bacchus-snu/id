@@ -18,14 +18,18 @@ const createServer = (log: Bunyan, model: Model) => {
       return
     }
 
-    const { username, name, password } = body
+    const { username, name, password, emailLocal, emailDomain } = body
 
-    if (!username || !name || !password) {
+    if (!username || !name || !password || !emailLocal || !emailDomain) {
       ctx.status = 400
       return
     }
 
-    model.pgDo(c => model.users.create(c, username, name, password ))
+    await model.pgDo(async c => {
+      const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx)
+      await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
+    })
     ctx.status = 201
     await next()
   })
