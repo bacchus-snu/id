@@ -11,16 +11,9 @@ const createServer = (log: Bunyan, model: Model) => {
   app.use(bodyParser())
 
   router.post('/api/user', async (ctx, next) => {
-    let body: any = ctx.request.body
+    const body: any = ctx.request.body
 
-    if (body == null || typeof body !== 'string') {
-      ctx.status = 400
-      return
-    }
-
-    try {
-      body = JSON.parse(body)
-    } catch (e) {
+    if (body == null || typeof body !== 'object') {
       ctx.status = 400
       return
     }
