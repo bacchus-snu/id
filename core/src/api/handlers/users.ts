@@ -42,3 +42,16 @@ export function createUser(model: Model, config: Config): IMiddleware {
     await next()
   }
 }
+
+export function deleteUser(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const user_idx: any = ctx.params.user_idx
+
+    await model.pgDo(async c => {
+      await model.users.delete(c, user_idx)
+    })
+
+    ctx.status = 204
+    await next()
+  }
+}

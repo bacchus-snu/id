@@ -1,4 +1,7 @@
 language: node_js
 node_js:
   - node
-before_install: cd core
+before_install: true
+script:
+  - "cd core && npm ci && npm test && cd .."
+  - "cd front && npm ci && npm run build && cd .."

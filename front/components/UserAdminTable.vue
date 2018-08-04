@@ -13,6 +13,16 @@
                 :label="col"
                 :key="col">
               </el-table-column>
+              <el-table-column
+                label="">
+                <template slot-scope="scope">
+                  <el-button
+                    @click="deleteUser(scope.row.user_idx)"
+                    type="danger"
+                    icon="el-icon-delete"
+                    circle/>
+                </template>
+              </el-table-column>
             </el-table>
           </el-card>
         </el-col>
@@ -98,6 +108,16 @@ export default class UserAdminTable extends Vue {
     this.clearFields()
 
     if (response.status !== 201) {
+      this.$notify.error('Request error!')
+    }
+
+    this.userData = await this.fetchUsers()
+  }
+
+  async deleteUser(userIdx) {
+    let response = await axios.delete('/api/user/' + userIdx)
+
+    if (response.status !== 204) {
       this.$notify.error('Request error!')
     }
 
