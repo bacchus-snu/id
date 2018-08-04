@@ -19,7 +19,8 @@
     "sudoerGroupName": "csesudoers",
     "sudoerGroupGid": 100600,
     "defaultShell": "/bin/bash",
-    "minUid": 100000
+    "minUid": 100000,
+    "homeDirectoryPrefix": "/csehome"
   },
   "postgresql": {
     "host": "127.0.0.1",
