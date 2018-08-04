@@ -55,6 +55,16 @@ module.exports = {
   ** Build configuration
   */
   css: ["~/assets/css/main.css"],
+
+  plugins: [
+    '~/plugins/element-ui',
+  ],
+
+  css: [
+    'element-ui/lib/theme-chalk/index.css',
+    'element-ui/lib/theme-chalk/reset.css',
+  ],
+
   build: {},
   modules: [
     "@nuxtjs/axios",
