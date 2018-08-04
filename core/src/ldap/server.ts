@@ -7,7 +7,7 @@ import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
-import { NoSuchEntryError } from '../model/errors';
+import { NoSuchEntryError } from '../model/errors'
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
