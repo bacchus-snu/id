@@ -84,7 +84,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       res.end()
       return next()
     } catch (e) {
-      throw new ldap.InvalidCredentialsError()
+      return next(new ldap.InvalidCredentialsError())
     }
   })
 
