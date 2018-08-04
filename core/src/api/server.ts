@@ -3,8 +3,9 @@ import * as Bunyan from 'bunyan'
 import Model from '../model/model'
 import * as Router from 'koa-router'
 import * as bodyParser from 'koa-bodyparser'
+import Config from '../config'
 
-const createServer = (log: Bunyan, model: Model) => {
+const createServer = (log: Bunyan, model: Model, config: Config) => {
   const app = new Koa()
   const router = new Router()
 
@@ -27,7 +28,7 @@ const createServer = (log: Bunyan, model: Model) => {
 
     await model.pgDo(async c => {
       const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx)
+      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx, config.posix.defaultShell)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
     })
     ctx.status = 201
