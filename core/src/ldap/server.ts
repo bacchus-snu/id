@@ -128,6 +128,9 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.end()
         return next()
       }
+    } else {
+      res.end()
+      return next()
     }
   })
 
