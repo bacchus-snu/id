@@ -12,7 +12,7 @@ export default class EmailAddresses {
    */
   public async create(local: string, domain: string): Promise<() => number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2)' +
-      'RETRUNING email_address_idx'
+      'RETURNING email_address_idx'
     const result = await this.model.pgClient.query(query, [local, domain])
     this.model.log.info(result)
     return () => result.rows[0].email_address_idx
