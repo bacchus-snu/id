@@ -2,8 +2,14 @@
   <div>
     <el-card>
       <el-table
+        :data="tableData"
         empty-text="No Data">
-
+        <el-table-column
+          v-for="col in fields"
+          :prop="col"
+          :label="col"
+          :key="col">
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -13,13 +19,20 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
+import { User, userFields } from '~/types/User'
 
 @Component({})
 export default class UserAdminTable extends Vue {
+  public userData: Array<User>
+  public fields: Array<string> = userFields;
 
   async mounted(): Promise<void> {
     let response = await axios.get('/api/user')
-    console.log(response.data)
+    this.userData = response.data
+  }
+
+  get tableData() {
+    return this.userData
   }
 
 }
