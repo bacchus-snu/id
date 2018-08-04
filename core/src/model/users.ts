@@ -3,9 +3,8 @@ import { PoolClient } from 'pg'
 import config from '../config'
 
 interface User {
-  idx: number
+  user_idx: number
   username: string | null
-  passwordDigest: string | null
   name: string
   uid: number | null
   shell: string
@@ -25,14 +24,13 @@ export default class Users {
   }
 
   public async getAll(client: PoolClient): Promise<Array<User>> {
-    const query = 'SELECT * FROM users'
+    const query = 'SELECT user_idx, username, name, uid, shell FROM users'
     const result = await client.query(query)
     const users = []
     for (const row of result.rows) {
       users.push({
-        idx: row.user_idx,
+        user_idx: row.user_idx,
         username: row.username,
-        passwordDigest: row.password_digest,
         name: row.name,
         uid: row.uid,
         shell: row.shell,
