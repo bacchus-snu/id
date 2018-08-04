@@ -27,6 +27,11 @@ const createServer = (log: Bunyan, model: Model) => {
 
     const { username, name, password } = body
 
+    if (!username || !name || !password) {
+      ctx.status = 400
+      return
+    }
+
     model.pgDo(c => model.users.create(c, username, name, password ))
     ctx.status = 201
     await next()
