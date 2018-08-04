@@ -1,14 +1,26 @@
 {
   "name": "bacchus-id-front",
-  "version": "0.0.1-dev",
   "description": "Identity management service for SNUCSE - Front",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bacchus-snu/id.git"
-  },
   "author": "Bacchus <contact@bacchus.snucse.org>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/bacchus-snu/id/issues"
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@nuxtjs/axios": "^5.0.0",
+    "element-ui": "^2.4.5",
+    "nuxt": "^1.3.0",
+    "nuxt-property-decorator": "^1.2.0",
+    "vuex-class": "^0.3.0"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.6",
+    "ts-loader": "^3.5.0",
+    "typescript": "^2.7.2"
   }
 }

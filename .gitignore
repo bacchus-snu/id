@@ -19,3 +19,8 @@ Thumbs.db
 .*.swp
 .*.swo
 .vscode/
+.vs/
+*.njsproj
+*.sln
+bin/
+obj/
