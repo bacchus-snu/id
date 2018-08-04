@@ -2,7 +2,7 @@
   <div>
     <el-card>
       <el-table
-        :data="tableData"
+        :data="userData"
         empty-text="No Data">
         <el-table-column
           v-for="col in fields"
@@ -23,16 +23,12 @@ import { User, userFields } from '~/types/User'
 
 @Component({})
 export default class UserAdminTable extends Vue {
-  public userData: Array<User>
-  public fields: Array<string> = userFields;
+  public userData: Array<User> = []
+  public fields: Array<string> = userFields
 
   async mounted(): Promise<void> {
     let response = await axios.get('/api/user')
     this.userData = response.data
-  }
-
-  get tableData() {
-    return this.userData
   }
 
 }
