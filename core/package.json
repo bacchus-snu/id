@@ -20,12 +20,16 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "koa": "^2.5.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
     "ldapjs": "^1.0.2",
     "pg": "^7.4.3"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.4",
     "@types/koa": "^2.0.46",
+    "@types/koa-bodyparser": "^5.0.1",
+    "@types/koa-router": "^7.0.31",
     "@types/pg": "^7.4.10",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2"
