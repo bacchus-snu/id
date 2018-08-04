@@ -96,6 +96,7 @@ export interface PosixConfig {
 
   /**
    * Minimum value for uid.
+   * Note that this value is ignored when there are any UIDs below this limit.
    */
   minUid: number
 
