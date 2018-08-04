@@ -1,48 +1,36 @@
 import * as pg from 'pg'
 import Users from './users'
+import EmailAddresses from './email_addresses'
+import * as Bunyan from 'bunyan'
 
 export default class Model {
   public readonly users: Users
+  public readonly emailAddresses: EmailAddresses
+
   private readonly pgConfig: pg.PoolConfig
-  private _pgClient: pg.PoolClient | null
-  private pgPool: pg.Pool | null
+  private readonly pgPool: pg.Pool
 
-  public get pgClient(): pg.PoolClient {
-    if (this._pgClient === null) {
-      throw new Error('Transaction not ready')
-    } else {
-      return this._pgClient
-    }
-  }
-
-  constructor(postgresConfig: pg.PoolConfig) {
+  constructor(postgresConfig: pg.PoolConfig, public readonly log: Bunyan) {
     this.pgConfig = postgresConfig
-    this.pgPool = null
-    this._pgClient = null
+    this.pgPool = new pg.Pool(this.pgConfig)
 
-    this.users = new Users(this)
+    this.users = new Users()
+    this.emailAddresses = new EmailAddresses()
   }
 
-  public async pgDo<T>(query: () => Promise<T>): Promise<T> {
-    if (this.pgPool === null) {
-      try {
-        this.pgPool = new pg.Pool(this.pgConfig)
-      } catch (e) {
-        throw e
-      }
-    }
-    this._pgClient = await this.pgPool.connect()
+  public async pgDo<T>(query: (client: pg.PoolClient) => Promise<T>): Promise<T> {
+    const client = await this.pgPool.connect()
     try {
-      await this._pgClient.query('BEGIN')
-      const result = await query()
-      await this._pgClient.query('COMMIT')
+      await client.query('BEGIN')
+      const result = await query(client)
+      await client.query('COMMIT')
       return result
     } catch (e) {
-      await this._pgClient.query('ROLLBACK')
+      await client.query('ROLLBACK')
+      this.log.error(e)
       throw e
     } finally {
-      this._pgClient.release()
-      this._pgClient = null
+      client.release()
     }
   }
 }

@@ -1,0 +1,30 @@
+{
+  "instanceName": "id-core",
+  "logLevel": 30,
+  "ldap": {
+    "listenHost": "127.0.0.1",
+    "listenPort": "50389",
+    "usersDN": "ou=users,dc=snucse,dc=org",
+    "groupsDN": "ou=groups,dc=snucse,dc=org",
+    "subschemaDN": "cn=subschema,dc=snucse,dc=org"
+  },
+  "api": {
+    "listenHost": "127.0.0.1",
+    "listenPort": "50080"
+  },
+  "posix": {
+    "userGroupName": "cseusers",
+    "userGroupGid": 101132,
+    "sudoerGroupName": "csesudoers",
+    "sudoerGroupGid": 100600,
+    "defaultShell": "/bin/bash",
+    "minUid": 100000
+  },
+  "postgresql": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "user": "id",
+    "password": "INSERT_PASSWORD_HERE",
+    "database": "id"
+  }
+}

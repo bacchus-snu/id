@@ -2,22 +2,24 @@ import createLDAPServer from './ldap/server'
 import Model from './model/model'
 import * as bunyan from 'bunyan'
 import createAPIServer from './api/server'
+import config from './config'
 
 const log = bunyan.createLogger({
-  name: 'id',
-  level: bunyan.INFO,
+  name: config.instanceName,
+  level: config.logLevel,
 })
 const model = new Model({
-  user: 'id',
-  host: '127.0.0.1',
-  database: 'id',
-  password: 'idpass',
-  port: 3321,
-})
+  user: config.postgresql.user,
+  host: config.postgresql.host,
+  database: config.postgresql.database,
+  password: config.postgresql.password,
+  port: config.postgresql.port,
+}, log)
 const ldapServer = createLDAPServer({log}, model)
-ldapServer.listen(389, '127.0.0.1', () => log.info('LDAP server listening'))
+ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
+  () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
 const apiServer = createAPIServer(log, model)
-apiServer.listen(8089)
-model.pgDo(() => model.users.create('bacchus', 'Bacchus', 'bacchuspassword'))
-  .then(() => log.info('Query OK'))
+apiServer.listen(config.api.listenPort, config.api.listenHost)
+model.pgDo(c => model.emailAddresses.create(c, 'nobody', 'bacchus.snucse.org'))
+  .then(x => log.info(`Query OK: result ${x}`))
   .catch(e => log.error(e, 'Query fail'))
