@@ -64,7 +64,9 @@ export default class Users {
     if (getNewUidResult.rows.length !== 1) {
       throw new Error('Failed to assign posix uid')
     }
+    this.model.log.info(getNewUidResult.rows[0])
     const newUid = getNewUidResult.rows[0] === null ? minUid : getNewUidResult.rows[0].uid
+    this.model.log.info(newUid)
     const assignResult = await client.query('UPDATE users SET uid = $1 WHERE user_idx = $2 AND uid IS NULL',
       [newUid, userIdx])
   }
