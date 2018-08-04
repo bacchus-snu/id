@@ -74,14 +74,18 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   }
 
   // Non-anonymous bind.
-  server.bind(usersDN, (req, res, next) => {
+  server.bind(usersDN, async (req, res, next) => {
     if (req.dn.rdns.length === 0 || req.dn.rdns[0].attrs.cn == null) {
       return next(new ldap.InvalidCredentialsError())
     }
     const cn = req.dn.rdns[0].attrs.cn.value
-    model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
-      .catch(_ => next(new ldap.InvalidCredentialsError()))
-      .then(_ => res.end()).then(_ => next())
+    try {
+      await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
+      res.end()
+      return next()
+    } catch (e) {
+      throw new ldap.InvalidCredentialsError()
+    }
   })
 
   // Root DSE.
@@ -104,34 +108,29 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   })
 
   // Account lookups.
-  server.search(usersDN, (req, res, next) => {
+  server.search(usersDN, async (req, res, next) => {
     const parentDN = req.dn.parent()
     if (req.dn.equals(parsedUsersDN)) {
       if (req.scope === 'base') {
         res.send(usersOU)
-        res.end()
-        return next()
       } else {
         // Same results for 'one' and 'sub'
-        model.pgDo(c => model.users.getAll(c)).then(usersToPosixAccounts).then(users => users.forEach(user => {
-          if (req.filter.matches(user.attributes)) {
-            res.send(user)
+        const users = await model.pgDo(c => model.users.getAll(c))
+        usersToPosixAccounts(users).forEach(account => {
+          if (req.filter.matches(account.attributes)) {
+            res.send(account)
           }
-        })).then(_ => res.end()).then(_ => next())
+        })
       }
     } else if (parentDN != null && req.scope === 'base' && req.dn.rdns[0].attrs.cn != null) {
       if (parentDN.equals(parsedUsersDN)) {
         const wantedUid = req.dn.rdns[0].attrs.cn.value
-        model.pgDo(c => model.users.getByUsername(c, wantedUid)).then(userToPosixAccount).then(user => res.send(user))
-          .then(_ => res.end()).then(_ => next())
-      } else {
-        res.end()
-        return next()
+        const account = userToPosixAccount(await model.pgDo(c => model.users.getByUsername(c, wantedUid)))
+        res.send(account)
       }
-    } else {
-      res.end()
-      return next()
     }
+    res.end()
+    return next()
   })
 
   return server
