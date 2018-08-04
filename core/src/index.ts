@@ -20,6 +20,8 @@ ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
   () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
 const apiServer = createAPIServer(log, model)
 apiServer.listen(config.api.listenPort, config.api.listenHost)
-model.pgDo(c => model.emailAddresses.create(c, 'nobody', 'bacchus.snucse.org'))
-  .then(x => log.info(`Query OK: result ${x}`))
-  .catch(e => log.error(e, 'Query fail'))
+model.pgDo(async c => {
+  const emailAddressIdx = await model.emailAddresses.create(c, 'new', 'bacchus.snucse.org')
+  return await model.users.create(c, 'bacchus', 'password_digest', 'bacchus', emailAddressIdx)
+}).then(x => log.info(`Query OK: result ${x}`))
+.catch(e => log.error(e, 'Query fail'))
