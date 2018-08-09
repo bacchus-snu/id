@@ -1,6 +1,7 @@
 import Model from './model'
 import { PoolClient } from 'pg'
-import { NoSuchEntryError } from './errors'
+import { NoSuchEntryError, AuthenticationError } from './errors'
+import * as argon2 from 'argon2'
 
 export interface User {
   user_idx: number
@@ -14,10 +15,11 @@ export default class Users {
   constructor(private readonly model: Model) {
   }
 
-  public async create(client: PoolClient, username: string, passwordDigest: string,
+  public async create(client: PoolClient, username: string, password: string,
       name: string, primaryEmailAddressIdx: number, shell: string): Promise<number> {
     const query = 'INSERT INTO users(username, password_digest, name, primary_email_address_idx, shell)' +
       'VALUES ($1, $2, $3, $4, $5) RETURNING user_idx'
+    const passwordDigest = await argon2.hash(password)
     const result = await client.query(query, [username, passwordDigest, name,
       primaryEmailAddressIdx, shell])
     return result.rows[0].user_idx
@@ -55,12 +57,19 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
-  public async authenticate(client: PoolClient, username: string, passwordDigest: string): Promise<User> {
-    const query = 'SELECT user_idx FROM users WHERE username = $1 and password_digest = $2'
-    const result = await client.query(query, [username, passwordDigest])
+  public async authenticate(client: PoolClient, username: string, password: string): Promise<User> {
+    const query = 'SELECT user_idx, password_digest FROM users WHERE username = $1'
+    const result = await client.query(query, [username])
     if (result.rows.length !== 1) {
       throw new NoSuchEntryError()
     }
+
+    const passwordDigest = result.rows[0].password_digest
+
+    if (!await argon2.verify(passwordDigest, password)) {
+      throw new AuthenticationError()
+    }
+
     return this.rowToUser(result.rows[0])
   }
 
