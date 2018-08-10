@@ -53,3 +53,30 @@ create table reserved_usernames (
   reserved_username text primary key check (reserved_username <> ''),
   owner_idx integer references users(user_idx) on delete set null
 );
+
+create table groups (
+  group_idx serial primary key,
+  name_ko text not null check (name_ko <> ''),
+  name_en text not null check (name_en <> ''),
+  description_ko text not null check (description_ko <> ''),
+  description_en text not null check (description_en <> '')
+);
+
+-- OR relationship for groups.
+create table group_relations (
+  supergroup integer references groups(group_idx) on delete cascade,
+  subgroup integer references groups(group_idx) on delete cascade,
+  unique (supergroup, subgroup)
+);
+
+create table permissions (
+  permission_idx serial primary key,
+  name_ko text not null check (name_ko <> ''),
+  name_en text not null check (name_en <> '')
+);
+
+create table permission_requirements (
+  group_idx integer references groups(group_idx) on delete cascade,
+  permission_idx integer references permissions(permission_idx) on delete cascade,
+  unique (group_idx, permission_idx)
+);
