@@ -17,7 +17,7 @@ const log = bunyan.createLogger({
 const model = new Model(config.postgresql, log)
 
 test('create and delete group', async t => {
-  await model.pgDo(c => async {
+  await model.pgDo(async c => {
     const name: Translation = {
       ko: '도지',
       en: 'doge',
@@ -27,6 +27,7 @@ test('create and delete group', async t => {
       ko: '강아지',
       en: 'dog',
     }
+
     const idx = await model.groups.create(c, name, description)
     const row = await model.groups.getByIdx(c, idx)
 
