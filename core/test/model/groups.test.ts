@@ -54,7 +54,7 @@ test('set owner user', async t => {
   await model.pgDo(async c => {
     const groupIdx = await model.groups.create(c, name, description)
     const mailIdx = await model.emailAddresses.create(c, 'mrdoge', 'dogeuniverse.com')
-    const userIdx = await model.users.create(c, 'MrDoge', 'SuperSecurePassword', '김도지', mailIdx, '/bin/bash')
+    const userIdx = await model.users.create(c, 'MrDoge', 'SuperSecurePassword', '김도지', mailIdx, '/bin/bash', 'en')
 
     await model.groups.setOwnerUser(c, groupIdx, userIdx)
     t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, userIdx)
