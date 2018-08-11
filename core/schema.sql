@@ -1,8 +1,13 @@
 drop table if exists shells cascade;
 drop table if exists users cascade;
 drop table if exists email_addresses cascade;
-drop table if exists snuid cascade;
+drop table if exists snuids cascade;
 drop table if exists reserved_usernames cascade;
+drop table if exists groups cascade;
+drop table if exists group_relations cascade;
+drop table if exists user_memberships cascade;
+drop table if exists permissions cascade;
+drop table if exists permission_requirements cascade;
 
 -- Allowed shells to use
 create table shells (
