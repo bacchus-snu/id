@@ -32,6 +32,9 @@ export default class Users {
   public async delete(client: PoolClient, userIdx: string): Promise<number> {
     const query = 'DELETE FROM users WHERE user_idx = $1 RETURNING user_idx'
     const result = await client.query(query, [userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].user_idx
   }
 
@@ -95,6 +98,9 @@ export default class Users {
   public async deleteUserMembership(client: PoolClient, userMembershipIdx: number): Promise<number> {
     const query = 'DELETE FROM user_memberships WHERE user_membership_idx = $1 RETURNING user_membership_idx'
     const result = await client.query(query, [userMembershipIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].user_membership_idx
   }
 
