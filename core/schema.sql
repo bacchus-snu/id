@@ -8,6 +8,7 @@ drop table if exists group_relations cascade;
 drop table if exists user_memberships cascade;
 drop table if exists permissions cascade;
 drop table if exists permission_requirements cascade;
+drop table if exists pending_user_memberships cascade;
 drop type if exists language cascade;
 
 -- Allowed shells to use
@@ -70,6 +71,8 @@ create table reserved_usernames (
 
 create table groups (
   idx serial primary key,
+  owner_user_idx integer references user(idx) on delete set null,
+  owner_group_idx integer references group(idx) on delete set null,
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
   description_ko text not null check (description_ko <> ''),
@@ -105,3 +108,11 @@ create table permission_requirements (
   permission_idx integer not null references permissions(idx) on delete cascade,
   unique (group_idx, permission_idx)
 );
+
+create table pending_user_memberships (
+  idx serial primary key,
+  user_idx integer not null references users(idx) on delete cascade,
+  group_idx integer not null references groups(idx) on delete cascade,
+  created_at timestamp without time zone not null,
+  unique (user_idx, group_idx)
+)

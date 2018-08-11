@@ -12,7 +12,7 @@ export interface User {
   name: string
   uid: number | null
   shell: string
-  preferred_language: Language
+  preferredLanguage: Language
 }
 
 export default class Users {
@@ -112,7 +112,7 @@ export default class Users {
       name: row.name,
       uid: row.uid,
       shell: row.shell,
-      preferred_language: row.preferred_language,
+      preferredLanguage: row.preferred_language,
     }
   }
 }
