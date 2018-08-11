@@ -7,9 +7,10 @@ export default class Permissions {
   constructor(private readonly model: Model) {
   }
 
-  public async create(client: PoolClient, name: Translation): Promise<number> {
-    const query = 'INSERT INTO permissions(name_ko, name_en) VALUES ($1, $2) RETURNING permission_idx'
-    const result = await client.query(query, [name.ko, name.en])
+  public async create(client: PoolClient, name: Translation, description: Translation): Promise<number> {
+    const query = 'INSERT INTO permissions(name_ko, name_en, description_ko, ' +
+      'description_en) VALUES ($1, $2, $3, $4) RETURNING permission_idx'
+    const result = await client.query(query, [name.ko, name.en, description.ko, description.en])
     return result.rows[0].permission_idx
   }
 

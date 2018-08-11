@@ -86,16 +86,16 @@ export default class Users {
       [newUid, userIdx])
   }
 
-  public async addMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
-    const query = 'INSERT INTO memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING membership_idx'
+  public async addUserMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'INSERT INTO user_memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING user_membership_idx'
     const result = await client.query(query, [userIdx, groupIdx])
-    return result.rows[0].membership_idx
+    return result.rows[0].user_membership_idx
   }
 
-  public async deleteMembership(client: PoolClient, membershipIdx: number): Promise<number> {
-    const query = 'DELETE FROM memberships WHERE membership_idx = $1 RETURNING membership_idx'
-    const result = await client.query(query, [membershipIdx])
-    return result.rows[0].membership_idx
+  public async deleteUserMembership(client: PoolClient, userMembershipIdx: number): Promise<number> {
+    const query = 'DELETE FROM user_memberships WHERE user_membership_idx = $1 RETURNING user_membership_idx'
+    const result = await client.query(query, [userMembershipIdx])
+    return result.rows[0].user_membership_idx
   }
 
   private rowToUser(row: any): User {

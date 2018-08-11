@@ -76,8 +76,8 @@ create table group_relations (
   unique (supergroup_idx, subgroup_idx)
 );
 
-create table memberships (
-  membership_idx serial primary key,
+create table user_memberships (
+  user_membership_idx serial primary key,
   user_idx integer references users(user_idx) on delete cascade,
   group_idx integer references groups(group_idx) on delete cascade,
   unique (user_idx, group_idx)
@@ -86,7 +86,9 @@ create table memberships (
 create table permissions (
   permission_idx serial primary key,
   name_ko text not null check (name_ko <> ''),
-  name_en text not null check (name_en <> '')
+  name_en text not null check (name_en <> ''),
+  description_ko text not null check (description_ko <> ''),
+  description_en text not null check (description_en <> '')
 );
 
 create table permission_requirements (
