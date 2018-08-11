@@ -25,3 +25,16 @@ export async function createGroup(c: PoolClient, model: Model): Promise<number> 
 
   return await model.groups.create(c, name, description)
 }
+
+export async function createPermission(c: PoolClient, model: Model): Promise<number> {
+  const name = {
+    ko: uuid(),
+    en: uuid(),
+  }
+
+  const description = {
+    ko: uuid(),
+    en: uuid(),
+  }
+  return await model.permissions.create(c, name, description)
+}
