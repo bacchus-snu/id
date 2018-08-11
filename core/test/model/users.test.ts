@@ -94,3 +94,18 @@ test('add and delete user membership', async t => {
     t.fail()
   })
 })
+
+test('get all user memberships', async t => {
+  await model.pgDo(async c => {
+    const userIdx = await createUser(c, model)
+    const groupIdx1 = await createGroup(c, model)
+    const groupIdx2 = await createGroup(c, model)
+
+    const idx1 = await model.users.addUserMembership(c, userIdx, groupIdx1)
+    const idx2 = await model.users.addUserMembership(c, userIdx, groupIdx2)
+
+    const result = await model.users.getAllUserMemberships(c, userIdx)
+
+    t.deepEqual(result.map(um => um.groupIdx).sort(), [groupIdx1, groupIdx2].sort())
+  })
+})

@@ -15,6 +15,11 @@ export interface User {
   preferredLanguage: Language
 }
 
+export interface UserMembership {
+  userIdx: number
+  groupIdx: number
+}
+
 export default class Users {
   constructor(private readonly model: Model) {
   }
@@ -105,6 +110,29 @@ export default class Users {
     return result.rows[0].idx
   }
 
+  public async getAllUserMemberships(client: PoolClient, userIdx: number): Promise<Array<UserMembership>> {
+    const query = 'SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
+    const result = await client.query(query, [userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows.map(row => this.rowToUserMembership(row))
+  }
+
+  public async getUserReachableGroups(client: PoolClient, userIdx: number): Promise<Array<number>> {
+    const reachableGroups = await this.model.groups.getReachableGroup(client)
+    const userMemberships = await this.getAllUserMemberships(client, userIdx)
+    const groupSet = new Set()
+
+    userMemberships.forEach(userMembership => {
+      reachableGroups[userMembership.groupIdx].forEach(gi => {
+        groupSet.add(gi)
+      })
+    })
+
+    return Array.from(groupSet)
+  }
+
   private rowToUser(row: any): User {
     return {
       idx: row.idx,
@@ -113,6 +141,13 @@ export default class Users {
       uid: row.uid,
       shell: row.shell,
       preferredLanguage: row.preferred_language,
+    }
+  }
+
+  private rowToUserMembership(row: any): UserMembership {
+    return {
+      userIdx: row.user_idx,
+      groupIdx: row.group_idx,
     }
   }
 }

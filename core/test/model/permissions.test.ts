@@ -8,7 +8,7 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
-import { createGroup, createPermission } from '../test_utils'
+import { createUser, createGroup, createPermission, createGroupRelation } from '../test_utils'
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
 
@@ -65,5 +65,40 @@ test('create and delete permission requirements', async t => {
     const emptyResult = await c.query(query, [idx])
 
     t.is(emptyResult.rows.length, 0)
+  })
+})
+
+test('check user permission', async t => {
+  await model.pgDo(async c => {
+    const g: Array<number> = []
+    const range: Array<number> = [...Array(5).keys()]
+    for (const _ of range) {
+      g.push(await createGroup(c, model))
+    }
+
+    await createGroupRelation(c, model, g[0], g[1])
+    await createGroupRelation(c, model, g[0], g[2])
+    await createGroupRelation(c, model, g[1], g[3])
+    await createGroupRelation(c, model, g[1], g[4])
+
+    const permissionIdx = await createPermission(c, model)
+    await model.permissions.addPermissionRequirement(c, g[2], permissionIdx)
+    await model.permissions.addPermissionRequirement(c, g[4], permissionIdx)
+
+    const userIdx1 = await createUser(c, model)
+    await model.users.addUserMembership(c, userIdx1, g[0])
+
+    t.true(await model.permissions.checkUserHavePermission(c, userIdx1, permissionIdx))
+
+    const userIdx2 = await createUser(c, model)
+    await model.users.addUserMembership(c, userIdx2, g[1])
+
+    t.false(await model.permissions.checkUserHavePermission(c, userIdx2, permissionIdx))
+
+    const userIdx3 = await createUser(c, model)
+    await model.users.addUserMembership(c, userIdx3, g[1])
+    await model.users.addUserMembership(c, userIdx3, g[2])
+
+    t.true(await model.permissions.checkUserHavePermission(c, userIdx3, permissionIdx))
   })
 })
