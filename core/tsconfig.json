@@ -11,6 +11,7 @@
     "typeRoots": ["./node_modules/@types", "./typings"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ]
 }

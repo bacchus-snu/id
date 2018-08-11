@@ -5,8 +5,9 @@
   "scripts": {
     "build": "rm -rf ./dist && tsc",
     "lint": "tslint --project ./tsconfig.json",
-    "start": "node dist/index.js",
-    "test": "npm run lint && npm run build"
+    "start": "node dist/src/index.js",
+    "test": "npm run lint && npm run build",
+    "testdb": "ava --color --verbose"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "@types/koa-bodyparser": "^5.0.1",
     "@types/koa-router": "^7.0.31",
     "@types/pg": "^7.4.10",
+    "ava": "^0.25.0",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2"
   }
