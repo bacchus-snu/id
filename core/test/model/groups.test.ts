@@ -14,19 +14,20 @@ const log = bunyan.createLogger({
   level: config.logLevel,
 })
 
+const name: Translation = {
+  ko: '도지',
+  en: 'doge',
+}
+
+const description: Translation = {
+  ko: '강아지',
+  en: 'dog',
+}
+
 const model = new Model(config.postgresql, log)
 
 test('create and delete group', async t => {
   await model.pgDo(async c => {
-    const name: Translation = {
-      ko: '도지',
-      en: 'doge',
-    }
-
-    const description: Translation = {
-      ko: '강아지',
-      en: 'dog',
-    }
 
     const idx = await model.groups.create(c, name, description)
     const row = await model.groups.getByIdx(c, idx)
@@ -46,5 +47,32 @@ test('create and delete group', async t => {
     }
 
     t.fail()
+  })
+})
+
+test('set owner user', async t => {
+  await model.pgDo(async c => {
+    const groupIdx = await model.groups.create(c, name, description)
+    const mailIdx = await model.emailAddresses.create(c, 'mrdoge', 'dogeuniverse.com')
+    const userIdx = await model.users.create(c, 'MrDoge', 'SuperSecurePassword', '김도지', mailIdx, '/bin/bash', 'en')
+
+    await model.groups.setOwnerUser(c, groupIdx, userIdx)
+    t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, userIdx)
+
+    await model.groups.setOwnerUser(c, groupIdx, null)
+    t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, null)
+  })
+})
+
+test('set owner group', async t => {
+  await model.pgDo(async c => {
+    const groupIdx = await model.groups.create(c, name, description)
+    const ownerGroupIdx = await model.groups.create(c, name, description)
+
+    await model.groups.setOwnerGroup(c, groupIdx, ownerGroupIdx)
+    t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, ownerGroupIdx)
+
+    await model.groups.setOwnerGroup(c, groupIdx, null)
+    t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, null)
   })
 })

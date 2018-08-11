@@ -5,6 +5,8 @@ import { NoSuchEntryError } from './errors'
 
 export interface Group {
   idx: number
+  ownerUserIdx: number | null
+  ownerGroupIdx: number | null
   name: Translation
   description: Translation
 }
@@ -38,6 +40,22 @@ export default class Groups {
     return result.rows[0].idx
   }
 
+  public async setOwnerUser(client: PoolClient, groupIdx: number, ownerUserIdx: number | null): Promise<void> {
+    const query = 'UPDATE groups SET owner_user_idx = $1 WHERE idx = $2 RETURNING idx'
+    const result = await client.query(query, [ownerUserIdx, groupIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+  }
+
+  public async setOwnerGroup(client: PoolClient, groupIdx: number, ownerGroupIdx: number | null): Promise<void> {
+    const query = 'UPDATE groups SET owner_group_idx = $1 WHERE idx = $2 RETURNING idx'
+    const result = await client.query(query, [ownerGroupIdx, groupIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+  }
+
   public async addGroupRelation(client: PoolClient, supergroupIdx: number, subgroupIdx: number): Promise<number> {
     const query = 'INSERT INTO group_relations(supergroup_idx, subgroup_idx) ' +
       'VALUES ($1, $2) RETURNING idx'
@@ -57,6 +75,8 @@ export default class Groups {
   private rowToGroup(row: any): Group {
     return {
       idx: row.idx,
+      ownerUserIdx: row.owner_user_idx,
+      ownerGroupIdx: row.owner_group_idx,
       name: {
         ko: row.name_ko,
         en: row.name_en,

@@ -12,7 +12,7 @@ export interface User {
   name: string
   uid: number | null
   shell: string
-  preferred_language: Language
+  preferredLanguage: Language
 }
 
 export default class Users {
@@ -20,12 +20,12 @@ export default class Users {
   }
 
   public async create(client: PoolClient, username: string, password: string,
-      name: string, primaryEmailAddressIdx: number, shell: string): Promise<number> {
-    const query = 'INSERT INTO users(username, password_digest, name, primary_email_address_idx, shell)' +
-      'VALUES ($1, $2, $3, $4, $5) RETURNING idx'
+      name: string, primaryEmailAddressIdx: number, shell: string, preferredLanguage: Language): Promise<number> {
+    const query = 'INSERT INTO users(username, password_digest, name, primary_email_address_idx, shell, ' +
+      'preferred_language) VALUES ($1, $2, $3, $4, $5, $6) RETURNING idx'
     const passwordDigest = await argon2.hash(password)
     const result = await client.query(query, [username, passwordDigest, name,
-      primaryEmailAddressIdx, shell])
+      primaryEmailAddressIdx, shell, preferredLanguage])
     return result.rows[0].idx
   }
 
@@ -112,7 +112,7 @@ export default class Users {
       name: row.name,
       uid: row.uid,
       shell: row.shell,
-      preferred_language: row.preferred_language,
+      preferredLanguage: row.preferred_language,
     }
   }
 }

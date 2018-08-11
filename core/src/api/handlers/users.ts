@@ -26,16 +26,17 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    const { username, name, password, emailLocal, emailDomain } = body
+    const { username, name, password, emailLocal, emailDomain, preferredLanguage } = body
 
-    if (!username || !name || !password || !emailLocal || !emailDomain) {
+    if (!username || !name || !password || !emailLocal || !emailDomain || !preferredLanguage) {
       ctx.status = 400
       return
     }
 
     await model.pgDo(async c => {
       const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx, config.posix.defaultShell)
+      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx,
+        config.posix.defaultShell, preferredLanguage)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
     })
     ctx.status = 201
