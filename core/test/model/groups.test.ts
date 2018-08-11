@@ -68,7 +68,7 @@ test('set owner user', async t => {
 test('set owner group', async t => {
   await model.pgDo(async c => {
     const groupIdx = await createGroup(c, model)
-    const ownerGroupIdx = await createUser(c, model)
+    const ownerGroupIdx = await createGroup(c, model)
 
     await model.groups.setOwnerGroup(c, groupIdx, ownerGroupIdx)
     t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, ownerGroupIdx)

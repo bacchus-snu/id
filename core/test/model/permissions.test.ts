@@ -37,8 +37,10 @@ test('create and delete permissions', async t => {
     const result = await c.query(query, [permissionIdx])
 
     t.truthy(result.rows[0])
-    t.deepEqual(result.rows[0].name, name)
-    t.deepEqual(result.rows[0].description, description)
+    t.deepEqual(result.rows[0].name_ko, name.ko)
+    t.deepEqual(result.rows[0].name_en, name.en)
+    t.deepEqual(result.rows[0].description_ko, description.ko)
+    t.deepEqual(result.rows[0].description_en, description.en)
 
     const deletedPermissionIdx = await model.permissions.delete(c, permissionIdx)
     const emptyResult = await c.query(query, [permissionIdx])

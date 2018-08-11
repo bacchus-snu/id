@@ -24,8 +24,6 @@ test('create and delete user', async t => {
     const userIdx = await createUser(c, model)
 
     const user1 = await model.users.getByUserIdx(c, userIdx)
-    t.is(user1.name, 'mrdoge')
-
     const user2 = await model.users.getByUsername(c, user1.name)
     t.is(user2.name, user1.name)
 
