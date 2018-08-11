@@ -9,5 +9,5 @@ before_script:
   - "psql -U postgres id < ./core/schema.sql"
 script:
   - "cd core && npm ci && npm test"
-  - "npm testdb && cd .."
+  - "npm run testdb && cd .."
   - "cd front && npm ci && npm run build && cd .."

@@ -20,13 +20,13 @@ export default class Groups {
     return result.rows[0].idx
   }
 
-  public async getByIdx(client: PoolClient, idx: number): Group {
+  public async getByIdx(client: PoolClient, idx: number): Promise<Group> {
     const query = 'SELECT * FROM groups WHERE idx = $1'
     const result = await client.query(query, [idx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
-    return rowToGroup(result.rows[0])
+    return this.rowToGroup(result.rows[0])
   }
 
   public async delete(client: PoolClient, groupIdx: number): Promise<number> {

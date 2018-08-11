@@ -3,7 +3,7 @@ import test from 'ava'
 import * as fs from 'fs'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
-import Config from '../../config'
+import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
@@ -17,7 +17,7 @@ const log = bunyan.createLogger({
 const model = new Model(config.postgresql, log)
 
 test('create and delete group', async t => {
-  await model.pgDo(c => {
+  await model.pgDo(c => async {
     const name: Translation = {
       ko: '도지',
       en: 'doge',
@@ -37,7 +37,7 @@ test('create and delete group', async t => {
     t.is(idx, deleteIdx)
 
     const shouldThrow = async () => {
-      await model.groups.getByIdx(idx)
+      await model.groups.getByIdx(c, idx)
     }
 
     t.throws(shouldThrow, NoSuchEntryError)
