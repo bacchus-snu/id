@@ -25,7 +25,8 @@
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
     "ldapjs": "^1.0.2",
-    "pg": "^7.4.3"
+    "pg": "^7.4.3",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.4",
@@ -33,6 +34,7 @@
     "@types/koa-bodyparser": "^5.0.1",
     "@types/koa-router": "^7.0.31",
     "@types/pg": "^7.4.10",
+    "@types/uuid": "^3.4.3",
     "ava": "^0.25.0",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2"

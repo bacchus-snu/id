@@ -29,7 +29,7 @@ export default class Users {
     return result.rows[0].idx
   }
 
-  public async delete(client: PoolClient, userIdx: string): Promise<number> {
+  public async delete(client: PoolClient, userIdx: number): Promise<number> {
     const query = 'DELETE FROM users WHERE idx = $1 RETURNING idx'
     const result = await client.query(query, [userIdx])
     if (result.rows.length === 0) {
