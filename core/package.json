@@ -33,7 +33,7 @@
     "@types/koa-bodyparser": "^5.0.1",
     "@types/koa-router": "^7.0.31",
     "@types/pg": "^7.4.10",
-    "ava": "^0.25.0",
+    "ava": "^1.0.0-beta.6",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2"
   }
