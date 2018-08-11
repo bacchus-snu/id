@@ -1,8 +1,14 @@
 drop table if exists shells cascade;
 drop table if exists users cascade;
 drop table if exists email_addresses cascade;
-drop table if exists snuid cascade;
+drop table if exists snuids cascade;
 drop table if exists reserved_usernames cascade;
+drop table if exists groups cascade;
+drop table if exists group_relations cascade;
+drop table if exists user_memberships cascade;
+drop table if exists permissions cascade;
+drop table if exists permission_requirements cascade;
+drop type if exists language cascade;
 
 -- Allowed shells to use
 create table shells (
@@ -10,6 +16,9 @@ create table shells (
 );
 
 insert into shells (shell) values ('/bin/bash');
+
+-- Language
+create type language as enum ('ko', 'en');
 
 -- Users (accounts)
 create table users (
@@ -25,7 +34,10 @@ create table users (
 
   -- posixAccount
   uid integer unique,
-  shell text not null references shells(shell)
+  shell text not null references shells(shell),
+
+  -- Language preference
+  preferred_language language not null
 
   -- primary_email_address_idx integer not null unique references email_addresses(email_address_idx)
 );
@@ -52,4 +64,42 @@ create table snuids (
 create table reserved_usernames (
   reserved_username text primary key check (reserved_username <> ''),
   owner_idx integer references users(user_idx) on delete set null
+);
+
+create table groups (
+  group_idx serial primary key,
+  name_ko text not null check (name_ko <> ''),
+  name_en text not null check (name_en <> ''),
+  description_ko text not null check (description_ko <> ''),
+  description_en text not null check (description_en <> '')
+);
+
+-- OR relationship for groups.
+create table group_relations (
+  group_relation_idx serial primary key,
+  supergroup_idx integer not null references groups(group_idx) on delete cascade,
+  subgroup_idx integer not null references groups(group_idx) on delete cascade,
+  unique (supergroup_idx, subgroup_idx)
+);
+
+create table user_memberships (
+  user_membership_idx serial primary key,
+  user_idx integer not null references users(user_idx) on delete cascade,
+  group_idx integer not null references groups(group_idx) on delete cascade,
+  unique (user_idx, group_idx)
+);
+
+create table permissions (
+  permission_idx serial primary key,
+  name_ko text not null check (name_ko <> ''),
+  name_en text not null check (name_en <> ''),
+  description_ko text not null check (description_ko <> ''),
+  description_en text not null check (description_en <> '')
+);
+
+create table permission_requirements (
+  permission_requirement_idx serial primary key,
+  group_idx integer not null references groups(group_idx) on delete cascade,
+  permission_idx integer not null references permissions(permission_idx) on delete cascade,
+  unique (group_idx, permission_idx)
 );

@@ -1,12 +1,14 @@
 import * as pg from 'pg'
 import Users from './users'
 import EmailAddresses from './email_addresses'
+import Groups from './groups'
 import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 
 export default class Model {
   public readonly users: Users
   public readonly emailAddresses: EmailAddresses
+  public readonly groups: Groups
 
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
@@ -17,6 +19,7 @@ export default class Model {
 
     this.users = new Users(this)
     this.emailAddresses = new EmailAddresses(this)
+    this.groups = new Groups(this)
   }
 
   public async pgDo<T>(query: (client: pg.PoolClient) => Promise<T>): Promise<T> {

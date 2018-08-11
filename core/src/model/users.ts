@@ -3,12 +3,16 @@ import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError } from './errors'
 import * as argon2 from 'argon2'
 
+// see language enum in schema.sql
+export type Language = 'ko' | 'en'
+
 export interface User {
   user_idx: number
   username: string | null
   name: string
   uid: number | null
   shell: string
+  preferred_language: Language
 }
 
 export default class Users {
@@ -28,6 +32,9 @@ export default class Users {
   public async delete(client: PoolClient, userIdx: string): Promise<number> {
     const query = 'DELETE FROM users WHERE user_idx = $1 RETURNING user_idx'
     const result = await client.query(query, [userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].user_idx
   }
 
@@ -82,6 +89,21 @@ export default class Users {
       [newUid, userIdx])
   }
 
+  public async addUserMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'INSERT INTO user_memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING user_membership_idx'
+    const result = await client.query(query, [userIdx, groupIdx])
+    return result.rows[0].user_membership_idx
+  }
+
+  public async deleteUserMembership(client: PoolClient, userMembershipIdx: number): Promise<number> {
+    const query = 'DELETE FROM user_memberships WHERE user_membership_idx = $1 RETURNING user_membership_idx'
+    const result = await client.query(query, [userMembershipIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].user_membership_idx
+  }
+
   private rowToUser(row: any): User {
     return {
       user_idx: row.user_idx,
@@ -89,6 +111,7 @@ export default class Users {
       name: row.name,
       uid: row.uid,
       shell: row.shell,
+      preferred_language: row.preferred_language,
     }
   }
 }
