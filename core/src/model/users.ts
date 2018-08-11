@@ -57,7 +57,7 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
-  public async authenticate(client: PoolClient, username: string, password: string): Promise<User> {
+  public async authenticate(client: PoolClient, username: string, password: string): Promise<void> {
     const query = 'SELECT user_idx, password_digest FROM users WHERE username = $1'
     const result = await client.query(query, [username])
     if (result.rows.length !== 1) {
@@ -69,8 +69,6 @@ export default class Users {
     if (!await argon2.verify(passwordDigest, password)) {
       throw new AuthenticationError()
     }
-
-    return true
   }
 
   public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<void> {
