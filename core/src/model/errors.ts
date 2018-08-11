@@ -16,3 +16,9 @@ export class NoSuchEntryError extends ControllableError {
     super('No such entry')
   }
 }
+
+export class AuthenticationError extends ControllableError {
+  constructor() {
+    super('Authencation fail')
+  }
+}
