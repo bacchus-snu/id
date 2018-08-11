@@ -11,8 +11,20 @@ export interface Group {
   description: Translation
 }
 
+interface GroupReachable {
+  [groupIdx: number]: Array<number>
+}
+
+export interface GroupRelation {
+  supergroupIdx: number
+  subgroupIdx: number
+}
+
 export default class Groups {
+  private reachableGroupCache: GroupReachable
+
   constructor(private readonly model: Model) {
+    this.reachableGroupCache = {}
   }
 
   public async create(client: PoolClient, name: Translation, description: Translation): Promise<number> {
@@ -20,6 +32,40 @@ export default class Groups {
       'description_en) VALUES ($1, $2, $3, $4) RETURNING idx'
     const result = await client.query(query, [name.ko, name.en, description.ko, description.en])
     return result.rows[0].idx
+  }
+
+  public async getAllIdx(client: PoolClient): Promise<Array<number>> {
+    const query = 'SELECT idx FROM groups'
+    const result = await client.query(query)
+
+    return result.rows.map(row => row.idx)
+  }
+
+  public async getReachableGroup(client: PoolClient): Promise<GroupReachable> {
+    let groupIdxArray: Array<number> = []
+    let groupRelationArray: Array<GroupRelation> = []
+    const groupReachable: GroupReachable = {}
+    const dp: GroupReachable = {}
+
+    groupIdxArray = await this.getAllIdx(client)
+    groupRelationArray = await this.getAllGroupRelation(client)
+
+    groupRelationArray.forEach(groupRelation => {
+      const si = groupRelation.supergroupIdx
+      if (!(si in groupReachable)) {
+        groupReachable[si] = []
+      }
+      // maybe can use Set?
+      if (!groupReachable[si].includes(groupRelation.subgroupIdx)) {
+        groupReachable[si].push(groupRelation.subgroupIdx)
+      }
+    })
+
+    groupIdxArray.forEach(gi => {
+      this.dfsGroup(gi, dp, groupReachable)
+    })
+
+    return dp
   }
 
   public async getByIdx(client: PoolClient, idx: number): Promise<Group> {
@@ -63,13 +109,35 @@ export default class Groups {
     return result.rows[0].idx
   }
 
-  public async deleteGroupRelation(client: PoolClient, groupRelationIdx: number) {
+  public async deleteGroupRelation(client: PoolClient, groupRelationIdx: number): Promise<number> {
     const query = 'DELETE FROM group_relations WHERE idx = $1 RETURNING idx'
     const result = await client.query(query, [groupRelationIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
+  }
+
+  public async getAllGroupRelation(client: PoolClient): Promise<Array<GroupRelation>> {
+    const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations'
+    const result = await client.query(query)
+    return result.rows.map(row => this.rowToGroupRelation(row))
+  }
+
+  private dfsGroup(groupIdx: number, dp: GroupReachable, groupReachable: GroupReachable): Array<number> {
+    if (groupIdx in dp) {
+      return dp[groupIdx]
+    }
+
+    const firstReachable: Array<number> = groupReachable[groupIdx]
+    const newReachable: Array<number> = []
+
+    firstReachable.forEach(gi => {
+      newReachable.concat(this.dfsGroup(gi, dp, groupReachable))
+    })
+
+    dp[groupIdx] = Array.from(new Set(newReachable.concat(firstReachable).concat([groupIdx])))
+    return dp[groupIdx]
   }
 
   private rowToGroup(row: any): Group {
@@ -85,6 +153,13 @@ export default class Groups {
         ko: row.description_ko,
         en: row.description_en,
       },
+    }
+  }
+
+  private rowToGroupRelation(row: any): GroupRelation {
+    return {
+      supergroupIdx: row.supergroup_idx,
+      subgroupIdx: row.subgroup_idx,
     }
   }
 }
