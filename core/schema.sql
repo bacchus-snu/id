@@ -9,6 +9,8 @@ create table shells (
   shell text primary key check (shell <> '')
 );
 
+insert into shells (shell) values ('/bin/bash');
+
 -- Users (accounts)
 create table users (
   user_idx serial primary key,
