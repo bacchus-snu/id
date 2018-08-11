@@ -70,9 +70,7 @@ export default class Users {
       throw new AuthenticationError()
     }
 
-    delete result.rows[0].password_digest
-
-    return this.rowToUser(result.rows[0])
+    return true
   }
 
   public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<void> {
