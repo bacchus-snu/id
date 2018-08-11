@@ -17,6 +17,9 @@ export default class Groups {
   public async delete(client: PoolClient, groupIdx: number): Promise<number> {
     const query = 'DELETE FROM groups WHERE group_idx = $1 RETURNING group_idx'
     const result = await client.query(query, [groupIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].group_idx
   }
 
@@ -30,6 +33,9 @@ export default class Groups {
   public async deleteGroupRelation(client: PoolClient, groupRelationIdx: number) {
     const query = 'DELETE FROM group_relations WHERE group_relation_idx = $1 RETURNING group_relation_idx'
     const result = await client.query(query, [groupRelationIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].group_relation_idx
   }
 }

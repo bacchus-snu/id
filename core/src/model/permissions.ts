@@ -17,6 +17,9 @@ export default class Permissions {
   public async delete(client: PoolClient, permissionIdx: number): Promise<number> {
     const query = 'DELETE FROM permissions WHERE permission_idx = $1 RETURNING permission_idx'
     const result = await client.query(query, [permissionIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].permission_idx
   }
 
@@ -32,6 +35,9 @@ export default class Permissions {
     const query = 'DELETE FROM permission_requirements ' +
       'WHERE permission_requirement_idx = $1 RETURNING permission_requirement_idx'
     const result = await client.query(query, [permissionRequirementIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
     return result.rows[0].permission_requirement_idx
   }
 }
