@@ -44,25 +44,26 @@ export default class Groups {
   public async getReachableGroup(client: PoolClient): Promise<GroupReachable> {
     let groupIdxArray: Array<number> = []
     let groupRelationArray: Array<GroupRelation> = []
-    const groupReachable: GroupReachable = {}
+    const firstGroupReachable: GroupReachable = {}
     const dp: GroupReachable = {}
 
     groupIdxArray = await this.getAllIdx(client)
     groupRelationArray = await this.getAllGroupRelation(client)
 
+    groupIdxArray.forEach(groupIdx => {
+      firstGroupReachable[groupIdx] = []
+    })
+
     groupRelationArray.forEach(groupRelation => {
       const si = groupRelation.supergroupIdx
-      if (!(si in groupReachable)) {
-        groupReachable[si] = []
-      }
       // maybe can use Set?
-      if (!groupReachable[si].includes(groupRelation.subgroupIdx)) {
-        groupReachable[si].push(groupRelation.subgroupIdx)
+      if (!firstGroupReachable[si].includes(groupRelation.subgroupIdx)) {
+        firstGroupReachable[si].push(groupRelation.subgroupIdx)
       }
     })
 
     groupIdxArray.forEach(gi => {
-      this.dfsGroup(gi, dp, groupReachable)
+      this.dfsGroup(gi, dp, firstGroupReachable)
     })
 
     return dp
@@ -124,19 +125,22 @@ export default class Groups {
     return result.rows.map(row => this.rowToGroupRelation(row))
   }
 
-  private dfsGroup(groupIdx: number, dp: GroupReachable, groupReachable: GroupReachable): Array<number> {
+  private dfsGroup(groupIdx: number, dp: GroupReachable, firstGroupReachable: GroupReachable): Array<number> {
     if (groupIdx in dp) {
       return dp[groupIdx]
     }
 
-    const firstReachable: Array<number> = groupReachable[groupIdx]
-    const newReachable: Array<number> = []
+    const firstReachable: Array<number> = firstGroupReachable[groupIdx]
+    let newReachable: Array<number> = []
 
     firstReachable.forEach(gi => {
-      newReachable.concat(this.dfsGroup(gi, dp, groupReachable))
+      newReachable = newReachable.concat(this.dfsGroup(gi, dp, firstGroupReachable))
     })
 
-    dp[groupIdx] = Array.from(new Set(newReachable.concat(firstReachable).concat([groupIdx])))
+    const indexSet = new Set(newReachable.concat(firstReachable))
+    indexSet.add(groupIdx)
+
+    dp[groupIdx] = Array.from(indexSet)
     return dp[groupIdx]
   }
 

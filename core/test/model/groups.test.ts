@@ -93,8 +93,8 @@ test('get reachable group object', async t => {
 
     const result = await model.groups.getReachableGroup(c)
 
-    t.deepEqual(result[g[0]], [g[0], g[1], g[2], g[3], g[4]])
-    t.deepEqual(result[g[1]], [g[1], g[3], g[4]])
+    t.deepEqual(result[g[0]].sort(), [g[0], g[1], g[2], g[3], g[4]].sort())
+    t.deepEqual(result[g[1]].sort(), [g[1], g[3], g[4]].sort())
     t.deepEqual(result[g[2]], [g[2]])
     t.deepEqual(result[g[3]], [g[3]])
     t.deepEqual(result[g[4]], [g[4]])
