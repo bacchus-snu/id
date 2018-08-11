@@ -13,14 +13,13 @@ export default class EmailAddresses {
    * @return promise of the index of the new record
    */
   public async create(client: PoolClient, local: string, domain: string): Promise<number> {
-    const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2)' +
-      'RETURNING email_address_idx'
+    const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) RETURNING idx'
     const result = await client.query(query, [local, domain])
-    return result.rows[0].email_address_idx
+    return result.rows[0].idx
   }
 
   public async validate(client: PoolClient, userIdx: number, emailAddressIdx: number): Promise<void> {
-    const query = 'UPDATE email_addresses SET owner_idx = $1 WHERE email_address_idx = $2'
+    const query = 'UPDATE email_addresses SET owner_idx = $1 WHERE idx = $2'
     await client.query(query, [userIdx, emailAddressIdx])
   }
 }
