@@ -7,6 +7,8 @@ import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
+import { createGroup, createUser } from '../test_utils'
+
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
 
 const log = bunyan.createLogger({
@@ -52,9 +54,8 @@ test('create and delete group', async t => {
 
 test('set owner user', async t => {
   await model.pgDo(async c => {
-    const groupIdx = await model.groups.create(c, name, description)
-    const mailIdx = await model.emailAddresses.create(c, 'mrdoge', 'dogeuniverse.com')
-    const userIdx = await model.users.create(c, 'MrDoge', 'SuperSecurePassword', '김도지', mailIdx, '/bin/bash', 'en')
+    const groupIdx = await createGroup(c, model)
+    const userIdx = await createUser(c, model)
 
     await model.groups.setOwnerUser(c, groupIdx, userIdx)
     t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, userIdx)
@@ -66,8 +67,8 @@ test('set owner user', async t => {
 
 test('set owner group', async t => {
   await model.pgDo(async c => {
-    const groupIdx = await model.groups.create(c, name, description)
-    const ownerGroupIdx = await model.groups.create(c, name, description)
+    const groupIdx = await createGroup(c, model)
+    const ownerGroupIdx = await createUser(c, model)
 
     await model.groups.setOwnerGroup(c, groupIdx, ownerGroupIdx)
     t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, ownerGroupIdx)
