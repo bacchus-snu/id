@@ -71,15 +71,15 @@ create table groups (
 -- OR relationship for groups.
 create table group_relations (
   group_relation_idx serial primary key,
-  supergroup_idx integer references groups(group_idx) on delete cascade,
-  subgroup_idx integer references groups(group_idx) on delete cascade,
+  supergroup_idx integer not null references groups(group_idx) on delete cascade,
+  subgroup_idx integer not null references groups(group_idx) on delete cascade,
   unique (supergroup_idx, subgroup_idx)
 );
 
 create table user_memberships (
   user_membership_idx serial primary key,
-  user_idx integer references users(user_idx) on delete cascade,
-  group_idx integer references groups(group_idx) on delete cascade,
+  user_idx integer not null references users(user_idx) on delete cascade,
+  group_idx integer not null references groups(group_idx) on delete cascade,
   unique (user_idx, group_idx)
 );
 
@@ -93,7 +93,7 @@ create table permissions (
 
 create table permission_requirements (
   permission_requirement_idx serial primary key,
-  group_idx integer references groups(group_idx) on delete cascade,
-  permission_idx integer references permissions(permission_idx) on delete cascade,
+  group_idx integer not null references groups(group_idx) on delete cascade,
+  permission_idx integer not null references permissions(permission_idx) on delete cascade,
   unique (group_idx, permission_idx)
 );
