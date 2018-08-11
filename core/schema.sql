@@ -8,6 +8,7 @@ drop table if exists group_relations cascade;
 drop table if exists user_memberships cascade;
 drop table if exists permissions cascade;
 drop table if exists permission_requirements cascade;
+drop type if exists language cascade;
 
 -- Allowed shells to use
 create table shells (
