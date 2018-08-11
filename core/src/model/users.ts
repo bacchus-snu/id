@@ -3,12 +3,16 @@ import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError } from './errors'
 import * as argon2 from 'argon2'
 
+// see language enum in schema.sql
+export type Language = 'ko' | 'en'
+
 export interface User {
   user_idx: number
   username: string | null
   name: string
   uid: number | null
   shell: string
+  preferred_language: Language
 }
 
 export default class Users {
@@ -89,6 +93,7 @@ export default class Users {
       name: row.name,
       uid: row.uid,
       shell: row.shell,
+      preferred_language: row.preferred_language
     }
   }
 }

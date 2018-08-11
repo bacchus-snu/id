@@ -11,6 +11,9 @@ create table shells (
 
 insert into shells (shell) values ('/bin/bash');
 
+-- Language
+create type language as enum ('ko', 'en');
+
 -- Users (accounts)
 create table users (
   user_idx serial primary key,
@@ -25,7 +28,10 @@ create table users (
 
   -- posixAccount
   uid integer unique,
-  shell text not null references shells(shell)
+  shell text not null references shells(shell),
+
+  -- Language preference
+  preferred_language language not null
 
   -- primary_email_address_idx integer not null unique references email_addresses(email_address_idx)
 );
