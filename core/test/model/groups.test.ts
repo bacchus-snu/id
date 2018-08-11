@@ -41,6 +41,6 @@ test('create and delete group', async t => {
       await model.groups.getByIdx(c, idx)
     }
 
-    await t.throwsAsync(shouldThrow, NoSuchEntryError)
+    t.throws(await shouldThrow, NoSuchEntryError)
   })
 })
