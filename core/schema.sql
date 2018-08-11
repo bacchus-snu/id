@@ -22,7 +22,7 @@ create type language as enum ('ko', 'en');
 
 -- Users (accounts)
 create table users (
-  user_idx serial primary key,
+  idx serial primary key,
 
   -- Account credentials
   -- An username being null means the username is being changed
@@ -39,35 +39,37 @@ create table users (
   -- Language preference
   preferred_language language not null
 
-  -- primary_email_address_idx integer not null unique references email_addresses(email_address_idx)
+  -- primary_email_address_idx integer not null unique references email_addresses(idx)
 );
 
 -- Email addresses
 create table email_addresses (
-  email_address_idx serial primary key,
+  idx serial primary key,
   -- An user_id being null means unverified email address
-  owner_idx integer references users(user_idx) on delete cascade,
+  owner_idx integer references users(idx) on delete cascade,
   address_local text not null check (address_local <> ''),
   address_domain text not null check (address_domain <> ''),
   unique(address_local, address_domain)
 );
 
-alter table users add column primary_email_address_idx integer not null unique references email_addresses(email_address_idx);
+alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);
 
 -- SNU IDs
 create table snuids (
-  snuid text primary key check (snuid <> ''),
-  owner_idx integer not null references users(user_idx) on delete cascade
+  idx serial primary key,
+  snuid text unique not null check (snuid <> ''),
+  owner_idx integer not null references users(idx) on delete cascade
 );
 
 -- Reserved usernames
 create table reserved_usernames (
-  reserved_username text primary key check (reserved_username <> ''),
-  owner_idx integer references users(user_idx) on delete set null
+  idx serial primary key,
+  reserved_username text unique not null check (reserved_username <> ''),
+  owner_idx integer references users(idx) on delete set null
 );
 
 create table groups (
-  group_idx serial primary key,
+  idx serial primary key,
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
   description_ko text not null check (description_ko <> ''),
@@ -76,21 +78,21 @@ create table groups (
 
 -- OR relationship for groups.
 create table group_relations (
-  group_relation_idx serial primary key,
-  supergroup_idx integer not null references groups(group_idx) on delete cascade,
-  subgroup_idx integer not null references groups(group_idx) on delete cascade,
+  idx serial primary key,
+  supergroup_idx integer not null references groups(idx) on delete cascade,
+  subgroup_idx integer not null references groups(idx) on delete cascade,
   unique (supergroup_idx, subgroup_idx)
 );
 
 create table user_memberships (
-  user_membership_idx serial primary key,
-  user_idx integer not null references users(user_idx) on delete cascade,
-  group_idx integer not null references groups(group_idx) on delete cascade,
+  idx serial primary key,
+  user_idx integer not null references users(idx) on delete cascade,
+  group_idx integer not null references groups(idx) on delete cascade,
   unique (user_idx, group_idx)
 );
 
 create table permissions (
-  permission_idx serial primary key,
+  idx serial primary key,
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
   description_ko text not null check (description_ko <> ''),
@@ -98,8 +100,8 @@ create table permissions (
 );
 
 create table permission_requirements (
-  permission_requirement_idx serial primary key,
-  group_idx integer not null references groups(group_idx) on delete cascade,
-  permission_idx integer not null references permissions(permission_idx) on delete cascade,
+  idx serial primary key,
+  group_idx integer not null references groups(idx) on delete cascade,
+  permission_idx integer not null references permissions(idx) on delete cascade,
   unique (group_idx, permission_idx)
 );
