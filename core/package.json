@@ -6,7 +6,7 @@
     "build": "rm -rf ./dist && tsc",
     "lint": "tslint --project ./tsconfig.json",
     "start": "node dist/index.js",
-    "test": "npm run lint && npm run build"
+    "test": "npm run lint && npm run build && ava --color --verbose"
   },
   "repository": {
     "type": "git",
