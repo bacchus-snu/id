@@ -86,6 +86,18 @@ export default class Users {
       [newUid, userIdx])
   }
 
+  public async addMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'INSERT INTO memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING membership_idx'
+    const result = await client.query(query, [userIdx, groupIdx])
+    return result.rows[0].membership_idx
+  }
+
+  public async deleteMembership(client: PoolClient, membershipIdx: number): Promise<number> {
+    const query = 'DELETE FROM memberships WHERE membership_idx = $1 RETURNING membership_idx'
+    const result = await client.query(query, [membershipIdx])
+    return result.rows[0].membership_idx
+  }
+
   private rowToUser(row: any): User {
     return {
       user_idx: row.user_idx,
@@ -93,7 +105,7 @@ export default class Users {
       name: row.name,
       uid: row.uid,
       shell: row.shell,
-      preferred_language: row.preferred_language
+      preferred_language: row.preferred_language,
     }
   }
 }
