@@ -76,7 +76,7 @@ export default class Groups {
     return {
       idx: row.idx,
       ownerUserIdx: row.owner_user_idx,
-      ownerGroupIdx: row.owner_gropu_idx,
+      ownerGroupIdx: row.owner_group_idx,
       name: {
         ko: row.name_ko,
         en: row.name_en,
