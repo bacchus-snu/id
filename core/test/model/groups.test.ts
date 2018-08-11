@@ -37,10 +37,14 @@ test('create and delete group', async t => {
     const deleteIdx = await model.groups.delete(c, idx)
     t.is(idx, deleteIdx)
 
-    const shouldThrow = async () => {
+    try {
       await model.groups.getByIdx(c, idx)
+    } catch (e) {
+      if (e instanceof NoSuchEntryError) {
+        return
+      }
     }
 
-    t.throws(await shouldThrow, NoSuchEntryError)
+    t.fail()
   })
 })
