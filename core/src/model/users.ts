@@ -119,18 +119,18 @@ export default class Users {
     return result.rows.map(row => this.rowToUserMembership(row))
   }
 
-  public async getUserReachableGroups(client: PoolClient, userIdx: number): Promise<Array<number>> {
-    const reachableGroups = await this.model.groups.getReachableGroup(client)
+  public async getUserReachableGroups(client: PoolClient, userIdx: number): Promise<Set<number>> {
     const userMemberships = await this.getAllUserMemberships(client, userIdx)
-    const groupSet = new Set()
+    const groupSet = new Set<number>()
 
-    userMemberships.forEach(userMembership => {
-      reachableGroups[userMembership.groupIdx].forEach(gi => {
+    for (const userMembership of userMemberships) {
+      const reachableGroups = await this.model.groups.getGroupReachableArray(client, userMembership.groupIdx)
+      reachableGroups.forEach(gi => {
         groupSet.add(gi)
       })
-    })
+    }
 
-    return Array.from(groupSet)
+    return groupSet
   }
 
   private rowToUser(row: any): User {

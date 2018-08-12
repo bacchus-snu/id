@@ -91,12 +91,21 @@ test('get reachable group object', async t => {
     await createGroupRelation(c, model, g[1], g[3])
     await createGroupRelation(c, model, g[1], g[4])
 
-    const result = await model.groups.getReachableGroup(c)
+    let result: Array<number> = []
 
-    t.deepEqual(result[g[0]].sort(), [g[0], g[1], g[2], g[3], g[4]].sort())
-    t.deepEqual(result[g[1]].sort(), [g[1], g[3], g[4]].sort())
-    t.deepEqual(result[g[2]], [g[2]])
-    t.deepEqual(result[g[3]], [g[3]])
-    t.deepEqual(result[g[4]], [g[4]])
+    result = await model.groups.getGroupReachableArray(c, g[0])
+    t.deepEqual(result.sort(), [g[0], g[1], g[2], g[3], g[4]].sort())
+
+    result = await model.groups.getGroupReachableArray(c, g[1])
+    t.deepEqual(result.sort(), [g[1], g[3], g[4]].sort())
+
+    result = await model.groups.getGroupReachableArray(c, g[2])
+    t.deepEqual(result, [g[2]])
+
+    result = await model.groups.getGroupReachableArray(c, g[3])
+    t.deepEqual(result, [g[3]])
+
+    result = await model.groups.getGroupReachableArray(c, g[4])
+    t.deepEqual(result, [g[4]])
   })
 })

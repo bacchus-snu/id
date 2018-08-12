@@ -47,7 +47,7 @@ export default class Permissions {
   }
 
   public async checkUserHavePermission(client: PoolClient, userIdx: number, permissionIdx: number): Promise<boolean> {
-    const userReachableGroups = await this.model.users.getUserReachableGroups(client, userIdx)
+    const userReachableGroups = Array.from(await this.model.users.getUserReachableGroups(client, userIdx))
     const permissionRequirements = await this.getAllPermissionRequirements(client, permissionIdx)
 
     for (const pr of permissionRequirements) {
