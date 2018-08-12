@@ -5,6 +5,7 @@ drop table if exists snuids cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;
 drop table if exists group_relations cascade;
+drop table if exists group_reachable_cache cascade;
 drop table if exists user_memberships cascade;
 drop table if exists permissions cascade;
 drop table if exists permission_requirements cascade;
@@ -81,6 +82,14 @@ create table groups (
 
 -- OR relationship for groups.
 create table group_relations (
+  idx serial primary key,
+  supergroup_idx integer not null references groups(idx) on delete cascade,
+  subgroup_idx integer not null references groups(idx) on delete cascade,
+  unique (supergroup_idx, subgroup_idx)
+);
+
+-- Cache for reachable group relation for a group
+create table group_reachable_cache (
   idx serial primary key,
   supergroup_idx integer not null references groups(idx) on delete cascade,
   subgroup_idx integer not null references groups(idx) on delete cascade,
