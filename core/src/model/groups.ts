@@ -15,7 +15,7 @@ interface GroupReachable {
   [groupIdx: number]: Array<number>
 }
 
-export interface GroupRelation {
+export interface GroupRelationship {
   supergroupIdx: number
   subgroupIdx: number
 }
@@ -91,7 +91,7 @@ export default class Groups {
     return result.rows[0].idx
   }
 
-  private async getAllGroupRelation(client: PoolClient): Promise<Array<GroupRelation>> {
+  private async getAllGroupRelation(client: PoolClient): Promise<Array<GroupRelationship>> {
     const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations'
     const result = await client.query(query)
     return result.rows.map(row => this.rowToGroupRelation(row))
@@ -125,7 +125,7 @@ export default class Groups {
 
   private async updateGroupReachableCache(client: PoolClient): Promise<void> {
     let groupIdxArray: Array<number> = []
-    let groupRelationArray: Array<GroupRelation> = []
+    let groupRelationArray: Array<GroupRelationship> = []
     const firstGroupReachable: GroupReachable = {}
     const cache: GroupReachable = {}
 
@@ -177,7 +177,7 @@ export default class Groups {
     }
   }
 
-  private rowToGroupRelation(row: any): GroupRelation {
+  private rowToGroupRelation(row: any): GroupRelationship {
     return {
       supergroupIdx: row.supergroup_idx,
       subgroupIdx: row.subgroup_idx,

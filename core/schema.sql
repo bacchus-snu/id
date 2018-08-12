@@ -90,7 +90,6 @@ create table group_relations (
 
 -- Cache for reachable group relation for a group
 create table group_reachable_cache (
-  idx serial primary key,
   supergroup_idx integer not null references groups(idx) on delete cascade,
   subgroup_idx integer not null references groups(idx) on delete cascade,
   unique (supergroup_idx, subgroup_idx)
