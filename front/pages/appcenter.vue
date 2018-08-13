@@ -1,20 +1,20 @@
 <template>
   <div>
-    <login-form/>
+    <app-center/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import LoginForm from '~/components/LoginForm.vue'
+import AppCenter from '~/components/AppCenter.vue'
 
 @Component({
   components: {
-    'login-form': LoginForm,
+    'app-center': AppCenter,
   }
 })
 
-export default class extends Vue {
+export default class appcenter extends Vue {
 
 }
 </script>

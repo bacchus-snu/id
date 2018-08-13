@@ -1,20 +1,20 @@
 <template>
   <div>
-    <login-form/>
+    <user-admin-table/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import LoginForm from '~/components/LoginForm.vue'
+import UserAdminTable from '~/components/UserAdminTable.vue'
 
 @Component({
   components: {
-    'login-form': LoginForm,
+    'user-admin-table': UserAdminTable,
   }
 })
 
-export default class extends Vue {
+export default class admin extends Vue {
 
 }
 </script>
