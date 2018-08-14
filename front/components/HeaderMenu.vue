@@ -82,16 +82,6 @@ export default class HeaderMenu extends Vue {
 .limenu a:hover {
   background-color: #f2a43e;
 }
-.selmenu a {
-  display: block;
-  color: black;
-  font-size: 20px;
-  padding: 14px 16px;
-  text-decoration: none;
-  margin: 0 20px;
-  border-radius: 4px;
-  background-color: #f2a43e;
-}
 .lilink {
   float: left;
 }
