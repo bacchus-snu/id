@@ -1,6 +1,6 @@
 <template>
   <div>
-    <login-form/>
+    <login-form></login-form>
   </div>
 </template>
 

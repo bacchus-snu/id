@@ -5,9 +5,9 @@
       <li name="nav" class="isActive" @click="selectMenu(0)"><nuxt-link to="/">{{menuSel[1]}}</nuxt-link></li>
       <li name="nav" class="limenu" @click="selectMenu(1)"><nuxt-link to="/support">{{menuSel[2]}}</nuxt-link></li>
       <li name="nav" class="limenu" @click="selectMenu(2)"><nuxt-link to="/appcenter">{{menuSel[3]}}</nuxt-link></li>
-      <li class="lilink"><a href="http://cse.snu.ac.kr">{{menuSel[4]}}  <i class="el-icon-more-outline"></i></a></li>
-      <li class="lilink"><a href="http://bacchus.snucse.org">{{menuSel[5]}}  <i class="el-icon-more-outline"></i></a></li>
-      <li class="lilink" @click="selectMenu(3)"><nuxt-link to="/help">{{menuSel[6]}}  <i class="el-icon-question"></i></nuxt-link></li>
+      <li class="limenu lilink"><a href="http://cse.snu.ac.kr">{{menuSel[4]}}  <i class="el-icon-more-outline"></i></a></li>
+      <li class="limenu lilink"><a href="http://bacchus.snucse.org">{{menuSel[5]}}  <i class="el-icon-more-outline"></i></a></li>
+      <li class="limenu lilink" @click="selectMenu(3)"><nuxt-link to="/help">{{menuSel[6]}}  <i class="el-icon-question"></i></nuxt-link></li>
       <li class="libutton"><el-button class="button" type="primary" @click="changeLang"> {{menuSel[7]}}</el-button></li>
 	  </ul>	
   </div>
@@ -22,16 +22,19 @@ import { AxiosResponse } from 'axios'
 
 export default class HeaderMenu extends Vue {
 
-  public lang: string = this.$store.state.language
   private menuEng: Array<string> = ['SNUCSE','Account','Support','AppCenter','Dpt','Bacchus','help','한국어']
   private menuKor: Array<string> = ['스누씨','통합계정','실습지원','앱센터','학부','바쿠스','도움말','English']
   private menuSel: Array<string> = this.menuKor
-  private active: Array<boolean> = this.$store.state.menu
+  public active: Array<boolean> = this.$store.state.menu
 
   changeLang() {
     this.$store.commit('changeLang')
-    if (this.$store.state.language === 'ko') this.menuSel = this.menuKor
-    else this.menuSel = this.menuEng
+    if (this.$store.state.language === 'ko') {
+	  this.menuSel = this.menuKor
+	}
+    else {
+	  this.menuSel = this.menuEng
+	}
   }
 
   selectMenu(num) {
@@ -39,8 +42,12 @@ export default class HeaderMenu extends Vue {
     this.active = this.$store.state.menu
     var navs = document.getElementsByName("nav")
     for (var i=0; i<this.active.length-1; i++){
-      if (this.active[i]==true) navs[i].className = "isActive"
-      else navs[i].className = "limenu"
+      if (this.active[i]==true) {
+		navs[i].className = "isActive"
+	  }
+      else {
+		navs[i].className = "limenu"
+	  }
     }
   }
 }
@@ -82,13 +89,8 @@ export default class HeaderMenu extends Vue {
 .limenu a:hover {
   background-color: #f2a43e;
 }
-.lilink {
-  float: left;
-}
 .lilink a {
   display: block;
-  text-align: center;
-  text-decoration: none;
   font-size: 16px;
   color: rgb(255, 123, 0);
   padding: 16px 16px;

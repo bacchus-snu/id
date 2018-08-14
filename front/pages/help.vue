@@ -1,6 +1,6 @@
 <template>
   <div>
-    <service-info/>
+    <service-info></service-info>
   </div>
 </template>
 

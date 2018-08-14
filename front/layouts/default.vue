@@ -2,7 +2,7 @@
   <div>
     <el-container>
       <el-header>
-        <header-menu/>
+        <header-menu></header-menu>
       </el-header>
       <el-main>
         <nuxt/>
@@ -13,11 +13,11 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import HeaderMenu from '~/components/HeaderMenu.vue'
+import TheHeading from '~/components/TheHeading.vue'
 
 @Component({
   components: {
-    'header-menu': HeaderMenu,
+    'the-heading': TheHeading,
   }
 })
 

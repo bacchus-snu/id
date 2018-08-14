@@ -1,6 +1,6 @@
 <template>
   <div>
-    <user-admin-table/>
+    <user-admin-table></user-admin-table>
   </div>
 </template>
 

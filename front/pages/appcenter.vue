@@ -1,6 +1,6 @@
 <template>
   <div>
-    <app-center/>
+    <app-center></app-center>
   </div>
 </template>
 

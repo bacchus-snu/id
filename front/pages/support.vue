@@ -1,6 +1,6 @@
 <template>
   <div>
-    <lab-support/>
+    <lab-support></lab-support>
   </div>
 </template>
 
