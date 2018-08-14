@@ -1,13 +1,9 @@
 <template>
   <div>
-    <el-container>
-      <el-header>
-        <header-menu></header-menu>
-      </el-header>
-      <el-main>
-        <nuxt/>
-      </el-main>
-    </el-container>
+    <the-heading></the-heading>
+    <div>
+      <nuxt/>
+    </div>
   </div>
 </template>
 

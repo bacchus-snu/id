@@ -9,7 +9,7 @@
       <el-input v-model="password" size="small"/>
     </el-form-item>
     <el-form-item>
-      <el-button class="button" type="primary" @click="onLogin"> {{menuSel[1]}} </el-button>
+      <el-button class="button" type="warning" @click="onLogin"> {{menuSel[1]}} </el-button>
     </el-form-item>
   </el-form>
   </div>
@@ -24,12 +24,13 @@ export default class LoginForm extends Vue {
 
   public username: string = ''
   public password: string = ''
-  private menuEng: Array<string> = ['Please login to manage your integrated account','Login']
+  private menuEng: Array<string> = ['Please login to manage your integrated account.','Login']
   private menuKor: Array<string> = ['통합 계정 관리를 위해 로그인하십시오.','로그인 ']
 
   get menuSel() {
     return (this.lang === 'ko') ? this.menuKor : this.menuEng
   }
+
   get lang() {
     return this.$store.state.language
   }
