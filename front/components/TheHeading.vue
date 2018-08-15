@@ -1,10 +1,12 @@
 <template>
   <div>
-    <el-row>
-    <el-col :span="16">
 	  <el-menu active-text-color="#ff7e05" mode="horizontal">
       <el-menu-item index="1" class="topnav alink">
-        <a href="http://www.snucse.org">{{menuSel[0]}}<i class="el-icon-more-outline"></i></a>
+        <a class="div-link" href="http://www.snucse.org">
+          <div>
+            {{menuSel[0]}}<i class="el-icon-more-outline"></i>
+          </div>
+        </a>
       </el-menu-item>
       <el-menu-item index="2" class="topnav">
         <nuxt-link to="/">{{menuSel[1]}}</nuxt-link>
@@ -16,20 +18,24 @@
         <nuxt-link to="/appcenter">{{menuSel[3]}}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="5" class="topnav alink">
-        <a href="http://cse.snu.ac.kr">{{menuSel[4]}}<i class="el-icon-more-outline"></i></a>
+        <a class="div-link" href="http://cse.snu.ac.kr">
+          <div>
+            {{menuSel[4]}}<i class="el-icon-more-outline"></i>
+          </div>
+        </a>
       </el-menu-item>
       <el-menu-item index="6" class="topnav alink">
-        <a href="http://bacchus.snucse.org">{{menuSel[5]}}<i class="el-icon-more-outline"></i></a>
+        <a class="div-link" href="http://bacchus.snucse.org">
+          <div>
+            {{menuSel[5]}}<i class="el-icon-more-outline"></i>
+          </div>
+        </a>
       </el-menu-item>
       <el-menu-item index="7" class="topnav alink">
         <nuxt-link to="/help">{{menuSel[6]}}<i class="el-icon-question"></i></nuxt-link>
       </el-menu-item> 
-	  </el-menu>	
-    </el-col>
-    <el-col :span="4" :offset="4">
       <el-button class="topbutton" type="warning" @click="changeLang">{{menuSel[7]}}</el-button>
-    </el-col>
-    </el-row>
+	  </el-menu>	
   </div>
 </template>
 
@@ -60,7 +66,7 @@ export default class TheHeading extends Vue {
 .topnav {
   color: black;
   font-size: 20px;
-  margin: 0px 4px;
+  margin: 0px 15px;
   display: block;
 }
 .topnav:hover:not(.active) {
@@ -76,8 +82,11 @@ export default class TheHeading extends Vue {
 }
 .topbutton {
   float: right;
-  margin: 10px;
+  margin: 4px 10px;
   font-size: 20px;
   color: black;
+}
+.div-link {
+  outline: 0;
 }
 </style>
