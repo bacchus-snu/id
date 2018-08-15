@@ -1,20 +1,20 @@
 <template>
   <div>
-    <login-form></login-form>
+    <lab-support></lab-support>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import LoginForm from '~/components/LoginForm.vue'
+import LabSupport from '~/components/LabSupport.vue'
 
 @Component({
   components: {
-    'login-form': LoginForm,
+    'lab-support': LabSupport,
   }
 })
 
-export default class extends Vue {
+export default class support extends Vue {
 
 }
 </script>
