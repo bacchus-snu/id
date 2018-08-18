@@ -26,7 +26,7 @@ export function login(model: Model): IMiddleware {
             ctx.session.username = username
           } else {
             ctx.status = 500
-            throw new ControllableError('session error')
+            throw new Error('session error')
           }
 
         } catch (e) {
@@ -43,6 +43,7 @@ export function login(model: Model): IMiddleware {
       return
     }
 
-    await next()
+    ctx.status = 200
+    return
   }
 }
