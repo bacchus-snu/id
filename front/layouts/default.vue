@@ -9,15 +9,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import TheHeading from '~/components/TheHeading.vue'
+import TheHeading from '~/components/TheHeading'
 
 @Component({
   components: {
     'the-heading': TheHeading,
-  }
+  },
 })
 
 export default class extends Vue {
-  
+
 }
 </script>

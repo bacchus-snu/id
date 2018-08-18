@@ -6,15 +6,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import LabSupport from '~/components/LabSupport.vue'
+import LabSupport from '~/components/LabSupport'
 
 @Component({
   components: {
     'lab-support': LabSupport,
-  }
+  },
 })
 
-export default class support extends Vue {
+export default class LabSupportPage extends Vue {
 
 }
 </script>

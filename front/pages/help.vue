@@ -6,15 +6,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import ServiceInfo from '~/components/ServiceInfo.vue'
+import ServiceInfo from '~/components/ServiceInfo'
 
 @Component({
   components: {
     'service-info': ServiceInfo,
-  }
+  },
 })
 
-export default class help extends Vue {
+export default class HelpPage extends Vue {
 
 }
 </script>

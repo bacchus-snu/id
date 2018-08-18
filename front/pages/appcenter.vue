@@ -6,15 +6,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import AppCenter from '~/components/AppCenter.vue'
+import AppCenter from '~/components/AppCenter'
 
 @Component({
   components: {
     'app-center': AppCenter,
-  }
+  },
 })
 
-export default class appcenter extends Vue {
+export default class AppCenterPage extends Vue {
 
 }
 </script>

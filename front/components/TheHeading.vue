@@ -2,40 +2,40 @@
   <div>
 	  <el-menu active-text-color="#ff7e05" mode="horizontal">
       <el-menu-item index="1" class="topnav alink">
-        <a class="div-link" href="http://www.snucse.org">
+        <a class="div-link" href="https://www.snucse.org">
           <div>
-            {{menuSel[0]}}<i class="el-icon-more-outline"></i>
+            {{ menuSel[0] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="2" class="topnav">
-        <nuxt-link to="/">{{menuSel[1]}}</nuxt-link>
+        <nuxt-link to="/">{{ menuSel[1] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="3" class="topnav">
-        <nuxt-link to="/support">{{menuSel[2]}}</nuxt-link>
+        <nuxt-link to="/lab-support">{{ menuSel[2] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="4" class="topnav">
-        <nuxt-link to="/appcenter">{{menuSel[3]}}</nuxt-link>
+        <nuxt-link to="/appcenter">{{ menuSel[3] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="5" class="topnav alink">
-        <a class="div-link" href="http://cse.snu.ac.kr">
+        <a class="div-link" href="https://cse.snu.ac.kr">
           <div>
-            {{menuSel[4]}}<i class="el-icon-more-outline"></i>
+            {{ menuSel[4] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="6" class="topnav alink">
-        <a class="div-link" href="http://bacchus.snucse.org">
+        <a class="div-link" href="https://bacchus.snucse.org">
           <div>
-            {{menuSel[5]}}<i class="el-icon-more-outline"></i>
+            {{ menuSel[5] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="7" class="topnav alink">
-        <nuxt-link to="/help">{{menuSel[6]}}<i class="el-icon-question"></i></nuxt-link>
-      </el-menu-item> 
-      <el-button class="topbutton" type="warning" @click="changeLang">{{menuSel[7]}}</el-button>
-	  </el-menu>	
+        <nuxt-link to="/help">{{ menuSel[6] }}<i class="el-icon-question"></i></nuxt-link>
+      </el-menu-item>
+      <el-button class="topbutton" type="warning" @click="changeLang">{{ menuSel[7] }}</el-button>
+	  </el-menu>
   </div>
 </template>
 
@@ -46,16 +46,17 @@ import { Component, Vue} from 'nuxt-property-decorator'
 
 export default class TheHeading extends Vue {
 
-  private menuEng: Array<string> = ['SNUCSE','Account','Support','AppCenter','Dpt','Bacchus','help','한국어']
-  private menuKor: Array<string> = ['스누씨','통합계정','실습지원','앱센터','학부','바쿠스','도움말','English']
+  private menuEng: Array<string> =
+    ['SNUCSE', 'Account', 'Lab Support', 'AppCenter', 'Dpt', 'Bacchus', 'Help', '한국어']
+  private menuKor: Array<string> =
+    ['스누씨', '통합계정', '실습지원', '앱센터', '학부', '바쿠스', '도움말', 'English']
   private menuSel: Array<string> = this.menuKor
 
-  changeLang() {
+  public changeLang() {
     this.$store.commit('changeLang')
     if (this.$store.state.language === 'ko') {
       this.menuSel = this.menuKor
-    }
-    else {
+    } else {
       this.menuSel = this.menuEng
     }
   }
