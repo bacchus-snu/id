@@ -15,3 +15,4 @@ const test = async () => {
     await ps.unprepare()
   }
 }
+test().catch(e => console.log(e))
