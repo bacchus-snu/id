@@ -2,7 +2,7 @@
   <div>
 	  <el-menu active-text-color="#ff7e05" mode="horizontal">
       <el-menu-item index="1" class="topnav alink">
-        <a class="div-link" href="http://www.snucse.org">
+        <a class="div-link" href="https://www.snucse.org">
           <div>
             {{ menuSel[0] }}<i class="el-icon-more-outline"></i>
           </div>
@@ -18,14 +18,14 @@
         <nuxt-link to="/appcenter">{{ menuSel[3] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="5" class="topnav alink">
-        <a class="div-link" href="http://cse.snu.ac.kr">
+        <a class="div-link" href="https://cse.snu.ac.kr">
           <div>
             {{ menuSel[4] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="6" class="topnav alink">
-        <a class="div-link" href="http://bacchus.snucse.org">
+        <a class="div-link" href="https://bacchus.snucse.org">
           <div>
             {{ menuSel[5] }}<i class="el-icon-more-outline"></i>
           </div>
