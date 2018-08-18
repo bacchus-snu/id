@@ -12,7 +12,7 @@
         <nuxt-link to="/">{{ menuSel[1] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="3" class="topnav">
-        <nuxt-link to="/lab">{{ menuSel[2] }}</nuxt-link>
+        <nuxt-link to="/lab-support">{{ menuSel[2] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="4" class="topnav">
         <nuxt-link to="/appcenter">{{ menuSel[3] }}</nuxt-link>
@@ -47,7 +47,7 @@ import { Component, Vue} from 'nuxt-property-decorator'
 export default class TheHeading extends Vue {
 
   private menuEng: Array<string> =
-    ['SNUCSE', 'Account', 'Support', 'AppCenter', 'Dpt', 'Bacchus', 'help', '한국어']
+    ['SNUCSE', 'Account', 'Lab Support', 'AppCenter', 'Dpt', 'Bacchus', 'Help', '한국어']
   private menuKor: Array<string> =
     ['스누씨', '통합계정', '실습지원', '앱센터', '학부', '바쿠스', '도움말', 'English']
   private menuSel: Array<string> = this.menuKor
