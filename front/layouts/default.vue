@@ -14,10 +14,10 @@ import TheHeading from '~/components/TheHeading.vue'
 @Component({
   components: {
     'the-heading': TheHeading,
-  }
+  },
 })
 
 export default class extends Vue {
-  
+
 }
 </script>

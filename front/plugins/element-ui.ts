@@ -1,4 +1,4 @@
-import Vue from 'vue';
-import Element from 'element-ui';
+import Vue from 'vue'
+import Element from 'element-ui'
 
-Vue.use(Element);
+Vue.use(Element)

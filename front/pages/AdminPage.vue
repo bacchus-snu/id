@@ -11,10 +11,10 @@ import UserAdminTable from '~/components/UserAdminTable.vue'
 @Component({
   components: {
     'user-admin-table': UserAdminTable,
-  }
+  },
 })
 
-export default class admin extends Vue {
+export default class AdminPage extends Vue {
 
 }
 </script>

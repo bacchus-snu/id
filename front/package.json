@@ -17,7 +17,7 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "lint": "./node_modules/.bin/wotan -p tsconfig.json -c tslint.json"
+    "lint": "./node_modules/.bin/wotan -e '**/*.js' -e '**/*.d.ts' -p tsconfig.json -c tslint.json"
   },
   "devDependencies": {
     "@fimbul/valtyr": "^0.12.0",

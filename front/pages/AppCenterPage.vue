@@ -11,10 +11,10 @@ import AppCenter from '~/components/AppCenter.vue'
 @Component({
   components: {
     'app-center': AppCenter,
-  }
+  },
 })
 
-export default class appcenter extends Vue {
+export default class AppCenterPage extends Vue {
 
 }
 </script>

@@ -11,10 +11,10 @@ import ServiceInfo from '~/components/ServiceInfo.vue'
 @Component({
   components: {
     'service-info': ServiceInfo,
-  }
+  },
 })
 
-export default class help extends Vue {
+export default class HelpPage extends Vue {
 
 }
 </script>

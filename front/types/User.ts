@@ -11,5 +11,5 @@ export const userFields = [
   'username',
   'name',
   'shell',
-  'uid'
+  'uid',
 ]

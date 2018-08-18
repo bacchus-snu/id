@@ -11,10 +11,10 @@ import LoginForm from '~/components/LoginForm.vue'
 @Component({
   components: {
     'login-form': LoginForm,
-  }
+  },
 })
 
-export default class extends Vue {
+export default class IndexPage extends Vue {
 
 }
 </script>

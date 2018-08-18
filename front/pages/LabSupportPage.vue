@@ -11,10 +11,10 @@ import LabSupport from '~/components/LabSupport.vue'
 @Component({
   components: {
     'lab-support': LabSupport,
-  }
+  },
 })
 
-export default class support extends Vue {
+export default class LabSupportPage extends Vue {
 
 }
 </script>
