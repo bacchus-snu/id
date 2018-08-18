@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import TheHeading from '~/components/TheHeading.vue'
+import TheHeading from '~/components/TheHeading'
 
 @Component({
   components: {

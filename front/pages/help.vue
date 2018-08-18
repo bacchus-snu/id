@@ -1,20 +1,20 @@
 <template>
   <div>
-    <app-center></app-center>
+    <service-info></service-info>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import AppCenter from '~/components/AppCenter.vue'
+import ServiceInfo from '~/components/ServiceInfo'
 
 @Component({
   components: {
-    'app-center': AppCenter,
+    'service-info': ServiceInfo,
   },
 })
 
-export default class AppCenterPage extends Vue {
+export default class HelpPage extends Vue {
 
 }
 </script>

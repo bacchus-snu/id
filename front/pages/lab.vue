@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import LabSupport from '~/components/LabSupport.vue'
+import LabSupport from '~/components/LabSupport'
 
 @Component({
   components: {

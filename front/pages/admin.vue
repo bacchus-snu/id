@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import UserAdminTable from '~/components/UserAdminTable.vue'
+import UserAdminTable from '~/components/UserAdminTable'
 
 @Component({
   components: {

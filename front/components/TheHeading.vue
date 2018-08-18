@@ -12,7 +12,7 @@
         <nuxt-link to="/">{{ menuSel[1] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="3" class="topnav">
-        <nuxt-link to="/support">{{ menuSel[2] }}</nuxt-link>
+        <nuxt-link to="/lab">{{ menuSel[2] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="4" class="topnav">
         <nuxt-link to="/appcenter">{{ menuSel[3] }}</nuxt-link>
