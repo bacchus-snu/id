@@ -1,6 +1,8 @@
 import * as Koa from 'koa'
 import * as Bunyan from 'bunyan'
 import * as bodyParser from 'koa-bodyparser'
+import * as Session from 'koa-session'
+
 import Model from '../model/model'
 import { createRouter } from './router'
 import Config from '../config'
@@ -10,6 +12,7 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
   const router = createRouter(model, config)
 
   app.use(bodyParser())
+  app.use(Session(config.session, app))
   app.on('error', e => {
     log.error('API error', e)
   })
