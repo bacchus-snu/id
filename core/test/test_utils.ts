@@ -26,6 +26,10 @@ export async function createGroup(c: PoolClient, model: Model): Promise<number> 
   return await model.groups.create(c, name, description)
 }
 
+export async function createGroupRelation(c: PoolClient, model: Model, supergroupIdx: number, subgroupIdx: number) {
+  return await model.groups.addGroupRelation(c, supergroupIdx, subgroupIdx)
+}
+
 export async function createPermission(c: PoolClient, model: Model): Promise<number> {
   const name = {
     ko: uuid(),

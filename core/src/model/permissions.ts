@@ -31,12 +31,30 @@ export default class Permissions {
     return result.rows[0].idx
   }
 
-  public async deletePermissionRequirement(client: PoolClient, permissionRequirementIdx: number): Promise<number> {
+  public async deletePermissionRequirement(client: PoolClient, idx: number): Promise<number> {
     const query = 'DELETE FROM permission_requirements WHERE idx = $1 RETURNING idx'
-    const result = await client.query(query, [permissionRequirementIdx])
+    const result = await client.query(query, [idx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
+  }
+
+  public async getAllPermissionRequirements(client: PoolClient, idx: number): Promise<Array<number>> {
+    const query = 'SELECT group_idx FROM permission_requirements WHERE permission_idx = $1'
+    const result = await client.query(query, [idx])
+    return result.rows.map(row => row.group_idx)
+  }
+
+  public async checkUserHavePermission(client: PoolClient, userIdx: number, permissionIdx: number): Promise<boolean> {
+    const userReachableGroups = Array.from(await this.model.users.getUserReachableGroups(client, userIdx))
+    const permissionRequirements = await this.getAllPermissionRequirements(client, permissionIdx)
+
+    for (const pr of permissionRequirements) {
+      if (!userReachableGroups.includes(pr)) {
+        return false
+      }
+    }
+    return true
   }
 }

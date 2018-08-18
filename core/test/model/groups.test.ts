@@ -7,7 +7,7 @@ import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
-import { createGroup, createUser } from '../test_utils'
+import { createGroup, createUser, createGroupRelation } from '../test_utils'
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
 
@@ -75,5 +75,37 @@ test('set owner group', async t => {
 
     await model.groups.setOwnerGroup(c, groupIdx, null)
     t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, null)
+  })
+})
+
+test('get reachable group object', async t => {
+  await model.pgDo(async c => {
+    const g: Array<number> = []
+    const range: Array<number> = [...Array(5).keys()]
+    for (const _ of range) {
+      g.push(await createGroup(c, model))
+    }
+
+    await createGroupRelation(c, model, g[0], g[1])
+    await createGroupRelation(c, model, g[0], g[2])
+    await createGroupRelation(c, model, g[1], g[3])
+    await createGroupRelation(c, model, g[1], g[4])
+
+    let result: Array<number> = []
+
+    result = await model.groups.getGroupReachableArray(c, g[0])
+    t.deepEqual(result.sort(), [g[0], g[1], g[2], g[3], g[4]].sort())
+
+    result = await model.groups.getGroupReachableArray(c, g[1])
+    t.deepEqual(result.sort(), [g[1], g[3], g[4]].sort())
+
+    result = await model.groups.getGroupReachableArray(c, g[2])
+    t.deepEqual(result, [g[2]])
+
+    result = await model.groups.getGroupReachableArray(c, g[3])
+    t.deepEqual(result, [g[3]])
+
+    result = await model.groups.getGroupReachableArray(c, g[4])
+    t.deepEqual(result, [g[4]])
   })
 })
