@@ -6,5 +6,5 @@
     "password": "",
     "database": "id"
   },
-  mssql: "mssql://username:password@localhost/database"
+  "mssql": "mssql://username:password@localhost/database"
 }
