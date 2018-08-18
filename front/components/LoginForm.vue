@@ -1,15 +1,17 @@
 <template>
   <div class="login">
-  <h2> {{ menuSel[0] }} </h2>
+  <h2> {{ pleaseLoginTrans[lang] }} </h2>
   <el-form>
-    <el-form-item label="username">
-      <el-input v-model="username" size="small"/>
+    <el-form-item label="Username">
+      <el-input :disabled="isLoggingIn" v-model="username" size="small"/>
     </el-form-item>
-    <el-form-item label="password">
-      <el-input v-model="password" size="small"/>
+    <el-form-item label="Password">
+      <el-input :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
     </el-form-item>
     <el-form-item>
-      <el-button class="button" type="warning" @click="onLogin"> {{ menuSel[1] }} </el-button>
+      <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
+        {{ loginTrans[lang] }}
+      </el-button>
     </el-form-item>
   </el-form>
   </div>
@@ -19,29 +21,68 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
+import { Translation, Language } from '../assets/translate'
 
+@Component({
+
+})
 export default class LoginForm extends Vue {
 
-  public username: string = ''
-  public password: string = ''
-  private menuEng: Array<string> =
-    ['Please login to manage your integrated account.', 'Login']
-  private menuKor: Array<string> =
-    ['통합 계정 관리를 위해 로그인하십시오.', '로그인 ']
-
-  get menuSel() {
-    return (this.lang === 'ko') ? this.menuKor : this.menuEng
+  private username: string = ''
+  private password: string = ''
+  private isLoggingIn: boolean = false
+  private readonly pleaseLoginTrans: Translation = {
+    ko: '통합 계정 관리를 위해 로그인하십시오.',
+    en: 'Please login to manage your integrated account.',
+  }
+  private readonly loginTrans: Translation = {
+    ko: '로그인',
+    en: 'Sign in',
+  }
+  private readonly loginFieldErrorTrans: Translation = {
+    ko: '항목을 모두 입력해주세요.',
+    en: 'Please fill out all fields.',
+  }
+  private readonly loginFailedTrans: Translation = {
+    ko: '로그인에 실패했습니다.',
+    en: 'Failed to sign in.',
   }
 
-  get lang() {
+  get lang(): Language {
     return this.$store.state.language
   }
 
   public async onLogin() {
     if (!this.username || !this.password) {
-      this.$notify.error('Field error!')
+      this.$notify.error(this.loginFieldErrorTrans[this.lang])
       return
     }
+
+    if (this.isLoggingIn) {
+      return
+    }
+
+    this.isLoggingIn = true
+
+    const data = {
+      username: this.username,
+      password: this.password,
+    }
+
+    const response = await axios.post('/api/login', data, {
+      validateStatus: () => true,
+    })
+    this.isLoggingIn = false
+
+    if (response.status !== 200) {
+      this.$notify.error(this.loginFailedTrans[this.lang])
+      return
+    }
+
+    this.$store.commit('changeUsername', this.username)
+
+    this.username = ''
+    this.password = ''
   }
 
 }
