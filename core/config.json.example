@@ -14,7 +14,7 @@
     "listenPort": "50080"
   },
   "session": {
-    "key": "id:session",
+    "key": "id-session",
     "maxAge": 3600000,
     "signed": true,
     "rolling": false,
