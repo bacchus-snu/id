@@ -2,8 +2,6 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 
-import createAPIServer from '../../src/api/server'
-
 import * as fs from 'fs'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'

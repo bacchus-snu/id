@@ -13,7 +13,6 @@ import LoginForm from '~/components/LoginForm'
     'login-form': LoginForm,
   },
 })
-
 export default class IndexPage extends Vue {
 
 }
