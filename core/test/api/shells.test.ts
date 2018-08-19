@@ -1,5 +1,6 @@
 import test from 'ava'
 import * as request from 'supertest'
+import * as uuid from 'uuid/v4'
 
 import * as fs from 'fs'
 import Model from '../../src/model/model'
@@ -18,16 +19,15 @@ const model = new Model(config.postgresql, log)
 
 test('test getShells', async t => {
   let result
+  const newShell = uuid()
   await model.pgDo(async c => {
-    await model.shells.addShell(c, 'dogeshell')
+    await model.shells.addShell(c, newShell)
     result = await model.shells.getShells(c)
   })
 
   const agent = request.agent(app)
 
-  let response
-
-  response = await agent.get('/api/shells').send({})
+  const response = await agent.get('/api/shells').send({})
   t.is(response.status, 200)
-  t.true(response.body.shells.includes('dogeshell'))
+  t.true(response.body.shells.includes(newShell))
 })
