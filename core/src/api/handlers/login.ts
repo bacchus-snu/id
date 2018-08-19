@@ -40,10 +40,30 @@ export function login(model: Model): IMiddleware {
         }
       })
     } catch (e) {
+      ctx.session = null
       return
     }
 
     ctx.status = 200
     return
+  }
+}
+
+export function logout(): IMiddleware {
+  return async (ctx, next) => {
+    ctx.session = null
+    ctx.status = 200
+    await next()
+  }
+}
+
+export function checkLogin(): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      ctx.status = 200
+    } else {
+      ctx.status = 401
+    }
+    await next()
   }
 }
