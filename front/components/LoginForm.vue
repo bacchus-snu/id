@@ -21,7 +21,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
-import { Translation, Language } from '../assets/translate'
+import { Translation, Language } from '../types/translation'
 
 @Component({})
 export default class LoginForm extends Vue {

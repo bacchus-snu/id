@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { Translation, Language } from '../assets/translate'
+import { Translation, Language } from '../types/translation'
 
 @Component({})
 export default class TheHeading extends Vue {
