@@ -10,10 +10,19 @@
     </el-form-item>
     <el-form-item>
       <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
-        {{ loginTrans[lang] }}
+      {{ loginTrans[lang] }}
       </el-button>
+      <div>
+      {{ orTrans[lang] }}
+      <nuxt-link to="/sign-up">
+      <div class="signup">
+      {{ signupTrans[lang] }}
+      </div>
+      </nuxt-link>
+      </div>
     </el-form-item>
   </el-form>
+
   </div>
 </template>
 
@@ -44,6 +53,14 @@ export default class LoginForm extends Vue {
   private readonly loginFailedTrans: Translation = {
     ko: '로그인에 실패했습니다.',
     en: 'Failed to sign in.',
+  }
+  private readonly orTrans: Translation = {
+	  ko: '아직 계정이 없으신가요?',
+	  en: 'or',
+  }
+  private readonly signupTrans: Translation = {
+	  ko: '가입 신청하기',
+	  en: 'Sign up',
   }
 
   get lang(): Language {
@@ -113,5 +130,16 @@ export default class LoginForm extends Vue {
 
 .button:hover {
   background-color: #f2a43e;
+}
+
+.signup {
+  margin-left: 5px;
+  font-size: 16px;
+  color: #ff6105;
+  display: inline;
+}
+
+.signup:hover {
+  font-weight: bold;
 }
 </style>
