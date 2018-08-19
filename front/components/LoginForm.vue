@@ -23,9 +23,7 @@ import axios from 'axios'
 import { AxiosResponse } from 'axios'
 import { Translation, Language } from '../assets/translate'
 
-@Component({
-
-})
+@Component({})
 export default class LoginForm extends Vue {
 
   private username: string = ''
