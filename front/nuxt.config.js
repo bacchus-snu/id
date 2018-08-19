@@ -70,7 +70,13 @@ module.exports = {
     "@nuxtjs/axios",
     "~/modules/typescript.js"
   ],
+
+  proxy: {
+    '/api/': 'http://localhost:50080',
+  },
+
   axios: {
     // baseURL: 'http://id-dev.snucse.org:10101',
+    proxy: true,
   }
 }

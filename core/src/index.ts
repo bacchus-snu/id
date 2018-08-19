@@ -18,8 +18,19 @@ const model = new Model({
   password: config.postgresql.password,
   port: config.postgresql.port,
 }, log)
-const ldapServer = createLDAPServer({log}, model, config)
-ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
-  () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
+if (!process.env.TEST_API) {
+  const ldapServer = createLDAPServer({log}, model, config)
+  ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
+    () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
+} else {
+  const createTestUser = async () => {
+    await model.pgDo(async c => {
+      const emailIdx = await model.emailAddresses.create(c, 'doge', 'wow.com')
+      await model.users.create(c, 'bacchus', 'passwd', 'Bacchus', emailIdx, '/bin/bash', 'en')
+    })
+  }
+
+  createTestUser()
+}
 const apiServer = createAPIServer(log, model, config)
 apiServer.listen(config.api.listenPort, config.api.listenHost)
