@@ -1,6 +1,6 @@
 <template>
   <div>
-  실습 지원 
+  실습 지원
   </div>
 </template>
 
@@ -10,7 +10,6 @@ import axios from 'axios'
 import { AxiosResponse } from 'axios'
 
 @Component({})
-
 export default class LabSupport extends Vue {
 
 }

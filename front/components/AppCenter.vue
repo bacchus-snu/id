@@ -10,7 +10,6 @@ import axios from 'axios'
 import { AxiosResponse } from 'axios'
 
 @Component({})
-
 export default class AppCenter extends Vue {
 
 }

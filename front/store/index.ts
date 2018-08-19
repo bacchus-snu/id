@@ -1,5 +1,6 @@
 export const state = () => ({
   language: 'ko',
+  username: '',
 })
 
 export const mutations = {
@@ -9,5 +10,9 @@ export const mutations = {
     } else {
       state.language = 'ko'
     }
+  },
+
+  changeUsername(state, username: string) {
+    state.username = username
   },
 }

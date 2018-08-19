@@ -13,6 +13,13 @@
     "listenHost": "127.0.0.1",
     "listenPort": "50080"
   },
+  "session": {
+    "key": "id-session",
+    "maxAge": 3600000,
+    "signed": true,
+    "rolling": false,
+    "renew": true
+  },
   "posix": {
     "userGroupName": "cseusers",
     "userGroupGid": 101132,

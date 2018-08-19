@@ -68,7 +68,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
-import { User, userFields } from '~/types/User'
+import { User, userFields } from '~/types/user'
 
 @Component({})
 export default class UserAdminTable extends Vue {

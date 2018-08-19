@@ -25,7 +25,7 @@ module.exports = {
       `http://${host}:${port}`
   },
   head: {
-    title: "tt1",
+    title: "Bacchus ID",
     meta: [
       { charset: "utf-8" },
       {
@@ -36,7 +36,7 @@ module.exports = {
       {
         hid: "description",
         name: "description",
-        content: "Nuxt.js project"
+        content: "Identity management service for SNUCSE"
       }
     ],
     link: [

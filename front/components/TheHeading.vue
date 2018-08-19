@@ -4,61 +4,93 @@
       <el-menu-item index="1" class="topnav alink">
         <a class="div-link" href="https://www.snucse.org">
           <div>
-            {{ menuSel[0] }}<i class="el-icon-more-outline"></i>
+            {{ snucseTrans[lang] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="2" class="topnav">
-        <nuxt-link to="/">{{ menuSel[1] }}</nuxt-link>
+        <nuxt-link to="/">{{ accountTrans[lang] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="3" class="topnav">
-        <nuxt-link to="/lab-support">{{ menuSel[2] }}</nuxt-link>
+        <nuxt-link to="/lab-support">{{ labSupportTrans[lang] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="4" class="topnav">
-        <nuxt-link to="/appcenter">{{ menuSel[3] }}</nuxt-link>
+        <nuxt-link to="/appcenter">{{ appCenterTrans[lang] }}</nuxt-link>
       </el-menu-item>
       <el-menu-item index="5" class="topnav alink">
         <a class="div-link" href="https://cse.snu.ac.kr">
           <div>
-            {{ menuSel[4] }}<i class="el-icon-more-outline"></i>
+            {{ dptTrans[lang] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="6" class="topnav alink">
         <a class="div-link" href="https://bacchus.snucse.org">
           <div>
-            {{ menuSel[5] }}<i class="el-icon-more-outline"></i>
+            {{ bacchusTrans[lang] }}<i class="el-icon-more-outline"></i>
           </div>
         </a>
       </el-menu-item>
       <el-menu-item index="7" class="topnav alink">
-        <nuxt-link to="/help">{{ menuSel[6] }}<i class="el-icon-question"></i></nuxt-link>
+        <nuxt-link to="/help">{{ helpTrans[lang] }}<i class="el-icon-question"></i></nuxt-link>
       </el-menu-item>
-      <el-button class="topbutton" type="warning" @click="changeLang">{{ menuSel[7] }}</el-button>
+      <el-button class="topbutton" type="warning" @click="changeLang">{{ langTrans[lang] }}</el-button>
 	  </el-menu>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue} from 'nuxt-property-decorator'
+import { Component, Vue } from 'nuxt-property-decorator'
+import { Translation, Language } from '../types/translation'
 
 @Component({})
-
 export default class TheHeading extends Vue {
+  private readonly snucseTrans: Translation = {
+    ko: '스누씨',
+    en: 'SNUCSE',
+  }
 
-  private menuEng: Array<string> =
-    ['SNUCSE', 'Account', 'Lab Support', 'AppCenter', 'Dpt', 'Bacchus', 'Help', '한국어']
-  private menuKor: Array<string> =
-    ['스누씨', '통합계정', '실습지원', '앱센터', '학부', '바쿠스', '도움말', 'English']
-  private menuSel: Array<string> = this.menuKor
+  private readonly accountTrans: Translation = {
+    ko: '통합계정',
+    en: 'Account',
+  }
+
+  private readonly labSupportTrans: Translation = {
+    ko: '실습지원',
+    en: 'Lab Support',
+  }
+
+  private readonly appCenterTrans: Translation = {
+    ko: '앱센터',
+    en: 'AppCenter',
+  }
+
+  private readonly dptTrans: Translation = {
+    ko: '학부',
+    en: 'Dpt',
+  }
+
+  private readonly bacchusTrans: Translation = {
+    ko: '바쿠스',
+    en: 'Bacchus',
+  }
+
+  private readonly helpTrans: Translation = {
+    ko: '도움말',
+    en: 'Help',
+  }
+
+  private readonly langTrans: Translation = {
+    ko: 'English',
+    en: '한국어',
+  }
 
   public changeLang() {
     this.$store.commit('changeLang')
-    if (this.$store.state.language === 'ko') {
-      this.menuSel = this.menuKor
-    } else {
-      this.menuSel = this.menuEng
-    }
+  }
+
+  get lang(): Language {
+    return this.$store.state.language
   }
 }
 </script>
