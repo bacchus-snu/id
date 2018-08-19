@@ -37,8 +37,22 @@ import { Account } from '~/types/account'
 
 @Component({})
 export default class SignUpForm extends Vue {
+  @Provide()
+  public models: Account = {
+    name: '',
+    username: '',
+    password: '',
+    pwdcheck: '',
+    email: '',
+    shell: '',
+  }
+
+  public $refs!: {
+    'signupForm': HTMLElement,
+  }
+
   @Prop()
-  private readonly shellList: Array<string> 
+  private readonly shellList: Array<string>
   private emailLocal: string = ''
   private emailDomain: string = ''
   private readonly nameTrans: Translation = {
@@ -79,7 +93,7 @@ export default class SignUpForm extends Vue {
   }
   private readonly pwdErrorTrans: Translation = {
     ko: '비밀번호가 다릅니다',
-    en: 'The password does not match'
+    en: 'The password does not match',
   }
   private readonly emailErrorTrans: Translation = {
     ko: '유효한 이메일 주소를 입력해주세요',
@@ -87,104 +101,80 @@ export default class SignUpForm extends Vue {
   }
   private readonly lengthErrorTrans: Translation = {
     ko: '비밀번호는 최소 8자리여야 합니다',
-    en: 'The password should be at leat 8 characters'
+    en: 'The password should be at leat 8 characters',
   }
 
-  @Provide() 
-  rules = {
+  @Provide()
+  private rules = {
     name: [{
-      required: true, 
+      required: true,
       message: ' ',
-      trigger: 'blur' 
+      trigger: 'blur',
     }],
     username: [{
-      required: true, 
+      required: true,
       message: ' ',
-      trigger: 'blur' 
+      trigger: 'blur',
     }],
     password: [{
-      required: true, 
+      required: true,
       min: 8,
       message: this.lengthErrorTrans[this.lang],
-      trigger: 'blur' 
+      trigger: 'blur',
     }],
     pwdcheck: [{
       required: true,
       validator: this.validatePassword,
-      trigger: 'blur' 
+      trigger: 'blur',
     }],
     email: [{
-      required: true, 
+      required: true,
       validator: this.validateEmail,
-      trigger: 'blur' 
+      trigger: 'blur',
     }],
     shell: [{
-      required: true, 
+      required: true,
       message: ' ',
-      trigger: 'change' 
+      trigger: 'change',
     }],
-  }
-
-  @Provide() 
-  models: Account = {
-    name: '',
-    username: '',
-    password: '',
-    pwdcheck: '',
-    email: '',
-    shell: '',
   }
 
   get lang(): Language {
     return this.$store.state.language
   }
 
-  public $refs!: {
-    'signupForm': HTMLElement
-  }
-  
   public validatePassword(rule, value, callback) {
     if (value === '') {
-      callback(new Error(' '));
-    } 
-    else if (value !== this.models.password) {
-      callback(new Error(this.pwdErrorTrans[this.lang]));
-    } 
-    else {
-      callback();
+      callback(new Error(' '))
+    } else if (value !== this.models.password) {
+      callback(new Error(this.pwdErrorTrans[this.lang]))
+    } else {
+      callback()
     }
   }
 
   public validateEmail(rule, value, callback) {
     if (value === '') {
-      callback(new Error(' '));
-    } 
-    else if (value.split("@").length != 2) {
-      callback(new Error(this.emailErrorTrans[this.lang]));
-    } 
-    else {
-      var emailSplit = value.split("@")
+      callback(new Error(' '))
+    } else if (value.split('@').length !== 2) {
+      callback(new Error(this.emailErrorTrans[this.lang]))
+    } else {
+      const emailSplit = value.split('@')
       this.emailLocal = emailSplit[0]
       this.emailDomain = emailSplit[1]
-      callback();
+      callback()
     }
   }
 
   public submitForm(formName) {
-    this.$refs[formName].validate((valid) => {
+    this.$refs[formName].validate( valid => {
       if (valid) {
-        console.log(this.models.email.split("@").length)
-        if (this.models.password !== this.models.pwdcheck) {
-          this.$notify.error(this.pwdErrorTrans[this.lang])
-          return false;
-        }
         this.signUpAccount()
         this.$refs[formName].resetFields()
-      } 
-      else {
-        return false;
+      } else {
+        return false
       }
-    });
+    })
   }
 
   public async signUpAccount() {
@@ -200,8 +190,7 @@ export default class SignUpForm extends Vue {
     })
     if (response.status !== 201) {
       this.$notify.error(this.failTrans[this.lang])
-    }
-    else {
+    } else {
       this.$notify.success(this.successTrans[this.lang])
     }
     */

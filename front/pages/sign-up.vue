@@ -18,7 +18,7 @@ export default class SignUpPage extends Vue {
   private shellList: Array<string>
 
   private async asyncData() {
-    const result = await axios.get(process.env.baseUrl+'/api/shells')
+    const result = await axios.get(process.env.baseUrl + '/api/shells')
     return { shellList : result.data.shells }
   }
 

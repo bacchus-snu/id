@@ -55,12 +55,12 @@ export default class LoginForm extends Vue {
     en: 'Failed to sign in.',
   }
   private readonly orTrans: Translation = {
-	  ko: '아직 계정이 없으신가요?',
-	  en: 'or',
+    ko: '아직 계정이 없으신가요?',
+    en: 'or',
   }
   private readonly signupTrans: Translation = {
-	  ko: '가입 신청하기',
-	  en: 'Sign up',
+    ko: '가입 신청하기',
+    en: 'Sign up',
   }
 
   get lang(): Language {
