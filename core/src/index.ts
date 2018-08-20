@@ -23,6 +23,9 @@ if (!process.env.TEST_API) {
   ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
     () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
 } else {
+  /**
+   * This else block should be removed in production.
+   */
   const createTestUser = async () => {
     await model.pgDo(async c => {
       const emailIdx = await model.emailAddresses.create(c, 'doge', 'wow.com')
