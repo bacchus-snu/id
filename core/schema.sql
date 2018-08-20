@@ -39,7 +39,10 @@ create table users (
   shell text not null references shells(shell),
 
   -- Language preference
-  preferred_language language not null
+  preferred_language language not null,
+
+  -- Activated
+  activated boolean not null default false
 
   -- primary_email_address_idx integer not null unique references email_addresses(idx)
 );
