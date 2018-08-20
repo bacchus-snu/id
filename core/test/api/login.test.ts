@@ -29,6 +29,7 @@ test('test login with credential', async t => {
     const emailIdx = await createEmailAddress(c, model)
     userIdx = await model.users.create(
       c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.users.activate(c, userIdx)
   })
 
   const agent = request.agent(app)
@@ -59,6 +60,7 @@ test('test checkLogin', async t => {
     const emailIdx = await createEmailAddress(c, model)
     userIdx = await model.users.create(
       c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.users.activate(c, userIdx)
   })
 
   const agent = request.agent(app)

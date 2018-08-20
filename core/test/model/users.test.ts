@@ -5,7 +5,7 @@ import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
-import { NoSuchEntryError, AuthenticationError } from '../../src/model/errors'
+import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
 import { createEmailAddress, createUser, createGroup } from '../test_utils'
@@ -53,6 +53,7 @@ test('authenticate user', async t => {
     const password = uuid()
     const emailIdx = await createEmailAddress(c, model)
     const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.users.activate(c, userIdx)
 
     t.is(await model.users.authenticate(c, username, password), userIdx)
 
@@ -60,6 +61,27 @@ test('authenticate user', async t => {
       await model.users.authenticate(c, username, password + 'doge')
     } catch (e) {
       if (e instanceof AuthenticationError) {
+        return
+      }
+    }
+
+    t.fail()
+  })
+})
+
+test('reject not activated user', async t => {
+  await model.pgDo(async c => {
+    const username = uuid()
+    const password = uuid()
+    const emailIdx = await createEmailAddress(c, model)
+    const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.users.deactivate(c, userIdx)
+
+    try {
+      await model.users.authenticate(c, username, password)
+    } catch (e) {
+      if (e instanceof NotActivatedError) {
+        t.pass()
         return
       }
     }

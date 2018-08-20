@@ -1,6 +1,6 @@
 import Model from './model'
 import { PoolClient } from 'pg'
-import { NoSuchEntryError, AuthenticationError } from './errors'
+import { NoSuchEntryError, AuthenticationError, NotActivatedError } from './errors'
 import * as argon2 from 'argon2'
 
 // see language enum in schema.sql
@@ -70,10 +70,14 @@ export default class Users {
   }
 
   public async authenticate(client: PoolClient, username: string, password: string): Promise<number> {
-    const query = 'SELECT idx, password_digest FROM users WHERE username = $1'
+    const query = 'SELECT idx, password_digest, activated FROM users WHERE username = $1'
     const result = await client.query(query, [username])
-    if (result.rows.length !== 1) {
+    if (result.rows.length === 0) {
       throw new NoSuchEntryError()
+    }
+
+    if (!result.rows[0].activated) {
+      throw new NotActivatedError()
     }
 
     const passwordDigest = result.rows[0].password_digest
@@ -82,6 +86,16 @@ export default class Users {
     }
 
     return result.rows[0].idx
+  }
+
+  public async activate(client: PoolClient, userIdx: number): Promise<void> {
+    const query = 'UPDATE users SET activated = TRUE WHERE idx = $1'
+    const result = await client.query(query, [userIdx])
+  }
+
+  public async deactivate(client: PoolClient, userIdx: number): Promise<void> {
+    const query = 'UPDATE users SET activated = FALSE WHERE idx = $1'
+    const result = await client.query(query, [userIdx])
   }
 
   public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<void> {
