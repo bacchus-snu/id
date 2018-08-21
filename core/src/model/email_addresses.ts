@@ -35,7 +35,7 @@ export default class EmailAddresses {
 
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<number> {
     const query = 'INSERT INTO email_verification_token(email_idx, token, expires) VALUES ($1, $2, $3) RETURNING idx'
-    const token = crypto.randomBytes(16).toString('hex')
+    const token = crypto.randomBytes(32).toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
     return result.rows[0].idx
