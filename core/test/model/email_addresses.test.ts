@@ -36,6 +36,7 @@ test('generate verification token', async t => {
   await model.pgDo(async c => {
     const userIdx = await createUser(c, model)
     const emailAddressIdx = await createEmailAddress(c, model)
+    await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
 
     const query = 'SELECT * FROM email_verification_token WHERE email_idx = $1'
     const result = await c.query(query, [emailAddressIdx])
@@ -49,6 +50,7 @@ test('get email address by token', async t => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
 
     const tokenResult = await c.query('SELECT * FROM email_verification_token WHERE email_idx = $1', [emailAddressIdx])
     const token: string = tokenResult.rows[0].token

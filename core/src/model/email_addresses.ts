@@ -24,7 +24,6 @@ export default class EmailAddresses {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) RETURNING idx'
     const result = await client.query(query, [local, domain])
     const idx = result.rows[0].idx
-    await this.generateVerificationToken(client, idx)
     return idx
   }
 
@@ -33,12 +32,12 @@ export default class EmailAddresses {
     await client.query(query, [userIdx, emailAddressIdx])
   }
 
-  public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<number> {
-    const query = 'INSERT INTO email_verification_token(email_idx, token, expires) VALUES ($1, $2, $3) RETURNING idx'
+  public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
+    const query = 'INSERT INTO email_verification_token(email_idx, token, expires) VALUES ($1, $2, $3)'
     const token = crypto.randomBytes(32).toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
-    return result.rows[0].idx
+    return token
   }
 
   public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {

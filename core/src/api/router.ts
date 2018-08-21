@@ -3,6 +3,7 @@ import Model from '../model/model'
 import Config from '../config'
 import { login, logout, checkLogin } from './handlers/login'
 import { getUserList, createUser, deleteUser } from './handlers/users'
+import { sendVerificationEmail } from './handlers/emails'
 import { getShells } from './handlers/shells'
 
 export function createRouter(model: Model, config: Config): Router {
@@ -32,6 +33,13 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns shell: Array of string.
    */
   router.get('/api/shells', getShells(model))
+
+  /**
+   * Generate verification token and send sign up link.
+   * @param emailLocal email local.
+   * @param emailDomain email domain.
+   */
+  router.post('/api/email/verify', sendVerificationEmail(model))
 
   router.get('/api/user', getUserList(model))
   router.post('/api/user', createUser(model, config))
