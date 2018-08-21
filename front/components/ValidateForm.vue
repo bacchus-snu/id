@@ -39,17 +39,17 @@ export default class ValidateForm extends Vue {
     ko: '유효한 이메일 주소를 입력해주세요',
     en: 'Please input valid email address',
   }
-  private readonly sendTrans : Translation = {
+  private readonly sendTrans: Translation = {
     ko: '메일 전송',
-    en: 'Send an e-mail'
+    en: 'Send an e-mail',
   }
   private readonly successTrans: Translation = {
     ko: '가입 신청 링크가 메일로 전송되었습니다',
-    en: 'Signup link has been sended to your e-mail'
+    en: 'Signup link has been sended to your e-mail',
   }
   private readonly failTrans: Translation = {
     ko: '메일 전송 실패',
-    en: 'Mail delivery failed'
+    en: 'Mail delivery failed',
   }
   @Provide()
   private rules = {
