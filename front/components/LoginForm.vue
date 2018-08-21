@@ -14,7 +14,7 @@
       </el-button>
       <div>
       {{ orTrans[lang] }}
-      <nuxt-link to="/sign-up">
+      <nuxt-link to="/validation">
       <div class="signup">
       {{ signupTrans[lang] }}
       </div>
