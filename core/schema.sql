@@ -42,7 +42,7 @@ create table users (
   preferred_language language not null,
 
   -- Activated
-  activated boolean not null default false
+  activated boolean not null default true
 
   -- primary_email_address_idx integer not null unique references email_addresses(idx)
 );
@@ -55,6 +55,14 @@ create table email_addresses (
   address_local text not null check (address_local <> ''),
   address_domain text not null check (address_domain <> ''),
   unique(address_local, address_domain)
+);
+
+-- Verification token
+create table email_verification_token (
+  idx serial primary key,
+  email_idx integer not null references email_addresses(idx) on delete cascade,
+  token text not null check (token <> ''),
+  expires timestamp without time zone not null
 );
 
 alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);
