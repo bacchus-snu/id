@@ -16,9 +16,6 @@
     <el-form-item :label="checkTrans[lang]" prop="pwdcheck">
       <el-input type="password" v-model="models.pwdcheck"></el-input>
     </el-form-item>
-    <el-form-item :label="emailTrans[lang]" prop="email">
-      <el-input v-model="models.email" placeholder="example@snu.ac.kr"></el-input>
-    </el-form-item>
     <el-form-item :label="shellTrans[lang]" prop="shell">
       <el-select v-model="models.shell" placeholder="Please select your shell">
       <el-option v-for="shell in shellList" :value=shell :key="shell">{{ shell }}</el-option>
@@ -43,18 +40,14 @@ export default class SignUpForm extends Vue {
     username: '',
     password: '',
     pwdcheck: '',
-    email: '',
     shell: '',
   }
-
   public $refs!: {
     'signupForm': HTMLElement,
   }
 
   @Prop()
   private readonly shellList: Array<string>
-  private emailLocal: string = ''
-  private emailDomain: string = ''
   private readonly nameTrans: Translation = {
     ko: '이름',
     en: 'Name',
@@ -70,10 +63,6 @@ export default class SignUpForm extends Vue {
   private readonly checkTrans: Translation = {
     ko: '비밀번호 확인',
     en: 'Confirm password',
-  }
-  private readonly emailTrans: Translation = {
-    ko: '이메일',
-    en: 'Email',
   }
   private readonly shellTrans: Translation = {
     ko: '쉘',
@@ -94,10 +83,6 @@ export default class SignUpForm extends Vue {
   private readonly pwdErrorTrans: Translation = {
     ko: '비밀번호가 다릅니다',
     en: 'The password does not match',
-  }
-  private readonly emailErrorTrans: Translation = {
-    ko: '유효한 이메일 주소를 입력해주세요',
-    en: 'Please input valid email address',
   }
   private readonly lengthErrorTrans: Translation = {
     ko: '비밀번호는 최소 8자리여야 합니다',
@@ -127,11 +112,6 @@ export default class SignUpForm extends Vue {
       validator: this.validatePassword,
       trigger: 'blur',
     }],
-    email: [{
-      required: true,
-      validator: this.validateEmail,
-      trigger: 'blur',
-    }],
     shell: [{
       required: true,
       message: ' ',
@@ -153,19 +133,6 @@ export default class SignUpForm extends Vue {
     }
   }
 
-  public validateEmail(rule, value, callback) {
-    if (value === '') {
-      callback(new Error(' '))
-    } else if (value.split('@').length !== 2) {
-      callback(new Error(this.emailErrorTrans[this.lang]))
-    } else {
-      const emailSplit = value.split('@')
-      this.emailLocal = emailSplit[0]
-      this.emailDomain = emailSplit[1]
-      callback()
-    }
-  }
-
   public submitForm(formName) {
     this.$refs[formName].validate( valid => {
       if (valid) {
@@ -183,8 +150,6 @@ export default class SignUpForm extends Vue {
       name: this.models.name,
       username: this.models.username,
       password: this.models.password,
-      emailLocal: this.emailLocal,
-      emailDomain: this.emailDomain,
       shell: this.models.shell,
       preferredLanguage: this.lang,
     })
