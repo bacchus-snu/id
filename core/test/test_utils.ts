@@ -10,7 +10,6 @@ export async function createUser(c: PoolClient, model: Model): Promise<number> {
   const emailIdx = await createEmailAddress(c, model)
 
   const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
-  await model.users.activate(c, userIdx)
   return userIdx
 }
 
