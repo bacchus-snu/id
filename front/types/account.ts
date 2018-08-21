@@ -3,6 +3,5 @@ export interface Account {
   username: string
   password: string
   pwdcheck: string
-  email: string
   shell: string
 }
