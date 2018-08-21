@@ -31,3 +31,31 @@ test('create extra email', async t => {
     t.is(result.rows[0].owner_idx, userIdx)
   })
 })
+
+test('generate verification token', async t => {
+  await model.pgDo(async c => {
+    const userIdx = await createUser(c, model)
+    const emailAddressIdx = await createEmailAddress(c, model)
+
+    const query = 'SELECT * FROM email_verification_token WHERE email_idx = $1'
+    const result = await c.query(query, [emailAddressIdx])
+    t.is(result.rows.length, 1)
+  })
+})
+
+test('get email address by token', async t => {
+  await model.pgDo(async c => {
+    const userIdx = await createUser(c, model)
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+
+    const tokenResult = await c.query('SELECT * FROM email_verification_token WHERE email_idx = $1', [emailAddressIdx])
+    const token: string = tokenResult.rows[0].token
+
+    const result = await model.emailAddresses.getEmailAddressByToken(c, token)
+
+    t.is(result.local, emailLocal)
+    t.is(result.domain, emailDomain)
+  })
+})

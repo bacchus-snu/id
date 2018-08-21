@@ -1,6 +1,7 @@
 drop table if exists shells cascade;
 drop table if exists users cascade;
 drop table if exists email_addresses cascade;
+drop table if exists email_verification_token cascade;
 drop table if exists snuids cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;
@@ -60,9 +61,9 @@ create table email_addresses (
 -- Verification token
 create table email_verification_token (
   idx serial primary key,
-  email_idx integer not null references email_addresses(idx) on delete cascade,
-  token text not null check (token <> ''),
-  expires timestamp without time zone not null
+  email_idx integer unique not null references email_addresses(idx) on delete cascade,
+  token text unique not null check (token <> ''),
+  expires timestamp with time zone not null
 );
 
 alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);
