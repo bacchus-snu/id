@@ -9,13 +9,13 @@
         </a>
       </el-menu-item>
       <el-menu-item @click="routeTo('/')" index="2" class="topnav">
-        <nuxt-link to="/">{{ accountTrans[lang] }}</nuxt-link>
+        {{ accountTrans[lang] }}
       </el-menu-item>
       <el-menu-item @click="routeTo('/lab-support')" index="3" class="topnav">
-        <nuxt-link to="/lab-support">{{ labSupportTrans[lang] }}</nuxt-link>
+        {{ labSupportTrans[lang] }}
       </el-menu-item>
       <el-menu-item @click="routeTo('/appcenter')" index="4" class="topnav">
-        <nuxt-link to="/appcenter">{{ appCenterTrans[lang] }}</nuxt-link>
+         {{ appCenterTrans[lang] }}
       </el-menu-item>
       <el-menu-item index="5" class="topnav alink">
         <a class="div-link" href="https://cse.snu.ac.kr">
@@ -32,7 +32,7 @@
         </a>
       </el-menu-item>
       <el-menu-item @click="routeTo('/help')" index="7" class="topnav alink">
-        <nuxt-link to="/help">{{ helpTrans[lang] }}<i class="el-icon-question"></i></nuxt-link>
+        {{ helpTrans[lang] }}<i class="el-icon-question"></i>
       </el-menu-item>
       <el-button class="topbutton" type="warning" @click="changeLang">{{ langTrans[lang] }}</el-button>
 	  </el-menu>
