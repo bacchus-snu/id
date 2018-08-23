@@ -15,23 +15,57 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
-const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
+const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
+  if (user.account === null) {
+    return
+  }
   console.log(user.account)
+  const addresses: Array<string> = []
+  for (const addrRecord of (await selectEmail.execute({user_uid: user.uid})).recordset) {
+    const address = addrRecord.email
+    if (!addresses.includes(address)) {
+      addresses.push(address)
+    }
+  }
+
+  if (addresses.length === 0) {
+    throw new Error(`${user.account} has no email addresses`)
+  }
+
+  const addressIdxs: Array<number> = []
+  for (const address of addresses) {
+    const local = address.split('@')[0]
+    const domain = address.split('@')[1]
+    const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
+    addressIdxs.push(result.rows[0].idx)
+  }
+
+  const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language, primary_email_address_idx) ' +
+    'VALUES ($1, $2, \'/bin/bash\', \'ko\', $3) RETURNING idx', [user.account, user.name, addressIdxs[0]])
+  const userIdx = userInsertResult.rows[0].idx
+
+  for (const emailAddressIdx of addressIdxs) {
+    await pgClient.query('UPDATE email_addresses SET owner_idx=$1 where idx=$2', [userIdx, emailAddressIdx])
+  }
 }
 
 const migrateAll = async () => {
   const mssqlPool = new mssql.ConnectionPool(config.mssql)
   await mssqlPool.connect()
-  const mssqlPS = new mssql.PreparedStatement(mssqlPool)
-  await mssqlPS.prepare('SELECT * FROM [user]')
+  const mssqlSelectUser = new mssql.PreparedStatement(mssqlPool)
+  await mssqlSelectUser.prepare('SELECT * FROM [user]')
+  const mssqlSelectEmail = new mssql.PreparedStatement(mssqlPool)
+  await mssqlSelectEmail.prepare('SELECT * FROM user_email WHERE user_uid=@userUid')
   const pgClient = await (new pg.Pool(config.postgresql)).connect()
   try {
-    for (const user of (await mssqlPS.execute({})).recordset) {
-      await migrateUser(user, pgClient)
+    for (const user of (await mssqlSelectUser.execute({})).recordset) {
+      await migrateUser(user, pgClient, mssqlSelectEmail)
     }
   } finally {
-    await mssqlPS.unprepare()
+    await mssqlSelectUser.unprepare()
+    await mssqlSelectEmail.unprepare()
     await mssqlPool.close()
+    await pgClient.release()
   }
 }
 
