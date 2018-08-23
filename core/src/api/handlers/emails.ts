@@ -64,6 +64,7 @@ export function checkToken(model: Model): IMiddleware {
     try {
       await model.pgDo(async c => {
         emailAddress = await model.emailAddresses.getEmailAddressByToken(c, token)
+        await model.emailAddresses.ensureTokenNotExpired(c, token)
         result = {
           emailLocal: emailAddress.local,
           emailDomain: emailAddress.domain,

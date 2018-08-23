@@ -1,5 +1,5 @@
 import Model from './model'
-import { NoSuchEntryError } from './errors'
+import { NoSuchEntryError, ExpiredTokenError } from './errors'
 import { PoolClient } from 'pg'
 import * as crypto from 'crypto'
 import * as moment from 'moment'
@@ -21,7 +21,8 @@ export default class EmailAddresses {
    * @return promise of the index of the new record
    */
   public async create(client: PoolClient, local: string, domain: string): Promise<number> {
-    const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) RETURNING idx'
+    const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) ' +
+    'ON CONFLICT (address_local, address_domain) DO UPDATE SET address_local = $1 RETURNING idx'
     const result = await client.query(query, [local, domain])
     const idx = result.rows[0].idx
     return idx
@@ -42,7 +43,8 @@ export default class EmailAddresses {
   }
 
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
-    const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3)'
+    const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3) ' +
+    'ON CONFLICT (email_idx) DO UPDATE SET token = $2'
     const token = crypto.randomBytes(32).toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
@@ -70,5 +72,19 @@ export default class EmailAddresses {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
+  }
+
+  public async ensureTokenNotExpired(client: PoolClient, token: string): Promise<void> {
+    const query = 'SELECT expires FROM email_verification_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+
+    const expires = result.rows[0].expires
+
+    if (moment().isSameOrAfter(expires)) {
+      throw new ExpiredTokenError()
+    }
   }
 }

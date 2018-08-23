@@ -1,6 +1,7 @@
 import test from 'ava'
 
 import * as fs from 'fs'
+import * as moment from 'moment'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../../src/config'
@@ -59,5 +60,60 @@ test('get email address by token', async t => {
 
     t.is(result.local, emailLocal)
     t.is(result.domain, emailDomain)
+  })
+})
+
+test('identical address should not create new row', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const newEmailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+
+    t.is(emailAddressIdx, newEmailAddressIdx)
+  })
+})
+
+test('token request with identical email idx', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const oldToken = await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
+    const newToken = await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
+
+    const query = 'SELECT token FROM email_verification_tokens WHERE email_idx = $1'
+    const result = await c.query(query, [emailAddressIdx])
+    const token = result.rows[0].token
+    t.is(newToken, token)
+    t.not(oldToken, token)
+  })
+})
+
+test('token expiration', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const token = await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
+    const expiryResult = await c.query('SELECT expires FROM email_verification_tokens WHERE token = $1', [token])
+    const originalExpires = expiryResult.rows[0].expires
+
+    const query = 'UPDATE email_verification_tokens SET expires = $1 WHERE token = $2'
+    let newExpiry = moment(originalExpires).subtract(12, 'hours').toDate()
+    await c.query(query, [newExpiry, token])
+    await model.emailAddresses.ensureTokenNotExpired(c, token)
+
+    newExpiry = moment(originalExpires).subtract(1, 'day').toDate()
+    await c.query(query, [newExpiry, token])
+
+    try {
+      await model.emailAddresses.ensureTokenNotExpired(c, token)
+    } catch (e) {
+      t.pass()
+      return
+    }
+
+    t.fail()
   })
 })
