@@ -39,7 +39,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
     addressIdxs.push(result.rows[0].idx)
   }
 
-  if (addresses.length === 0) {
+  if (addressIdxs.length === 0) {
     console.error(`${user.account} has no email addresses`)
     return
   }
