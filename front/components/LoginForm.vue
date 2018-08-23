@@ -78,7 +78,7 @@ export default class LoginForm extends Vue {
     return this.$store.state.language
   }
 
-  public async onLogin() {
+  private async onLogin() {
     if (!this.username || !this.password) {
       this.$notify.error(this.loginFieldErrorTrans[this.lang])
       return
