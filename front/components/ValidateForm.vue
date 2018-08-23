@@ -77,7 +77,8 @@ export default class ValidateForm extends Vue {
   }
 
   public submitForm() {
-    const formElement: any = this.$refs['signupForm']
+    const elementRef = 'signupForm'
+    const formElement: any = this.$refs[elementRef]
     formElement.validate(async valid => {
       if (valid) {
         await this.sendEmail()
