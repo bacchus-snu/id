@@ -1,7 +1,7 @@
 drop table if exists shells cascade;
 drop table if exists users cascade;
 drop table if exists email_addresses cascade;
-drop table if exists email_verification_token cascade;
+drop table if exists email_verification_tokens cascade;
 drop table if exists snuids cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;

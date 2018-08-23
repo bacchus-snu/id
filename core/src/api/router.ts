@@ -49,9 +49,16 @@ export function createRouter(model: Model, config: Config): Router {
    */
   router.post('/api/email/check-token', checkToken(model))
 
-  router.get('/api/user', getUserList(model))
+  /**
+   * Create user.
+   * @param username username.
+   * @param name real name.
+   * @param password password.
+   * @param preferredLanguage preferred language.
+   */
   router.post('/api/user', createUser(model, config))
-  router.delete('/api/user/:user_idx', deleteUser(model))
+  // router.get('/api/user', getUserList(model))
+  // router.delete('/api/user/:user_idx', deleteUser(model))
 
   return router
 }

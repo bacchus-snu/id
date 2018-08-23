@@ -27,6 +27,15 @@ export default class EmailAddresses {
     return idx
   }
 
+  public async getIdxByAddress(client: PoolClient, local: string, domain: string): Promise<number> {
+    const query = 'SELECT idx FROM email_addresses WHERE address_local = $1 AND address_domain = $2'
+    const result = await client.query(query, [local, domain])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
+  }
+
   public async validate(client: PoolClient, userIdx: number, emailAddressIdx: number): Promise<void> {
     const query = 'UPDATE email_addresses SET owner_idx = $1 WHERE idx = $2'
     await client.query(query, [userIdx, emailAddressIdx])
@@ -52,5 +61,14 @@ export default class EmailAddresses {
       domain: result.rows[0].address_domain,
     }
     return ret
+  }
+
+  public async removeToken(client: PoolClient, token: string): Promise<number> {
+    const query = 'DELETE FROM email_verification_tokens WHERE token = $1 RETURNING idx'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
   }
 }

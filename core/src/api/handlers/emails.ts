@@ -30,11 +30,17 @@ export function sendVerificationEmail(model: Model): IMiddleware {
         emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
         token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
       })
-      // send email
-      await sendEmail(`${emailLocal}@${emailDomain}`, token,  model.log)
     } catch (e) {
       ctx.status = 400
       return
+    }
+
+    try {
+      // send email
+      await sendEmail(`${emailLocal}@${emailDomain}`, token,  model.log)
+    } catch (e) {
+      // should I throw error?
+      model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }
 
     ctx.status = 200
@@ -65,6 +71,13 @@ export function checkToken(model: Model): IMiddleware {
       })
     } catch (e) {
       ctx.status = 400
+      return
+    }
+
+    if (ctx.session) {
+      ctx.session.verificationToken = token
+    } else {
+      ctx.status = 500
       return
     }
 
