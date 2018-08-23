@@ -38,7 +38,7 @@ test('generate verification token', async t => {
     const emailAddressIdx = await createEmailAddress(c, model)
     await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
 
-    const query = 'SELECT * FROM email_verification_token WHERE email_idx = $1'
+    const query = 'SELECT * FROM email_verification_tokens WHERE email_idx = $1'
     const result = await c.query(query, [emailAddressIdx])
     t.is(result.rows.length, 1)
   })
@@ -52,7 +52,7 @@ test('get email address by token', async t => {
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
     await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
 
-    const tokenResult = await c.query('SELECT * FROM email_verification_token WHERE email_idx = $1', [emailAddressIdx])
+    const tokenResult = await c.query('SELECT * FROM email_verification_tokens WHERE email_idx = $1', [emailAddressIdx])
     const token: string = tokenResult.rows[0].token
 
     const result = await model.emailAddresses.getEmailAddressByToken(c, token)

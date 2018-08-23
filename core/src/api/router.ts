@@ -3,7 +3,7 @@ import Model from '../model/model'
 import Config from '../config'
 import { login, logout, checkLogin } from './handlers/login'
 import { getUserList, createUser, deleteUser } from './handlers/users'
-import { sendVerificationEmail } from './handlers/emails'
+import { sendVerificationEmail, checkToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 
 export function createRouter(model: Model, config: Config): Router {
@@ -40,6 +40,14 @@ export function createRouter(model: Model, config: Config): Router {
    * @param emailDomain email domain.
    */
   router.post('/api/email/verify', sendVerificationEmail(model))
+
+  /**
+   * Check token and response with according email addresss.
+   * @param token verification token.
+   * @returns emailLocal email local.
+   * @returns emailDomain email domain.
+   */
+  router.post('/api/email/check-token', checkToken(model))
 
   router.get('/api/user', getUserList(model))
   router.post('/api/user', createUser(model, config))

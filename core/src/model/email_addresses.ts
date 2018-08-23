@@ -33,7 +33,7 @@ export default class EmailAddresses {
   }
 
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
-    const query = 'INSERT INTO email_verification_token(email_idx, token, expires) VALUES ($1, $2, $3)'
+    const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3)'
     const token = crypto.randomBytes(32).toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
@@ -42,7 +42,7 @@ export default class EmailAddresses {
 
   public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {
     const query = 'SELECT e.address_local, e.address_domain FROM email_addresses AS e' +
-    ' INNER JOIN email_verification_token AS v ON v.token = $1 AND v.email_idx = e.idx'
+    ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx'
     const result = await client.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()

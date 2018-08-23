@@ -59,7 +59,7 @@ create table email_addresses (
 );
 
 -- Verification token
-create table email_verification_token (
+create table email_verification_tokens (
   idx serial primary key,
   email_idx integer unique not null references email_addresses(idx) on delete cascade,
   token text unique not null check (token <> ''),
