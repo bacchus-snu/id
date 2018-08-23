@@ -3,10 +3,10 @@
   <h2> {{ pleaseLoginTrans[lang] }} </h2>
   <el-form @submit.native.prevent="onLogin">
     <el-form-item label="Username">
-      <el-input :disabled="isLoggingIn" v-model="username" size="small"/>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" size="small"/>
     </el-form-item>
     <el-form-item label="Password">
-      <el-input :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
     </el-form-item>
     <el-form-item>
       <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
