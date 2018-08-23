@@ -15,6 +15,8 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
+const failed: Array<string> = []
+
 const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
   if (user.account === null) {
     return
@@ -35,12 +37,12 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
     if (!local || !domain) {
       continue
     }
-    if (local === 'kym7998' || local === 'enterminkong') {
-      console.error(`Ignoring ${address} (${user.account})`)
-      continue
+    try {
+      const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
+      addressIdxs.push(result.rows[0].idx)
+    } catch (e) {
+      failed.push(address)
     }
-    const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
-    addressIdxs.push(result.rows[0].idx)
   }
 
   if (addressIdxs.length === 0) {
@@ -78,4 +80,4 @@ const migrateAll = async () => {
   }
 }
 
-migrateAll().then(_ => console.log('Done')).catch(e => console.log(e))
+migrateAll().then(_ => console.log(failed)).catch(e => console.log(e))
