@@ -21,7 +21,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
   }
   console.log(user.account)
   const addresses: Array<string> = []
-  for (const addrRecord of (await selectEmail.execute({user_uid: user.uid})).recordset) {
+  for (const addrRecord of (await selectEmail.execute({userUid: user.uid})).recordset) {
     const address = addrRecord.email
     if (!addresses.includes(address)) {
       addresses.push(address)
