@@ -45,7 +45,8 @@ export default class EmailAddresses {
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
     const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3) ' +
     'ON CONFLICT (email_idx) DO UPDATE SET token = $2'
-    const token = crypto.randomBytes(32).toString('hex')
+    const randomBytes = await this.asyncRandomBytes(32)
+    const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
     return token
@@ -86,5 +87,16 @@ export default class EmailAddresses {
     if (moment().isSameOrAfter(expires)) {
       throw new ExpiredTokenError()
     }
+  }
+
+  private asyncRandomBytes(n: number): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(n, (err, buf) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(buf)
+      })
+    })
   }
 }
