@@ -2,6 +2,7 @@ import * as nodemailer from 'nodemailer'
 import Config from '../config'
 import * as Bunyan from 'bunyan'
 import * as fs from 'fs'
+import htmlTemplate from './verification_email_template'
 
 let config: Config | null
 try {
@@ -28,14 +29,13 @@ export async function sendEmail(emailAddrsss: string, token: string, logger: Bun
   }
 
   const transporter = nodemailer.createTransport(emailOption)
-  const html = fs.readFileSync('./verification_email_template.html', {encoding: 'utf-8'})
-  const tokenAddress = `https://id.snucse.org/verify/${token}`
+  const tokenAddress = `https://id.snucse.org/sign-up?token=${token}`
 
   const messageOption = {
     from: config.email.username,
     to: emailAddrsss,
     subject: config.email.subject,
-    html: html.replace('VERIFICATION_LINK', tokenAddress),
+    html: htmlTemplate.replace('VERIFICATION_LINK', tokenAddress),
   }
 
   // should we have to await this promise?

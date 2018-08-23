@@ -1,15 +1,22 @@
 <template>
   <el-card class="signup">
-  <div slot="header" class=cardHead>
+  <div slot="header" class="card-head">
     <span>Sign up</span>
   </div>
-  <h2>{{ emailTrans[lang] }}</h2>
-  <el-form @submit.native.prevent="submitForm" :model="models" status-icon ref="signupForm" :rules="rules">
-    <el-form-item prop="email">
-      <el-input v-model="models.email" placeholder="example@snu.ac.kr"></el-input>
-    </el-form-item>
-  </el-form>
-  <el-button class="button" type="warning" @click="submitForm">{{ sendTrans[lang] }}</el-button>
+  <template v-if="!isEmailSent">
+    <h2>{{ emailTrans[lang] }}</h2>
+    <el-form @submit.native.prevent="submitForm" :model="models" status-icon ref="signupForm" :rules="rules">
+      <el-form-item prop="email">
+        <el-input :disabled="isSubmitted" v-model="models.email" placeholder="example@snu.ac.kr"></el-input>
+      </el-form-item>
+    </el-form>
+    <el-button :disabled="isSubmitted" class="button" type="warning" @click="submitForm">{{ sendTrans[lang] }}</el-button>
+  </template>
+  <template v-else>
+    <!--
+      Something should placed here...
+    -->
+  </template>
   </el-card>
 </template>
 
@@ -24,6 +31,9 @@ export default class ValidateForm extends Vue {
   public models = {
     email: '',
   }
+
+  private isSubmitted: boolean = false
+  private isEmailSent: boolean = false
 
   private emailLocal: string = ''
   private emailDomain: string = ''
@@ -80,8 +90,10 @@ export default class ValidateForm extends Vue {
     const formElement: any = this.$refs[elementRef]
     formElement.validate(async valid => {
       if (valid) {
+        this.isSubmitted = true
         await this.sendEmail()
         formElement.resetFields()
+        this.isSubmitted = false
       } else {
         return false
       }
@@ -89,17 +101,16 @@ export default class ValidateForm extends Vue {
   }
 
   public async sendEmail() {
-    /*
     const response = await axios.post('/api/email/verify', {
       emailLocal: this.emailLocal,
       emailDomain: this.emailDomain,
-    })
+    }, { validateStatus: () => true })
     if (response.status !== 200) {
       this.$notify.error(this.failTrans[this.lang])
-    } else {
-      this.$notify.success(this.successTrans[this.lang])
+      return
     }
-    */
+
+    this.$notify.success(this.successTrans[this.lang])
   }
 
 }
@@ -129,7 +140,7 @@ export default class ValidateForm extends Vue {
   background-color: #f2a43e;
 }
 
-.cardHead {
+.card-head {
   font-size: 24px;
 }
 

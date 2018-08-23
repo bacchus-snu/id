@@ -15,10 +15,29 @@ import axios from 'axios'
   },
 })
 export default class SignUpPage extends Vue {
-  private shellList: Array<string>
+  private shellList: Array<string> = []
+
+  public async created() {
+    const token = this.$route.query.token
+    if (!token) {
+      this.$router.push('/')
+    }
+
+    const response = await axios.post('/api/email/check-token', { token }, {
+      validateStatus: () => true,
+    })
+
+    if (response.status !== 200) {
+      this.$router.push('/')
+    }
+
+    this.$store.commit('changeEmail', response.data)
+  }
 
   private async asyncData() {
-    const result = await axios.get(process.env.baseUrl + '/api/shells')
+    const result = await axios.get(process.env.baseUrl + '/api/shells', {
+      validateStatus: () => true,
+    })
     return { shellList : result.data.shells }
   }
 

@@ -23,7 +23,7 @@
     "koa": "^2.5.2",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
-    "koa-session": "^5.8.2",
+    "koa-session": "^5.8.3",
     "ldapjs": "^1.0.2",
     "moment": "^2.22.2",
     "nodemailer": "^4.6.8",
@@ -43,6 +43,6 @@
     "ava": "^0.25.0",
     "supertest": "^3.1.0",
     "tslint": "^5.11.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.0.1"
   }
 }

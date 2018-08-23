@@ -1,6 +1,6 @@
 <template>
   <el-card class="signup">
-  <div slot="header" class=cardHead>
+  <div slot="header" class="card-head">
     <span>Sign up</span>
   </div>
   <el-form @submit.native.prevent="submitForm" :model="models" status-icon size="medium" ref="signupForm" :rules="rules" label-width="150px">
@@ -145,20 +145,21 @@ export default class SignUpForm extends Vue {
   }
 
   public async signUpAccount() {
-    /*
-    const response = await axios.post('', {
+    const response = await axios.post('/api/user', {
       name: this.models.name,
       username: this.models.username,
       password: this.models.password,
-      shell: this.models.shell,
+      // shell: this.models.shell,
       preferredLanguage: this.lang,
-    })
+    }, { validateStatus: () => true })
+
     if (response.status !== 201) {
       this.$notify.error(this.failTrans[this.lang])
-    } else {
-      this.$notify.success(this.successTrans[this.lang])
+      return
     }
-    */
+
+    this.$notify.success(this.successTrans[this.lang])
+    this.$router.push('/')
   }
 
 }
@@ -196,7 +197,7 @@ export default class SignUpForm extends Vue {
   width: 100%;
 }
 
-.cardHead {
+.card-head {
   font-size: 24px;
 }
 </style>
