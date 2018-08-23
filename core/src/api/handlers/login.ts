@@ -13,16 +13,16 @@ export function login(model: Model): IMiddleware {
     }
 
     const { username, password } = body
-    let userId: number
+    let userIdx: number
 
     try {
       await model.pgDo(async c => {
         try {
-          userId = await model.users.authenticate(c, username, password)
+          userIdx = await model.users.authenticate(c, username, password)
 
           if (ctx.session) {
             // store information in session store
-            ctx.session.userId = userId
+            ctx.session.userIdx = userIdx
             ctx.session.username = username
           } else {
             ctx.status = 500
@@ -60,6 +60,10 @@ export function logout(): IMiddleware {
 export function checkLogin(): IMiddleware {
   return async (ctx, next) => {
     if (ctx.session && !ctx.session.isNew) {
+      const data = {
+        username: ctx.session.username,
+      }
+      ctx.body = data
       ctx.status = 200
     } else {
       ctx.status = 401

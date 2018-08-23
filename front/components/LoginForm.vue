@@ -63,6 +63,17 @@ export default class LoginForm extends Vue {
     en: 'Sign up',
   }
 
+  private async created() {
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 200 && response.data.username) {
+      this.$store.commit('changeUsername', response.data.username)
+      // TODO: redirect to my page
+    }
+  }
+
   get lang(): Language {
     return this.$store.state.language
   }

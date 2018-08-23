@@ -24,6 +24,7 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    * Check login.
    * 200 if already logged in, 401 if not.
+   * @returns username username.
    */
   router.get('/api/check-login', checkLogin())
 
@@ -57,8 +58,6 @@ export function createRouter(model: Model, config: Config): Router {
    * @param preferredLanguage preferred language.
    */
   router.post('/api/user', createUser(model, config))
-  // router.get('/api/user', getUserList(model))
-  // router.delete('/api/user/:user_idx', deleteUser(model))
 
   return router
 }
