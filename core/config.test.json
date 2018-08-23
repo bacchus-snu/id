@@ -1,6 +1,6 @@
 {
   "instanceName": "id-core",
-  "logLevel": 30,
+  "logLevel": 61,
   "ldap": {
     "listenHost": "127.0.0.1",
     "listenPort": "50389",
