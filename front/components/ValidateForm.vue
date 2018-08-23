@@ -4,12 +4,12 @@
     <span>Sign up</span>
   </div>
   <h2>{{ emailTrans[lang] }}</h2>
-  <el-form :model="models" status-icon ref="signupForm" :rules="rules">
+  <el-form @submit.native.prevent="submitForm" :model="models" status-icon ref="signupForm" :rules="rules">
     <el-form-item prop="email">
       <el-input v-model="models.email" placeholder="example@snu.ac.kr"></el-input>
     </el-form-item>
   </el-form>
-  <el-button class="button" type="warning" @click="submitForm('signupForm')">{{ sendTrans[lang] }}</el-button>
+  <el-button class="button" type="warning" @click="submitForm">{{ sendTrans[lang] }}</el-button>
   </el-card>
 </template>
 
@@ -24,9 +24,6 @@ export default class ValidateForm extends Vue {
   @Provide()
   public models = {
     email: '',
-  }
-  public $refs!: {
-    'signupForm': HTMLElement,
   }
 
   private emailLocal: string = ''
@@ -51,6 +48,7 @@ export default class ValidateForm extends Vue {
     ko: '메일 전송 실패',
     en: 'Mail delivery failed',
   }
+
   @Provide()
   private rules = {
     email: [{
@@ -65,6 +63,7 @@ export default class ValidateForm extends Vue {
   }
 
   public validateEmail(rule, value, callback) {
+    // TODO: use mailcheck module to suggest and validate correctly?
     if (value === '') {
       callback(new Error(' '))
     } else if (value.split('@').length !== 2) {
@@ -77,11 +76,12 @@ export default class ValidateForm extends Vue {
     }
   }
 
-  public submitForm(formName) {
-    this.$refs[formName].validate( valid => {
+  public submitForm() {
+    const formElement: any = this.$refs['signupForm']
+    formElement.validate(async valid => {
       if (valid) {
-        this.sendEmail()
-        this.$refs[formName].resetFields()
+        await this.sendEmail()
+        formElement.resetFields()
       } else {
         return false
       }

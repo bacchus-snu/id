@@ -1,7 +1,7 @@
 <template>
   <div class="login">
   <h2> {{ pleaseLoginTrans[lang] }} </h2>
-  <el-form>
+  <el-form @submit.native.prevent="onLogin">
     <el-form-item label="Username">
       <el-input :disabled="isLoggingIn" v-model="username" size="small"/>
     </el-form-item>
@@ -98,6 +98,7 @@ export default class LoginForm extends Vue {
 
     this.username = ''
     this.password = ''
+    // TODO: do something (e.g. redirect to my page?)
   }
 
 }
