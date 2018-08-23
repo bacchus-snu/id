@@ -8,7 +8,7 @@ const test = async () => {
   const pool = new mssql.ConnectionPool(config.mssql)
   await pool.connect()
   const ps = new mssql.PreparedStatement(pool)
-  await ps.prepare('SELECT TOP 10 * FROM [users]')
+  await ps.prepare('SELECT TOP 10 * FROM [user]')
   try {
     const result = await ps.execute({})
     console.log(result)
