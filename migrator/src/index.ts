@@ -55,6 +55,7 @@ const migrateAll = async () => {
   const mssqlSelectUser = new mssql.PreparedStatement(mssqlPool)
   await mssqlSelectUser.prepare('SELECT * FROM [user]')
   const mssqlSelectEmail = new mssql.PreparedStatement(mssqlPool)
+  mssqlSelectEmail.input('userUid', mssql.BigInt)
   await mssqlSelectEmail.prepare('SELECT * FROM user_email WHERE user_uid=@userUid')
   const pgClient = await (new pg.Pool(config.postgresql)).connect()
   try {
