@@ -4,6 +4,8 @@ node_js:
 before_install: true
 services:
   - postgresql
+addons:
+  postgresql: "9.6"
 before_script:
   - "psql -c 'create database id;' -U postgres"
   - "psql -U postgres id < ./core/schema.sql"
