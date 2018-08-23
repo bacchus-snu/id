@@ -40,7 +40,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @param emailLocal email local.
    * @param emailDomain email domain.
    */
-  router.post('/api/email/verify', sendVerificationEmail(model))
+  router.post('/api/email/verify', sendVerificationEmail(model, config))
 
   /**
    * Check token and response with according email addresss.
