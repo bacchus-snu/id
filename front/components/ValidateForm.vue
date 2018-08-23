@@ -14,10 +14,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Provide } from 'nuxt-property-decorator'
+import { Component, Vue, Provide } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { Translation, Language } from '../types/translation'
-import { Account } from '~/types/account'
 
 @Component({})
 export default class ValidateForm extends Vue {
@@ -91,11 +90,11 @@ export default class ValidateForm extends Vue {
 
   public async sendEmail() {
     /*
-    const response = await axios.post('', {
+    const response = await axios.post('/api/email/verify', {
       emailLocal: this.emailLocal,
       emailDomain: this.emailDomain,
     })
-    if (response.status !== 201) {
+    if (response.status !== 200) {
       this.$notify.error(this.failTrans[this.lang])
     } else {
       this.$notify.success(this.successTrans[this.lang])

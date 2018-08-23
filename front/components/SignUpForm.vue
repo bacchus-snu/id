@@ -3,7 +3,7 @@
   <div slot="header" class=cardHead>
     <span>Sign up</span>
   </div>
-  <el-form :model="models" status-icon size="medium" ref="signupForm" :rules="rules" label-width="150px">
+  <el-form @submit.native.prevent="submitForm" :model="models" status-icon size="medium" ref="signupForm" :rules="rules" label-width="150px">
     <el-form-item :label="nameTrans[lang]" prop="name" required>
       <el-input v-model="models.name"></el-input>
     </el-form-item>
@@ -41,9 +41,6 @@ export default class SignUpForm extends Vue {
     password: '',
     pwdcheck: '',
     shell: '',
-  }
-  public $refs!: {
-    'signupForm': HTMLElement,
   }
 
   @Prop()
@@ -124,6 +121,7 @@ export default class SignUpForm extends Vue {
   }
 
   public validatePassword(rule, value, callback) {
+    // TODO: more password rules?
     if (value === '') {
       callback(new Error(' '))
     } else if (value !== this.models.password) {
@@ -134,10 +132,12 @@ export default class SignUpForm extends Vue {
   }
 
   public submitForm(formName) {
-    this.$refs[formName].validate( valid => {
+    const elementRef = 'signupForm'
+    const formElement: any = this.$refs[elementRef]
+    formElement.validate( valid => {
       if (valid) {
         this.signUpAccount()
-        this.$refs[formName].resetFields()
+        formElement.resetFields()
       } else {
         return false
       }
