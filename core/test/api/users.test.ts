@@ -1,6 +1,7 @@
 import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
+import * as crypto from 'crypto'
 
 import * as fs from 'fs'
 import Model from '../../src/model/model'
@@ -23,7 +24,7 @@ test('create user step by step', async t => {
   let response
   const emailLocal = uuid()
   const emailDomain = uuid()
-  const username = uuid()
+  const username = 'a' + crypto.randomBytes(4).toString('hex')
   const password = uuid()
   const name = uuid()
   const preferredLanguage = 'en'
@@ -54,6 +55,32 @@ test('create user step by step', async t => {
     token,
   })
   t.is(response.status, 200)
+
+  // test validation check
+  response = await agent.post('/api/user').send({
+    username: '0abcdefghijk',
+    password,
+    name,
+    preferredLanguage,
+  })
+  t.is(response.status, 400)
+
+  // test validation check
+  response = await agent.post('/api/user').send({
+    username: 'a' + crypto.randomBytes(32).toString('hex'),
+    password,
+    name,
+    preferredLanguage,
+  })
+  t.is(response.status, 400)
+
+  response = await agent.post('/api/user').send({
+    username,
+    password: 'asdf',
+    name,
+    preferredLanguage,
+  })
+  t.is(response.status, 400)
 
   response = await agent.post('/api/user').send({
     username,

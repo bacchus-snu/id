@@ -57,6 +57,22 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
+    // validates inputs
+    if (!/^[a-z][a-z0-9_]+$/.test(username) || username.length > 20) {
+      ctx.status = 400
+      return
+    }
+
+    if (password.length < 8) {
+      ctx.status = 400
+      return
+    }
+
+    if (!(['ko', 'en'].includes(preferredLanguage))) {
+      ctx.status = 400
+      return
+    }
+
     await model.pgDo(async c => {
       const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
       const userIdx = await model.users.create(
