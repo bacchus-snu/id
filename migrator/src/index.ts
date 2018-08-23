@@ -35,6 +35,10 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
     if (!local || !domain) {
       continue
     }
+    if (local === 'kym1998') {
+      console.error(`Ignoring ${address} (${user.account})`)
+      continue
+    }
     const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
     addressIdxs.push(result.rows[0].idx)
   }
