@@ -35,7 +35,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
     if (!local || !domain) {
       continue
     }
-    if (local === 'kym1998') {
+    if (local === 'kym7998') {
       console.error(`Ignoring ${address} (${user.account})`)
       continue
     }
