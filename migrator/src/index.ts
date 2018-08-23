@@ -28,16 +28,20 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient, selectEmail
     }
   }
 
-  if (addresses.length === 0) {
-    throw new Error(`${user.account} has no email addresses`)
-  }
-
   const addressIdxs: Array<number> = []
   for (const address of addresses) {
     const local = address.split('@')[0]
     const domain = address.split('@')[1]
+    if (!local || !domain) {
+      continue
+    }
     const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
     addressIdxs.push(result.rows[0].idx)
+  }
+
+  if (addresses.length === 0) {
+    console.error(`${user.account} has no email addresses`)
+    return
   }
 
   const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language, primary_email_address_idx) ' +
