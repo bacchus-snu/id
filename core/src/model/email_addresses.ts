@@ -94,6 +94,7 @@ export default class EmailAddresses {
       crypto.randomBytes(n, (err, buf) => {
         if (err) {
           reject(err)
+          return
         }
         resolve(buf)
       })
