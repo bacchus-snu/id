@@ -13,9 +13,7 @@
     <el-button :disabled="isSubmitted" class="button" type="warning" @click="submitForm">{{ sendTrans[lang] }}</el-button>
   </template>
   <template v-else>
-    <!--
-      Something should placed here...
-    -->
+    <h2>{{ successTrans[lang] }}</h2>
   </template>
   </el-card>
 </template>
@@ -54,8 +52,8 @@ export default class ValidateForm extends Vue {
     en: 'Send an e-mail',
   }
   private readonly successTrans: Translation = {
-    ko: '가입 신청 링크가 메일로 전송되었습니다',
-    en: 'Signup link has been sended to your e-mail',
+    ko: '가입 신청 링크가 메일로 전송되었습니다.',
+    en: 'Sign up link has been sent to your e-mail.',
   }
   private readonly failTrans: Translation = {
     ko: '메일 전송 실패',
@@ -116,7 +114,8 @@ export default class ValidateForm extends Vue {
       return
     }
 
-    this.$notify.success(this.successTrans[this.lang])
+    // this.$notify.success(this.successTrans[this.lang])
+    this.isEmailSent = true
   }
 
 }
