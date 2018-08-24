@@ -45,6 +45,10 @@ export default class ValidateForm extends Vue {
     ko: '유효한 이메일 주소를 입력해주세요',
     en: 'Please input valid email address',
   }
+  private readonly snuEmailOnlyTrans: Translation = {
+    ko: 'snu.ac.kr 도메인으로만 가입이 가능합니다.',
+    en: 'Only snu.ac.kr domain can be used.',
+  }
   private readonly sendTrans: Translation = {
     ko: '메일 전송',
     en: 'Send an e-mail',
@@ -77,10 +81,12 @@ export default class ValidateForm extends Vue {
       callback(new Error(' '))
     } else if (value.split('@').length !== 2) {
       callback(new Error(this.emailErrorTrans[this.lang]))
+    } else if (value.split('@')[1].trim() !== 'snu.ac.kr') {
+      callback(new Error(this.snuEmailOnlyTrans[this.lang]))
     } else {
       const emailSplit = value.split('@')
-      this.emailLocal = emailSplit[0]
-      this.emailDomain = emailSplit[1]
+      this.emailLocal = emailSplit[0].trim()
+      this.emailDomain = emailSplit[1].trim()
       callback()
     }
   }

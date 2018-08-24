@@ -7,7 +7,7 @@
     <el-form-item :label="nameTrans[lang]" prop="name" required>
       <el-input v-model="models.name"></el-input>
     </el-form-item>
-    <el-form-item :label="usernameTrans[lang]" prop="username">
+    <el-form-item :label="usernameTrans[lang]" prop="username" style="margin-bottom: 40px">
       <el-input v-model="models.username"></el-input>
     </el-form-item>
     <el-form-item :label="pwdTrans[lang]" prop="password">
@@ -85,6 +85,11 @@ export default class SignUpForm extends Vue {
     ko: '비밀번호는 최소 8자리여야 합니다',
     en: 'The password should be at leat 8 characters',
   }
+  private readonly usernameValidateTrans: Translation = {
+    ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자, _ 만 포함된 20자 이하여야 합니다.',
+    en: 'Username should be under 20 letters which only contains ' +
+    'lowercase alphabet, numbers, or underscores and starts with lowercase alphabet.',
+  }
 
   @Provide()
   private rules = {
@@ -95,7 +100,8 @@ export default class SignUpForm extends Vue {
     }],
     username: [{
       required: true,
-      message: ' ',
+      validator: this.validateUsername,
+      max: 20,
       trigger: 'blur',
     }],
     password: [{
@@ -118,6 +124,14 @@ export default class SignUpForm extends Vue {
 
   get lang(): Language {
     return this.$store.state.language
+  }
+
+  public validateUsername(rule, value, callback) {
+    if (!/^[a-z][a-z0-9_]+$/.test(value) || value.length > 20) {
+      callback(new Error(this.usernameValidateTrans[this.lang]))
+    } else {
+      callback()
+    }
   }
 
   public validatePassword(rule, value, callback) {
@@ -149,7 +163,6 @@ export default class SignUpForm extends Vue {
       name: this.models.name,
       username: this.models.username,
       password: this.models.password,
-      // shell: this.models.shell,
       preferredLanguage: this.lang,
     }, { validateStatus: () => true })
 

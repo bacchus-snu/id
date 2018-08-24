@@ -17,7 +17,7 @@ import axios from 'axios'
 export default class SignUpPage extends Vue {
   private shellList: Array<string> = []
 
-  public async created() {
+  public async mounted() {
     const token = this.$route.query.token
     if (!token) {
       this.$router.push('/')

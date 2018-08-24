@@ -63,7 +63,7 @@ export default class LoginForm extends Vue {
     en: 'Sign up',
   }
 
-  private async created() {
+  private async mounted() {
     const response = await axios.get('/api/check-login', {
       validateStatus: () => true,
     })
