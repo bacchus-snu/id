@@ -24,7 +24,8 @@
     "host": "smtp.gmail.com",
     "username": "INSERT_USERNAME_HERE",
     "password": "INSERT_PASSWORD_HERE",
-    "subject": "id.snucse.org 이메일 인증"
+    "subject": "id.snucse.org 이메일 인증",
+    "url": "https://id.snucse.org"
   },
   "posix": {
     "userGroupName": "cseusers",

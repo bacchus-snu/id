@@ -119,6 +119,11 @@ export interface EmailConfig {
    * Verification email subject.
    */
   subject: string
+
+  /**
+   * URL of id.snucse.org
+   */
+  url: string
 }
 
 /**

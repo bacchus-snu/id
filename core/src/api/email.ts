@@ -22,7 +22,7 @@ export async function sendEmail(emailAddrsss: string, token: string, logger: Bun
   }
 
   const transporter = nodemailer.createTransport(emailOption)
-  const tokenAddress = `https://id.snucse.org/sign-up?token=${token}`
+  const tokenAddress = `${config.email.url}/sign-up?token=${token}`
 
   const messageOption = {
     from: config.email.username,
