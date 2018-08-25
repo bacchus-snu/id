@@ -53,7 +53,8 @@ export default class EmailAddresses {
   }
 
   public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {
-    const query = 'SELECT e.address_local, e.address_domain FROM email_addresses AS e' +
+    const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
+    ' FROM email_addresses AS e' +
     ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx'
     const result = await client.query(query, [token])
     if (result.rows.length === 0) {
