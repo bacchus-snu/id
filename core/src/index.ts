@@ -11,6 +11,7 @@ const log = bunyan.createLogger({
   name: config.instanceName,
   level: config.logLevel,
 })
+
 const model = new Model({
   user: config.postgresql.user,
   host: config.postgresql.host,
@@ -18,22 +19,10 @@ const model = new Model({
   password: config.postgresql.password,
   port: config.postgresql.port,
 }, log)
-if (!process.env.TEST_API) {
-  const ldapServer = createLDAPServer({log}, model, config)
-  ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
-    () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
-} else {
-  /**
-   * This else block should be removed in production.
-   */
-  const createTestUser = async () => {
-    await model.pgDo(async c => {
-      const emailIdx = await model.emailAddresses.create(c, 'doge', 'wow.com')
-      await model.users.create(c, 'bacchus', 'passwd', 'Bacchus', emailIdx, '/bin/bash', 'en')
-    })
-  }
 
-  createTestUser()
-}
+const ldapServer = createLDAPServer({log}, model, config)
+ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
+  () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
+
 const apiServer = createAPIServer(log, model, config)
 apiServer.listen(config.api.listenPort, config.api.listenHost)
