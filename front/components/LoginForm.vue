@@ -1,12 +1,17 @@
 <template>
   <div class="login">
   <h2> {{ pleaseLoginTrans[lang] }} </h2>
-  <el-form @submit.native.prevent="onLogin">
+  <el-form @submit.native.prevent="onLogin" status-icon>
     <el-form-item label="Username">
-      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" size="small"/>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" required size="small"/>
     </el-form-item>
     <el-form-item label="Password">
-      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
+      <nuxt-link to="/password-reset">
+      <div class="forgot">
+      {{ forgotTrans[lang] }}
+      </div>
+      </nuxt-link>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" required size="small"/>
     </el-form-item>
     <el-form-item>
       <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
@@ -14,7 +19,7 @@
       </el-button>
       <div>
       {{ orTrans[lang] }}
-      <nuxt-link to="/validation">
+      <nuxt-link to="/verify">
       <div class="signup">
       {{ signupTrans[lang] }}
       </div>
@@ -62,6 +67,10 @@ export default class LoginForm extends Vue {
     ko: '가입 신청하기',
     en: 'Sign up',
   }
+  private readonly forgotTrans: Translation = {
+    ko: '비밀번호를 잊으셨나요?',
+    en: 'Forgot your password?',
+  }
 
   private async mounted() {
     const response = await axios.get('/api/check-login', {
@@ -70,7 +79,7 @@ export default class LoginForm extends Vue {
 
     if (response.status === 200 && response.data.username) {
       this.$store.commit('changeUsername', response.data.username)
-      // TODO: redirect to my page
+      this.$router.push('/my-page')
     }
   }
 
@@ -109,7 +118,7 @@ export default class LoginForm extends Vue {
 
     this.username = ''
     this.password = ''
-    // TODO: do something (e.g. redirect to my page?)
+    this.$router.push('/my-page')
   }
 
 }
@@ -152,6 +161,15 @@ export default class LoginForm extends Vue {
 }
 
 .signup:hover {
+  font-weight: bold;
+}
+
+.forgot {
+  float: right;
+  color: #ff6105;
+}
+
+.forgot:hover {
   font-weight: bold;
 }
 </style>
