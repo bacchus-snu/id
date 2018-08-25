@@ -109,6 +109,15 @@ export default class Users {
       [newUid, userIdx])
   }
 
+  public async changePassword(client: PoolClient, userIdx: number, newPassword: string): Promise<void> {
+    const passwordDigest = await argon2.hash(newPassword)
+    const query = 'UPDATE users SET password = $1 WHERE idx = $2 RETURNING idx'
+    const result = await client.query(query, [passwordDigest, userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+  }
+
   public async addUserMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
     const query = 'INSERT INTO user_memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
     const result = await client.query(query, [userIdx, groupIdx])
@@ -145,6 +154,15 @@ export default class Users {
     }
 
     return groupSet
+  }
+
+  public async getUserIdxByPasswordToken(client: PoolClient, token: string): Promise<number> {
+    const query = 'SELECT user_idx FROM password_change_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].user_idx
   }
 
   private rowToUser(row: any): User {

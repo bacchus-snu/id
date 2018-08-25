@@ -26,7 +26,6 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     try {
       // create email address and generate token
-      // TODO: expire unverificated email address
       await model.pgDo(async c => {
         emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
         token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
@@ -49,7 +48,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
   }
 }
 
-export function checkToken(model: Model): IMiddleware {
+export function checkEmailToken(model: Model): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
 

@@ -3,21 +3,6 @@ import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
 
-export function getUserList(model: Model): IMiddleware {
-  return async (ctx, next) => {
-    let users
-
-    await model.pgDo(async c => {
-      users = await model.users.getAll(c)
-    })
-
-    ctx.response.status = 200
-    ctx.response.body = users
-
-    await next()
-  }
-}
-
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
@@ -85,15 +70,75 @@ export function createUser(model: Model, config: Config): IMiddleware {
   }
 }
 
-export function deleteUser(model: Model): IMiddleware {
+export function checkPasswordToken(model: Model): IMiddleware {
   return async (ctx, next) => {
-    const user_idx: any = ctx.params.user_idx
+    const body: any = ctx.request.body
 
-    await model.pgDo(async c => {
-      await model.users.delete(c, user_idx)
-    })
+    if (body == null || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
 
-    ctx.status = 204
+    if (!ctx.session) {
+      ctx.status = 500
+      return
+    }
+
+    const { token } = body
+
+    if (!token) {
+      ctx.status = 401
+      return
+    }
+
+    let username
+    try {
+      await model.pgDo(async c => {
+        const userIdx = await model.users.getUserIdxByPasswordToken(c, token)
+        const query = 'SELECT username FROM users WHERE idx = $1'
+        const result = await c.query(query, [userIdx])
+        username = result.rows[0].username
+      })
+    } catch (e) {
+      ctx.status = 400
+      return
+    }
+
+    if (!username) {
+      ctx.status = 400
+      return
+    }
+
+    const data = {
+      username,
+    }
+
+    ctx.body = data
+    ctx.status = 200
     await next()
+  }
+}
+
+export function changePassword(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const body: any = ctx.request.body
+
+    if (body == null || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    if (!ctx.session) {
+      ctx.status = 500
+      return
+    }
+
+    const { currentPassword, newPassword } = body
+
+    if (!currentPassword || !newPassword) {
+      ctx.status = 400
+      return
+    }
+
   }
 }
