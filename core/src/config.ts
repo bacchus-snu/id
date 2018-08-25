@@ -97,6 +97,36 @@ export interface SessionConfig {
 }
 
 /**
+ * Confituration for sending email
+ */
+export interface EmailConfig {
+  /**
+   * SMTP host. e.g. smtp.gmail.com
+   */
+  host: string
+
+  /**
+   * Username. e.g. no-reply@snucse.org
+   */
+  username: string
+
+  /**
+   * Password.
+   */
+  password: string
+
+  /**
+   * Verification email subject.
+   */
+  subject: string
+
+  /**
+   * URL of id.snucse.org
+   */
+  url: string
+}
+
+/**
  * Configurations for POSIX-compliant interface.
  */
 export interface PosixConfig {
@@ -162,6 +192,11 @@ export default interface Config {
    * Session configuration.
    */
   session: SessionConfig
+
+  /**
+   * Email configuration.
+   */
+  email: EmailConfig
 
   /**
    * PostgreSQL connection configuration.

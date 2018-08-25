@@ -1,19 +1,28 @@
 <template>
   <div class="login">
   <h2> {{ pleaseLoginTrans[lang] }} </h2>
-  <el-form>
+  <el-form @submit.native.prevent="onLogin">
     <el-form-item label="Username">
-      <el-input :disabled="isLoggingIn" v-model="username" size="small"/>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" size="small"/>
     </el-form-item>
     <el-form-item label="Password">
-      <el-input :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
     </el-form-item>
     <el-form-item>
       <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
-        {{ loginTrans[lang] }}
+      {{ loginTrans[lang] }}
       </el-button>
+      <div>
+      {{ orTrans[lang] }}
+      <nuxt-link to="/validation">
+      <div class="signup">
+      {{ signupTrans[lang] }}
+      </div>
+      </nuxt-link>
+      </div>
     </el-form-item>
   </el-form>
+
   </div>
 </template>
 
@@ -45,12 +54,31 @@ export default class LoginForm extends Vue {
     ko: '로그인에 실패했습니다.',
     en: 'Failed to sign in.',
   }
+  private readonly orTrans: Translation = {
+    ko: '아직 계정이 없으신가요?',
+    en: 'or',
+  }
+  private readonly signupTrans: Translation = {
+    ko: '가입 신청하기',
+    en: 'Sign up',
+  }
+
+  private async mounted() {
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 200 && response.data.username) {
+      this.$store.commit('changeUsername', response.data.username)
+      // TODO: redirect to my page
+    }
+  }
 
   get lang(): Language {
     return this.$store.state.language
   }
 
-  public async onLogin() {
+  private async onLogin() {
     if (!this.username || !this.password) {
       this.$notify.error(this.loginFieldErrorTrans[this.lang])
       return
@@ -81,6 +109,7 @@ export default class LoginForm extends Vue {
 
     this.username = ''
     this.password = ''
+    // TODO: do something (e.g. redirect to my page?)
   }
 
 }
@@ -113,5 +142,16 @@ export default class LoginForm extends Vue {
 
 .button:hover {
   background-color: #f2a43e;
+}
+
+.signup {
+  margin-left: 5px;
+  font-size: 16px;
+  color: #ff6105;
+  display: inline;
+}
+
+.signup:hover {
+  font-weight: bold;
 }
 </style>

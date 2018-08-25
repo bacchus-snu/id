@@ -2,8 +2,6 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 
-import createAPIServer from '../../src/api/server'
-
 import * as fs from 'fs'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
@@ -78,6 +76,7 @@ test('test checkLogin', async t => {
 
   response = await agent.get('/api/check-login').send()
   t.is(response.status, 200)
+  t.is(response.body.username, username)
 
   response = await agent.get('/api/logout').send()
   t.is(response.status, 200)

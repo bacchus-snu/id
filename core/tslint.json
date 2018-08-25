@@ -15,7 +15,8 @@
     "arrow-parens": [true, "ban-single-arg-parens"],
     "variable-name": [true, "ban-keywords", "check-format"],
     "align": [true, "statements"],
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "no-console": false
   },
   "rulesDirectory": []
 }

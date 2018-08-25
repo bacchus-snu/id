@@ -13,6 +13,6 @@ const log = bunyan.createLogger({
 
 const model = new Model(config.postgresql, log)
 
-const app = createAPIServer(log, model, config).listen(config.api.listenPort)
+const app = createAPIServer(log, model, config).listen()
 
 export default app
