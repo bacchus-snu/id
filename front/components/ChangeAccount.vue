@@ -12,7 +12,7 @@
           <el-form @submit.native.prevent="submitEmail" :model="emailModel" status-icon ref="emailForm" :rules="emailRule">
             <el-form-item prop="email">
             <el-select v-model="emailModel.email" placeholder="Please select your email">
-              <el-option v-for="email in emailList" :value=email :key="email">{{ email }}</el-option>
+              <el-option v-for="email in emailListConcat" :value=email :key="email">{{ email }}</el-option>
             </el-select>
             </el-form-item>
           </el-form>
@@ -44,6 +44,7 @@
 import { Component, Prop, Vue, Provide } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { Translation, Language } from '../types/translation'
+import { EmailAddress } from '../types/user'
 
 @Component({})
 export default class ChangeAccount extends Vue {
@@ -59,7 +60,7 @@ export default class ChangeAccount extends Vue {
   @Prop()
   private readonly shellList: Array<string>
   @Prop()
-  private readonly emailList: Array<string>
+  private readonly emailList: Array<EmailAddress>
 
   private isSubmitted: boolean = false
   private isRequested: boolean = false
@@ -127,6 +128,10 @@ export default class ChangeAccount extends Vue {
     return this.$store.state.username
   }
 
+  get emailListConcat(): Array<string> {
+    return this.emailList.map(emailAddress => emailAddress.local + '@' + emailAddress.domain)
+  }
+
   public submitEmail() {
     const emailRef = 'emailForm'
     const emailElement: any = this.$refs[emailRef]
@@ -192,11 +197,11 @@ export default class ChangeAccount extends Vue {
   background-color: yellow;
 }
 
-.welcome { 
-  font-size: 32px; 
-  font-weight: 500; 
-  line-height: 40px; 
-  text-align: center; 
+.welcome {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 40px;
+  text-align: center;
   margin-top: 4%;
 }
 

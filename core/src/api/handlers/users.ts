@@ -146,19 +146,14 @@ export function changePassword(model: Model): IMiddleware {
 
 export function getUserEmails(model: Model): IMiddleware {
   return async (ctx, next) => {
-    const body: any = ctx.request.body
 
-    if (body == null || typeof body !== 'object') {
-      ctx.status = 400
+    // authorize
+    if (!ctx.session || !ctx.session.username) {
+      ctx.status = 401
       return
     }
 
-    const { username } = body
-
-    if (!username) {
-      ctx.status = 400
-      return
-    }
+    const username = ctx.session.username
 
     let ownerIdx: any
     try {

@@ -90,3 +90,35 @@ test('create user step by step', async t => {
   })
   t.is(response.status, 201)
 })
+
+test('get user email addresses', async t => {
+  const username = uuid()
+  const password = uuid()
+  let userIdx
+
+  await model.pgDo(async c => {
+    const emailIdx1 = await model.emailAddresses.create(c, uuid(), uuid())
+    const emailIdx2 = await model.emailAddresses.create(c, uuid(), uuid())
+
+    userIdx = await model.users.create(c, username, password, uuid(), emailIdx1, '/bin/bash', 'en')
+    await model.emailAddresses.validate(c, userIdx, emailIdx1)
+    await model.emailAddresses.validate(c, userIdx, emailIdx2)
+  })
+
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.get('/api/user/emails').send({})
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username,
+    password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.get('/api/user/emails').send({})
+  t.is(response.status, 200)
+  t.is(response.body.emails.length, 2)
+})
