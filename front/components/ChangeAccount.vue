@@ -106,6 +106,14 @@ export default class ChangeAccount extends Vue {
     ko: '셸 변경',
     en: 'Change shell',
   }
+  private readonly failShellChangeTrans: Translation = {
+    ko: '셸 변경에 실패하였습니다.',
+    en: 'Failed to change shell.',
+  }
+  private readonly failPasswordChangeEmailTrans: Translation = {
+    ko: '비밀번호 재설정 이메일을 보내는 데에 실패하였습니다.',
+    en: 'Failed to send password change email.',
+  }
 
   @Provide()
   private emailRule = {
@@ -153,7 +161,7 @@ export default class ChangeAccount extends Vue {
     }, { validateStatus: () => true })
 
     if (response.status !== 200) {
-      this.$notify.error(this.failTrans[this.lang])
+      this.$notify.error(this.failPasswordChangeEmailTrans[this.lang])
       return
     }
 
@@ -181,7 +189,7 @@ export default class ChangeAccount extends Vue {
     }, { validateStatus: () => true })
 
     if (response.status !== 200) {
-      this.$notify.error(this.failTrans[this.lang])
+      this.$notify.error(this.failShellChangeTrans[this.lang])
       return
     }
 

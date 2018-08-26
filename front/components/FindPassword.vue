@@ -105,8 +105,8 @@ export default class ValidateForm extends Vue {
 
   public async sendEmail() {
     const response = await axios.post('/api/user/send-password-token', {
-      emailLocal: this.emailModel.email.emailLocal,
-      emailDomain: this.emailModel.email.emailDomain,
+      emailLocal: this.emailLocal,
+      emailDomain: this.emailDomain,
     }, { validateStatus: () => true })
 
     if (response.status !== 200) {

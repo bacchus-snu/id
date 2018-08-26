@@ -3,5 +3,4 @@ export interface Account {
   username: string
   password: string
   pwdcheck: string
-  shell: string
 }
