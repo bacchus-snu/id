@@ -150,6 +150,7 @@ export function changePassword(model: Model): IMiddleware {
         }
         await model.users.authenticate(c, user.username, currentPassword)
         await model.users.changePassword(c, userIdx, newPassword)
+        await model.users.removeToken(c, token)
       })
     } catch (e) {
       ctx.status = 401
