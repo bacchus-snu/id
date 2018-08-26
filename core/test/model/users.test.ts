@@ -131,3 +131,18 @@ test('get all user memberships', async t => {
     t.deepEqual(result.map(um => um.groupIdx).sort(), [groupIdx1, groupIdx2].sort())
   })
 })
+
+test('change password', async t => {
+  await model.pgDo(async c => {
+    const username = uuid()
+    const password = uuid()
+    const emailIdx = await createEmailAddress(c, model)
+    const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+
+    const newPassword = uuid()
+    await model.users.changePassword(c, userIdx, newPassword)
+
+    await model.users.authenticate(c, username, newPassword)
+    t.pass()
+  })
+})

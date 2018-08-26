@@ -2,7 +2,6 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
-import { createContext } from 'vm'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
