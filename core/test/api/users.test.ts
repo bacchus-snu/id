@@ -162,6 +162,13 @@ test('change password', async t => {
   t.is(response.status, 401)
 
   response = await agent.post('/api/user/change-password').send({
+    currentPassword: 'doge',
+    newPassword,
+    token,
+  })
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/user/change-password').send({
     currentPassword: password,
     newPassword,
     token,
