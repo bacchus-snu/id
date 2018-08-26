@@ -4,6 +4,7 @@ import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import * as nodemailer from 'nodemailer'
 import { sendEmail } from '../email'
+import emailVerificationTemplate from '../templates/verification_email_template'
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
@@ -37,7 +38,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     try {
       // send email
-      await sendEmail(`${emailLocal}@${emailDomain}`, token,  model.log, config)
+      await sendEmail(`${emailLocal}@${emailDomain}`, token, emailVerificationTemplate,  model.log, config)
     } catch (e) {
       // should I throw error?
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
