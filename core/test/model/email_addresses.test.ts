@@ -129,12 +129,9 @@ test('get user emails', async t => {
     await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
     await model.emailAddresses.validate(c, userIdx, emailAddressIdx2)
 
-    const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
-    ' FROM email_addresses AS e' +
-    ' WHERE owner_idx = $1'
-    const result = await c.query(query, [userIdx])
-    t.is(result.rows.length, 2)
-    t.is(result.rows[0].address_local, emailLocal)
-    t.is(result.rows[0].address_domain, emailDomain)
+    const result = await model.emailAddresses.getEmailsByOwnerIdx(c, userIdx)
+    t.is(result.length, 2)
+    t.is(result[0].local, emailLocal)
+    t.is(result[0].domain, emailDomain)
   })
 })

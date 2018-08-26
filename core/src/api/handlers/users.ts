@@ -101,7 +101,7 @@ export function checkPasswordToken(model: Model): IMiddleware {
         username = result.rows[0].username
       })
     } catch (e) {
-      ctx.status = 400
+      ctx.status = 401
       return
     }
 
@@ -140,7 +140,7 @@ export function changePassword(model: Model): IMiddleware {
       ctx.status = 400
       return
     }
-
+    // TODO: check password token and go on
   }
 }
 

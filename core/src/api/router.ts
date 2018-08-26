@@ -77,8 +77,8 @@ export function createRouter(model: Model, config: Config): Router {
    * Get user's emails.
    * 200 if success.
    * @param username username.
-   * @returns emails: Array of string.
+   * @returns emails: Array of EmailAddress.
    */
-  router.post('/api/user/emails', getUserEmails(model))
+  router.get('/api/user/emails', getUserEmails(model))
   return router
 }
