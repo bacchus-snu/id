@@ -131,10 +131,6 @@ export default class ChangeAccount extends Vue {
     return this.$store.state.username
   }
 
-  private emailConcat(email: EmailAddress): string {
-    return `${email.local}@${email.domain}`
-  }
-
   public submitEmail() {
     const emailRef = 'emailForm'
     const emailElement: any = this.$refs[emailRef]
@@ -180,18 +176,21 @@ export default class ChangeAccount extends Vue {
   }
 
   public async changeShell() {
-    /*
-    const response = await axios.post('/api/email/verify', {
+    const response = await axios.post('/api/user/shell', {
       shell: this.shellModel.shell,
     }, { validateStatus: () => true })
+
     if (response.status !== 200) {
       this.$notify.error(this.failTrans[this.lang])
       return
     }
+
     this.isShellChanged = true
-    */
   }
 
+  private emailConcat(email: EmailAddress): string {
+    return `${email.local}@${email.domain}`
+  }
 }
 </script>
 
