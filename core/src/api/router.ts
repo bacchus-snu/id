@@ -2,7 +2,7 @@ import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import { login, logout, checkLogin } from './handlers/login'
-import { createUser, changePassword, checkPasswordToken } from './handlers/users'
+import { createUser, changePassword, checkPasswordToken, getUserEmails } from './handlers/users'
 import { sendVerificationEmail, checkEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 
@@ -31,7 +31,7 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    * Get shell list.
    * 200 if success.
-   * @returns shell: Array of string.
+   * @returns shells: Array of string.
    */
   router.get('/api/shells', getShells(model))
 
@@ -73,5 +73,12 @@ export function createRouter(model: Model, config: Config): Router {
    */
   router.post('/api/user/check-token', checkPasswordToken(model))
 
+  /**
+   * Get user's emails.
+   * 200 if success.
+   * @param username username.
+   * @returns emails: Array of string.
+   */
+  router.post('/api/user/emails', getUserEmails(model))
   return router
 }

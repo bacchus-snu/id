@@ -117,3 +117,24 @@ test('token expiration', async t => {
     t.fail()
   })
 })
+
+test('get user emails', async t => {
+  await model.pgDo(async c => {
+    const userIdx = await createUser(c, model)
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const emailAddressIdx2 = await createEmailAddress(c, model)
+
+    await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
+    await model.emailAddresses.validate(c, userIdx, emailAddressIdx2)
+
+    const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
+    ' FROM email_addresses AS e' +
+    ' WHERE owner_idx = $1'
+    const result = await c.query(query, [userIdx])
+    t.is(result.rows.length, 2)
+    t.is(result.rows[0].address_local, emailLocal)
+    t.is(result.rows[0].address_domain, emailDomain)
+  })
+})

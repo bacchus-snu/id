@@ -90,6 +90,17 @@ export default class EmailAddresses {
     }
   }
 
+  public async getEmailsByOwnerIdx(client: PoolClient, ownerIdx: number): Promise<Array<string>> {
+    const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
+    ' FROM email_addresses AS e' +
+    ' WHERE owner_idx = $1'
+    const result = await client.query(query, [ownerIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows.map(row => (row.address_local + '@' + row.address_domain))
+  }
+
   private asyncRandomBytes(n: number): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(n, (err, buf) => {

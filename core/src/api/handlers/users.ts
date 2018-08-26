@@ -2,6 +2,7 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
+import { createContext } from 'vm'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
@@ -140,5 +141,48 @@ export function changePassword(model: Model): IMiddleware {
       return
     }
 
+  }
+}
+
+export function getUserEmails(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const body: any = ctx.request.body
+
+    if (body == null || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const { username } = body
+
+    if (!username) {
+      ctx.status = 400
+      return
+    }
+
+    let ownerIdx: any
+    try {
+      await model.pgDo(async c => {
+        const owner = await model.users.getByUsername(c, username)
+        ownerIdx = owner.idx
+      })
+    } catch (e) {
+      ctx.status = 400
+      return
+    }
+
+    if (!ownerIdx) {
+      ctx.status = 400
+      return
+    }
+
+    let emails
+    await model.pgDo(async c => {
+      emails = await model.emailAddresses.getEmailsByOwnerIdx(c, ownerIdx)
+    })
+
+    ctx.status = 200
+    ctx.body = { emails }
+    await next()
   }
 }
