@@ -8,6 +8,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import ChangeAccount from '~/components/ChangeAccount'
 import axios from 'axios'
+import { EmailAddress } from '~/types/user'
 
 @Component({
   components: {
@@ -16,7 +17,7 @@ import axios from 'axios'
 })
 export default class MyAccountPage extends Vue {
   private shellList: Array<string> = []
-  private emailList: Array<string> = []
+  private emailList: Array<EmailAddress> = []
 
   private async asyncData({ store }) {
     const result = await axios.get(process.env.baseUrl + '/api/shells', {
@@ -24,7 +25,7 @@ export default class MyAccountPage extends Vue {
     })
     const response = await axios.get(process.env.baseUrl + '/api/user/emails',
       { validateStatus: () => true })
-    return { shellList : result.data.shells, emailList : response.data.emails}
+    return { shellList : result.data.shells, emailList : response.data.emails }
   }
 
 }

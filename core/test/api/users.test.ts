@@ -122,3 +122,55 @@ test('get user email addresses', async t => {
   t.is(response.status, 200)
   t.is(response.body.emails.length, 2)
 })
+
+test('change password', async t => {
+  const username = uuid()
+  const password = uuid()
+  const emailLocal = uuid()
+  const emailDomain = uuid()
+  let userIdx = -1
+
+  await model.pgDo(async c => {
+    const emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.emailAddresses.validate(c, userIdx, emailIdx)
+  })
+
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.post('/api/user/send-password-token').send({
+    emailLocal,
+    emailDomain,
+  })
+  t.is(response.status, 200)
+
+  let token
+  await model.pgDo(async c => {
+    const result = await c.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [userIdx])
+    t.is(result.rows.length, 1)
+    token = result.rows[0].token
+  })
+
+  const newPassword = uuid()
+  response = await agent.post('/api/user/change-password').send({
+    currentPassword: password,
+    newPassword,
+    token: 'doge',
+  })
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/user/change-password').send({
+    currentPassword: password,
+    newPassword,
+    token,
+  })
+  t.is(response.status, 200)
+
+  await model.pgDo(async c => {
+    await model.users.authenticate(c, username, newPassword)
+  })
+
+  t.pass()
+})
