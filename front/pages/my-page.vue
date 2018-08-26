@@ -18,11 +18,14 @@ export default class MyAccountPage extends Vue {
   private shellList: Array<string> = []
   private emailList: Array<string> = []
 
-  private async asyncData() {
+  private async asyncData({store}) {
     const result = await axios.get(process.env.baseUrl + '/api/shells', {
       validateStatus: () => true,
     })
-    return { shellList : result.data.shells, emailList : ['example@gmail.com'] }
+    const response = await axios.post(process.env.baseUrl + '/api/user/emails', {
+      username: store.state.username
+    }, { validateStatus: () => true })
+    return { shellList : result.data.shells, emailList : response.data.emails}
   }
 
 }
