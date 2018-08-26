@@ -23,7 +23,7 @@ export default class MyAccountPage extends Vue {
       validateStatus: () => true,
     })
     const response = await axios.post(process.env.baseUrl + '/api/user/emails', {
-      username: store.state.username
+      username: store.state.username,
     }, { validateStatus: () => true })
     return { shellList : result.data.shells, emailList : response.data.emails}
   }
