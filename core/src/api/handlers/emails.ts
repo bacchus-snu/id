@@ -37,7 +37,8 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     try {
       // send email
-      await sendEmail(`${emailLocal}@${emailDomain}`, token, emailVerificationTemplate,  model.log, config)
+      await sendEmail(`${emailLocal}@${emailDomain}`, token, config.email.verificationEmailSubject,
+        emailVerificationTemplate,  model.log, config)
     } catch (e) {
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }

@@ -3,7 +3,8 @@ import Config from '../config'
 import * as Bunyan from 'bunyan'
 import * as fs from 'fs'
 
-export async function sendEmail(emailAddrsss: string, token: string, template: string, logger: Bunyan, config: Config) {
+export async function sendEmail(emailAddrsss: string, token: string,
+  subject: string, template: string, logger: Bunyan, config: Config) {
   if (config === null) {
     logger.warn('No config, so the verification email will not be sent.')
     return
@@ -26,7 +27,7 @@ export async function sendEmail(emailAddrsss: string, token: string, template: s
   const messageOption = {
     from: config.email.username,
     to: emailAddrsss,
-    subject: config.email.subject,
+    subject,
     html: template.replace('VERIFICATION_LINK', tokenAddress),
   }
 

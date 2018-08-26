@@ -23,7 +23,8 @@
     "host": "smtp.gmail.com",
     "username": "INSERT_USERNAME_HERE",
     "password": "INSERT_PASSWORD_HERE",
-    "subject": "id.snucse.org 이메일 인증",
+    "verificationEmailSubject": "id.snucse.org 이메일 인증",
+    "passwordChangeEmailSubject": "id.snucse.org 비밀번호 변경",
     "url": "http://localhost:3000"
   },
   "posix": {
