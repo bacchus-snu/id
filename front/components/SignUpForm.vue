@@ -16,11 +16,6 @@
     <el-form-item :label="checkTrans[lang]" prop="pwdcheck">
       <el-input type="password" v-model="models.pwdcheck"></el-input>
     </el-form-item>
-    <el-form-item :label="shellTrans[lang]" prop="shell">
-      <el-select v-model="models.shell" placeholder="Please select your shell">
-      <el-option v-for="shell in shellList" :value=shell :key="shell">{{ shell }}</el-option>
-      </el-select>
-    </el-form-item>
   </el-form>
   <el-button class="button" type="warning" @click="submitForm('signupForm')">{{ createTrans[lang] }}</el-button>
   </el-card>
@@ -40,11 +35,8 @@ export default class SignUpForm extends Vue {
     username: '',
     password: '',
     pwdcheck: '',
-    shell: '',
   }
 
-  @Prop()
-  private readonly shellList: Array<string>
   private readonly nameTrans: Translation = {
     ko: '이름',
     en: 'Name',
@@ -60,10 +52,6 @@ export default class SignUpForm extends Vue {
   private readonly checkTrans: Translation = {
     ko: '비밀번호 확인',
     en: 'Confirm password',
-  }
-  private readonly shellTrans: Translation = {
-    ko: '쉘',
-    en: 'Shell',
   }
   private readonly createTrans: Translation = {
     ko: '계정 생성',
@@ -114,11 +102,6 @@ export default class SignUpForm extends Vue {
       required: true,
       validator: this.validatePassword,
       trigger: 'blur',
-    }],
-    shell: [{
-      required: true,
-      message: ' ',
-      trigger: 'change',
     }],
   }
 

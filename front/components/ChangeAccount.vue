@@ -12,7 +12,7 @@
           <el-form @submit.native.prevent="submitEmail" :model="emailModel" status-icon ref="emailForm" :rules="emailRule">
             <el-form-item prop="email">
             <el-select v-model="emailModel.email" placeholder="Please select your email">
-              <el-option v-for="email in emailListConcat" :value=email :key="email">{{ email }}</el-option>
+              <el-option v-for="email in emailList" :value="concatEmail(email)" :key="email">{{ email }}</el-option>
             </el-select>
             </el-form-item>
           </el-form>
@@ -29,7 +29,7 @@
           <el-form @submit.native.prevent="submitShell" :model="shellModel" status-icon ref="shellForm" :rules="shellRule">
             <el-form-item prop="shell">
             <el-select v-model="shellModel.shell" placeholder="Please select your shell">
-              <el-option v-for="shell in shellList" :value=shell :key="shell">{{ shell }}</el-option>
+              <el-option v-for="shell in shellList" :value="shell" :key="shell">{{ shell }}</el-option>
             </el-select>
             </el-form-item>
           </el-form>
@@ -50,7 +50,10 @@ import { EmailAddress } from '../types/user'
 export default class ChangeAccount extends Vue {
   @Provide()
   public emailModel = {
-    email: '',
+    email: {
+      emailLocal: '',
+      emailDomain: '',
+    },
   }
   @Provide()
   public shellModel = {
@@ -128,8 +131,8 @@ export default class ChangeAccount extends Vue {
     return this.$store.state.username
   }
 
-  get emailListConcat(): Array<string> {
-    return this.emailList.map(emailAddress => emailAddress.local + '@' + emailAddress.domain)
+  private emailConcat(email: EmailAddress): string {
+    return `${email.local}@${email.domain}`
   }
 
   public submitEmail() {
@@ -148,16 +151,17 @@ export default class ChangeAccount extends Vue {
   }
 
   public async sendEmail() {
-    /*
-    const response = await axios.post('', {
-      email: this.emailModel.email
+    const response = await axios.post('/api/user/send-password-token', {
+      emailLocal: this.emailModel.email.emailLocal,
+      emailDomain: this.emailModel.email.emailDomain,
     }, { validateStatus: () => true })
+
     if (response.status !== 200) {
       this.$notify.error(this.failTrans[this.lang])
       return
     }
+
     this.isEmailSent = true
-    */
   }
 
   public submitShell() {

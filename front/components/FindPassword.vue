@@ -104,16 +104,16 @@ export default class ValidateForm extends Vue {
   }
 
   public async sendEmail() {
-    /*
-    const response = await axios.post('', {
-      emailLocal: this.emailLocal,
-      emailDomain: this.emailDomain,
+    const response = await axios.post('/api/user/send-password-token', {
+      emailLocal: this.emailModel.email.emailLocal,
+      emailDomain: this.emailModel.email.emailDomain,
     }, { validateStatus: () => true })
+
     if (response.status !== 200) {
       this.$notify.error(this.failTrans[this.lang])
       return
     }
-    */
+
     this.isEmailSent = true
   }
 
