@@ -73,7 +73,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
   }
 }
 
-export function sendChangePasswordEmail(model: Model): IMiddleware {
+export function sendChangePasswordEmail(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
 
@@ -98,7 +98,7 @@ export function sendChangePasswordEmail(model: Model): IMiddleware {
     try {
       await model.pgDo(async c => {
         const userIdx = await model.users.getUserIdxByEmailAddress(c, emailLocal, emailDomain)
-        token = await model.users.generatePasswordChangeToken(client, userIdx)
+        token = await model.users.generatePasswordChangeToken(c, userIdx)
       })
     } catch (e) {
       // no such entry, but do nothing and just return 200
@@ -144,6 +144,9 @@ export function changePassword(model: Model): IMiddleware {
         const userIdx = await model.users.getUserIdxByPasswordToken(c, token)
         await model.users.ensureTokenNotExpired(c, token)
         const user = await model.users.getByUserIdx(c, userIdx)
+        if (user.username === null) {
+          throw new Error()
+        }
         await model.users.authenticate(c, user.username, currentPassword)
         await model.users.changePassword(c, userIdx, newPassword)
       })

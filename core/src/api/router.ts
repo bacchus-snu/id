@@ -72,7 +72,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @param emailLocal email local.
    * @param emailDomain email domain.
    */
-  router.post('/api/user/send-password-token', sendChangePasswordEmail(model))
+  router.post('/api/user/send-password-token', sendChangePasswordEmail(model, config))
 
   /**
    * Get user's emails.

@@ -3,6 +3,7 @@ import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError } from './errors'
 import * as argon2 from 'argon2'
 import * as moment from 'moment'
+import * as crypto from 'crypto'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'

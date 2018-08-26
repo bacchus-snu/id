@@ -7,6 +7,7 @@ import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
+import * as moment from 'moment'
 
 import { createEmailAddress, createUser, createGroup } from '../test_utils'
 
@@ -144,5 +145,51 @@ test('change password', async t => {
 
     await model.users.authenticate(c, username, newPassword)
     t.pass()
+  })
+})
+
+test('change password token request with identical email idx', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const oldToken = await model.users.generatePasswordChangeToken(c, userIdx)
+    const newToken = await model.users.generatePasswordChangeToken(c, userIdx)
+
+    const query = 'SELECT token FROM password_change_tokens WHERE user_idx = $1'
+    const result = await c.query(query, [userIdx])
+    const token = result.rows[0].token
+    t.is(newToken, token)
+    t.not(oldToken, token)
+  })
+})
+
+test('token expiration', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const token = await model.users.generatePasswordChangeToken(c, userIdx)
+    const expiryResult = await c.query('SELECT expires FROM password_change_tokens WHERE token = $1', [token])
+    const originalExpires = expiryResult.rows[0].expires
+
+    const query = 'UPDATE password_change_tokens SET expires = $1 WHERE token = $2'
+    let newExpiry = moment(originalExpires).subtract(12, 'hours').toDate()
+    await c.query(query, [newExpiry, token])
+    await model.users.ensureTokenNotExpired(c, token)
+
+    newExpiry = moment(originalExpires).subtract(1, 'day').toDate()
+    await c.query(query, [newExpiry, token])
+
+    try {
+      await model.users.ensureTokenNotExpired(c, token)
+    } catch (e) {
+      t.pass()
+      return
+    }
+
+    t.fail()
   })
 })

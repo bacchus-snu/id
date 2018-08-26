@@ -74,7 +74,7 @@ test('identical address should not create new row', async t => {
   })
 })
 
-test('token request with identical email idx', async t => {
+test('verification token request with identical email idx', async t => {
   await model.pgDo(async c => {
     const emailLocal = uuid()
     const emailDomain = uuid()
