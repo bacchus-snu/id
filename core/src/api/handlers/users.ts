@@ -2,6 +2,8 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
+import { sendEmail } from '../email'
+import changePasswordTemplate from '../templates/change_password_email_template'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
@@ -66,11 +68,12 @@ export function createUser(model: Model, config: Config): IMiddleware {
       await model.emailAddresses.removeToken(c, token)
     })
     ctx.status = 201
+    ctx.session.verificationToken = null
     await next()
   }
 }
 
-export function checkPasswordToken(model: Model): IMiddleware {
+export function sendChangePasswordEmail(model: Model): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
 
@@ -80,40 +83,35 @@ export function checkPasswordToken(model: Model): IMiddleware {
     }
 
     if (!ctx.session) {
-      ctx.status = 500
-      return
-    }
-
-    const { token } = body
-
-    if (!token) {
-      ctx.status = 401
-      return
-    }
-
-    let username
-    try {
-      await model.pgDo(async c => {
-        const userIdx = await model.users.getUserIdxByPasswordToken(c, token)
-        const query = 'SELECT username FROM users WHERE idx = $1'
-        const result = await c.query(query, [userIdx])
-        username = result.rows[0].username
-      })
-    } catch (e) {
-      ctx.status = 401
-      return
-    }
-
-    if (!username) {
       ctx.status = 400
       return
     }
 
-    const data = {
-      username,
+    const { emailLocal, emailDomain } = body
+
+    if (!emailLocal || !emailDomain) {
+      ctx.status = 400
+      return
     }
 
-    ctx.body = data
+    let token = ''
+    try {
+      await model.pgDo(async c => {
+        const userIdx = await model.users.getUserIdxByEmailAddress(c, emailLocal, emailDomain)
+        token = await model.users.generatePasswordChangeToken(client, userIdx)
+      })
+    } catch (e) {
+      // no such entry, but do nothing and just return 200
+      ctx.status = 200
+      return
+    }
+
+    try {
+      await sendEmail(`${emailLocal}@${emailDomain}`, token, changePasswordTemplate,  model.log, config)
+    } catch (e) {
+      model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
+    }
+
     ctx.status = 200
     await next()
   }
@@ -133,13 +131,29 @@ export function changePassword(model: Model): IMiddleware {
       return
     }
 
-    const { currentPassword, newPassword } = body
+    const { currentPassword, newPassword, token } = body
 
-    if (!currentPassword || !newPassword) {
+    if (!currentPassword || !newPassword || !token) {
       ctx.status = 400
       return
     }
-    // TODO: check password token and go on
+
+    try {
+      // check token validity
+      await model.pgDo(async c => {
+        const userIdx = await model.users.getUserIdxByPasswordToken(c, token)
+        await model.users.ensureTokenNotExpired(c, token)
+        const user = await model.users.getByUserIdx(c, userIdx)
+        await model.users.authenticate(c, user.username, currentPassword)
+        await model.users.changePassword(c, userIdx, newPassword)
+      })
+    } catch (e) {
+      ctx.status = 401
+      return
+    }
+
+    ctx.status = 200
+    await next()
   }
 }
 

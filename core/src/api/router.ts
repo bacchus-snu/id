@@ -2,8 +2,8 @@ import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import { login, logout, checkLogin } from './handlers/login'
-import { createUser, changePassword, checkPasswordToken, getUserEmails } from './handlers/users'
-import { sendVerificationEmail, checkEmailToken } from './handlers/emails'
+import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
+import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 
 export function createRouter(model: Model, config: Config): Router {
@@ -48,7 +48,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns emailLocal email local.
    * @returns emailDomain email domain.
    */
-  router.post('/api/email/check-token', checkEmailToken(model))
+  router.post('/api/email/check-token', checkVerificationEmailToken(model))
 
   /**
    * Create user.
@@ -63,15 +63,16 @@ export function createRouter(model: Model, config: Config): Router {
    * Change password for user.
    * @param currentPassword current password.
    * @param newPassword new password.
+   * @param token change password token.
    */
   router.post('/api/user/change-password', changePassword(model))
 
   /**
-   * Check password change token.
-   * @param token token.
-   * @returns username username.
+   * Send password change email.
+   * @param emailLocal email local.
+   * @param emailDomain email domain.
    */
-  router.post('/api/user/check-token', checkPasswordToken(model))
+  router.post('/api/user/send-password-token', sendChangePasswordEmail(model))
 
   /**
    * Get user's emails.
@@ -80,5 +81,6 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns emails: Array of EmailAddress.
    */
   router.get('/api/user/emails', getUserEmails(model))
+
   return router
 }

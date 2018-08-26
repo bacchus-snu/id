@@ -1,7 +1,8 @@
 import Model from './model'
 import { PoolClient } from 'pg'
-import { NoSuchEntryError, AuthenticationError, NotActivatedError } from './errors'
+import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError } from './errors'
 import * as argon2 from 'argon2'
+import * as moment from 'moment'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'
@@ -69,6 +70,15 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
+  public async getUserIdxByEmailAddress(client: PoolClient, emailLocal: string, emailDomain: string): Promise<number> {
+    const query = 'SELECT owner_idx FROM email_addresses WHERE address_local = $1 AND address_domain = $2'
+    const result = await client.query(query, [emailLocal, emailDomain])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].owner_idx
+  }
+
   public async authenticate(client: PoolClient, username: string, password: string): Promise<number> {
     const query = 'SELECT idx, password_digest, activated FROM users WHERE username = $1'
     const result = await client.query(query, [username])
@@ -107,6 +117,39 @@ export default class Users {
     const newUid = getNewUidResult.rows[0].uid === null ? minUid : getNewUidResult.rows[0].uid
     const assignResult = await client.query('UPDATE users SET uid = $1 WHERE idx = $2 AND uid IS NULL',
       [newUid, userIdx])
+  }
+
+  public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {
+    const query = 'INSERT INTO password_change_tokens(user_idx, token, expires) VALUES ($1, $2, $3) ' +
+    'ON CONFLICT (user_idx) DO UPDATE SET token = $2'
+    const randomBytes = await this.asyncRandomBytes(32)
+    const token = randomBytes.toString('hex')
+    const expires = moment().add(1, 'day').toDate()
+    const result = await client.query(query, [userIdx, token, expires])
+    return token
+  }
+
+  public async removeToken(client: PoolClient, token: string): Promise<number> {
+    const query = 'DELETE FROM password_change_tokens WHERE token = $1 RETURNING idx'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
+  }
+
+  public async ensureTokenNotExpired(client: PoolClient, token: string): Promise<void> {
+    const query = 'SELECT expires FROM password_change_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+
+    const expires = result.rows[0].expires
+
+    if (moment().isSameOrAfter(expires)) {
+      throw new ExpiredTokenError()
+    }
   }
 
   public async changePassword(client: PoolClient, userIdx: number, newPassword: string): Promise<number> {
@@ -182,5 +225,17 @@ export default class Users {
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
     }
+  }
+
+  private asyncRandomBytes(n: number): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(n, (err, buf) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve(buf)
+      })
+    })
   }
 }
