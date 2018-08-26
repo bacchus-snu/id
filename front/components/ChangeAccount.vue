@@ -9,10 +9,10 @@
           </div>
           <h2>{{ pwdChangeTrans[lang] }}</h2>
           <h3>{{ sendLinkTrans[lang] }}</h3>
-          <el-form @submit.native.prevent="submitEmail" :model="emailModel" status-icon ref="emailForm" :rules="emailRule">
+          <el-form @submit.native.prevent="submitEmail">
             <el-form-item prop="email">
-            <el-select v-model="emailModel.email" placeholder="Please select your email">
-              <el-option v-for="email in emailList" :value="concatEmail(email)" :key="email">{{ email }}</el-option>
+            <el-select v-model="selectedEmail" placeholder="Please select your email">
+              <el-option v-for="email in emailList" :label="concatEmail(email)" :value="email" :key="concatEmail(email)">{{ concatEmail(email) }}</el-option>
             </el-select>
             </el-form-item>
           </el-form>
@@ -26,9 +26,9 @@
           </div>
           <h2>{{ shellChangeTrans[lang] }}</h2>
           <h2>{{ chooseShellTrans[lang] }}</h2>
-          <el-form @submit.native.prevent="submitShell" :model="shellModel" status-icon ref="shellForm" :rules="shellRule">
+          <el-form @submit.native.prevent="submitShell">
             <el-form-item prop="shell">
-            <el-select v-model="shellModel.shell" placeholder="Please select your shell">
+            <el-select v-model="selectedShell" placeholder="Please select your shell">
               <el-option v-for="shell in shellList" :value="shell" :key="shell">{{ shell }}</el-option>
             </el-select>
             </el-form-item>
@@ -41,25 +41,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Provide } from 'nuxt-property-decorator'
+import { Component, Prop, Vue, Provide, Watch } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 import { EmailAddress } from '../types/user'
 
 @Component({})
 export default class ChangeAccount extends Vue {
-  @Provide()
-  public emailModel = {
-    email: {
-      emailLocal: '',
-      emailDomain: '',
-    },
-  }
-  @Provide()
-  public shellModel = {
-    shell: '',
-  }
-
   @Prop()
   private readonly shellList: Array<string>
   @Prop()
@@ -69,6 +57,8 @@ export default class ChangeAccount extends Vue {
   private isRequested: boolean = false
   private isEmailSent: boolean = false
   private isShellChanged: boolean = false
+  private selectedEmail: EmailAddress = { local: '', domain: '' }
+  private selectedShell: string = ''
 
   private readonly welcomeTrans: Translation = {
     ko: this.username + '님, 환영합니다.',
@@ -115,22 +105,6 @@ export default class ChangeAccount extends Vue {
     en: 'Failed to send password change email.',
   }
 
-  @Provide()
-  private emailRule = {
-    email: [{
-      required: true,
-      message: ' ',
-      trigger: 'change',
-    }],
-  }
-  private shellRule = {
-    shell: [{
-      required: true,
-      message: ' ',
-      trigger: 'change',
-    }],
-  }
-
   get lang(): Language {
     return this.$store.state.language
   }
@@ -139,25 +113,15 @@ export default class ChangeAccount extends Vue {
     return this.$store.state.username
   }
 
-  public submitEmail() {
-    const emailRef = 'emailForm'
-    const emailElement: any = this.$refs[emailRef]
-    emailElement.validate(async valid => {
-      if (valid) {
-        this.isSubmitted = true
-        await this.sendEmail()
-        emailElement.resetFields()
-        this.isSubmitted = false
-      } else {
-        return false
-      }
-    })
+  public async submitEmail() {
+    this.isSubmitted = true
+    await this.sendEmail()
   }
 
   public async sendEmail() {
     const response = await axios.post('/api/user/send-password-token', {
-      emailLocal: this.emailModel.email.emailLocal,
-      emailDomain: this.emailModel.email.emailDomain,
+      emailLocal: this.selectedEmail.local,
+      emailDomain: this.selectedEmail.domain,
     }, { validateStatus: () => true })
 
     if (response.status !== 200) {
@@ -168,24 +132,19 @@ export default class ChangeAccount extends Vue {
     this.isEmailSent = true
   }
 
-  public submitShell() {
-    const shellRef = 'shellForm'
-    const shellElement: any = this.$refs[shellRef]
-    shellElement.validate(async valid => {
-      if (valid) {
-        this.isRequested = true
-        await this.changeShell()
-        shellElement.resetFields()
-        this.isRequested = false
-      } else {
-        return false
-      }
-    })
+  public async submitShell() {
+    if (!this.selectedShell) {
+      return
+    }
+
+    this.isRequested = true
+    await this.changeShell()
+    this.isRequested = false
   }
 
   public async changeShell() {
     const response = await axios.post('/api/user/shell', {
-      shell: this.shellModel.shell,
+      shell: this.selectedShell,
     }, { validateStatus: () => true })
 
     if (response.status !== 200) {
@@ -196,7 +155,7 @@ export default class ChangeAccount extends Vue {
     this.isShellChanged = true
   }
 
-  private emailConcat(email: EmailAddress): string {
+  private concatEmail(email: EmailAddress): string {
     return `${email.local}@${email.domain}`
   }
 }

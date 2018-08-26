@@ -6,12 +6,12 @@
       <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" required size="small"/>
     </el-form-item>
     <el-form-item label="Password">
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" required size="small"/>
       <nuxt-link to="/password-reset">
       <div class="forgot">
       {{ forgotTrans[lang] }}
       </div>
       </nuxt-link>
-      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" required size="small"/>
     </el-form-item>
     <el-form-item>
       <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
