@@ -181,3 +181,38 @@ test('change password', async t => {
 
   t.pass()
 })
+
+test('change shell', async t => {
+  const username = uuid()
+  const password = uuid()
+  const newShell = uuid()
+  let userIdx = -1
+
+  await model.pgDo(async c => {
+    const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
+    userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    await model.emailAddresses.validate(c, userIdx, emailIdx)
+    await model.shells.addShell(c, newShell)
+  })
+
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.get('/api/user/shell').send()
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username,
+    password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post('/api/user/shell').send({
+    shell: newShell,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.get('/api/user/shell').send({})
+  t.is(response.body.shell, newShell)
+})

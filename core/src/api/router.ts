@@ -3,6 +3,7 @@ import Model from '../model/model'
 import Config from '../config'
 import { login, logout, checkLogin } from './handlers/login'
 import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
+import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 
@@ -81,6 +82,19 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns emails: Array of EmailAddress.
    */
   router.get('/api/user/emails', getUserEmails(model))
+
+  /**
+   * Get user current shell.
+   * 200 if success.
+   */
+  router.get('/api/user/shell', getUserShell(model))
+
+  /**
+   * Change user shell.
+   * 200 if success.
+   * @param shell shell.
+   */
+  router.post('/api/user/shell', changeUserShell(model))
 
   return router
 }

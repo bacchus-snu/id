@@ -163,6 +163,24 @@ export default class Users {
     return result.rows[0].idx
   }
 
+  public async changeShell(client: PoolClient, userIdx: number, shell: string): Promise<number> {
+    const query = 'UPDATE users SET shell = $1 WHERE idx = $2 RETURNING idx'
+    const result = await client.query(query, [shell, userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
+  }
+
+  public async getShell(client: PoolClient, userIdx: number): Promise<string> {
+    const query = 'SELECT shell FROM users WHERE idx = $1'
+    const result = await client.query(query, [userIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].shell
+  }
+
   public async addUserMembership(client: PoolClient, userIdx: number, groupIdx: number): Promise<number> {
     const query = 'INSERT INTO user_memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
     const result = await client.query(query, [userIdx, groupIdx])

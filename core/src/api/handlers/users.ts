@@ -160,9 +160,73 @@ export function changePassword(model: Model): IMiddleware {
   }
 }
 
+export function getUserShell(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    // authorize
+    if (!ctx.session || !ctx.session.userIdx) {
+      ctx.status = 401
+      return
+    }
+
+    const userIdx = ctx.session.userIdx
+
+    let shell: string = ''
+    try {
+      await model.pgDo(async c => {
+        shell = await model.users.getShell(c, userIdx)
+      })
+    } catch (e) {
+      ctx.status = 400
+      return
+    }
+
+    ctx.status = 200
+    ctx.body = {
+      shell,
+    }
+    await next()
+  }
+}
+
+export function changeUserShell(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    // authorize
+    if (!ctx.session || !ctx.session.userIdx) {
+      ctx.status = 401
+      return
+    }
+
+    const userIdx = ctx.session.userIdx
+    const body: any = ctx.request.body
+
+    if (body == null || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const { shell } = body
+
+    if (!shell || typeof shell !== 'string') {
+      ctx.status = 400
+      return
+    }
+
+    try {
+      await model.pgDo(async c => {
+        await model.users.changeShell(c, userIdx, shell)
+      })
+    } catch (e) {
+      ctx.status = 400
+      return
+    }
+
+    ctx.status = 200
+    await next()
+  }
+}
+
 export function getUserEmails(model: Model): IMiddleware {
   return async (ctx, next) => {
-
     // authorize
     if (!ctx.session || !ctx.session.username) {
       ctx.status = 401

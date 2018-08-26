@@ -193,3 +193,18 @@ test('token expiration', async t => {
     t.fail()
   })
 })
+
+test('change user shell', async t => {
+  await model.pgDo(async c => {
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const newShell = uuid()
+    await model.shells.addShell(c, newShell)
+    await model.users.changeShell(c, userIdx, newShell)
+
+    const currentShell = await model.users.getShell(c, userIdx)
+    t.is(currentShell, newShell)
+  })
+})
