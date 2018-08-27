@@ -23,7 +23,7 @@ test('create user step by step', async t => {
 
   let response
   const emailLocal = uuid()
-  const emailDomain = uuid()
+  const emailDomain = 'snu.ac.kr'
   const username = 'a' + crypto.randomBytes(4).toString('hex')
   const password = uuid()
   const name = uuid()
