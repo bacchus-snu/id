@@ -1,18 +1,18 @@
 <template>
   <div>
-    <change-account :emailList="emailList" :shellList="shellList"></change-account>
+    <my-page :emailList="emailList" :shellList="shellList"></my-page>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import ChangeAccount from '~/components/ChangeAccount'
+import MyPage from '~/components/MyPage'
 import axios from 'axios'
 import { EmailAddress } from '~/types/user'
 
 @Component({
   components: {
-    'change-account': ChangeAccount,
+    'my-page': MyPage,
   },
 })
 export default class MyAccountPage extends Vue {

@@ -42,6 +42,18 @@ export default class EmailAddresses {
     await client.query(query, [userIdx, emailAddressIdx])
   }
 
+  public async isValidatedEmail(client: PoolClient, emailAddressIdx: number): Promise<boolean> {
+    const query = 'SELECT owner_idx FROM email_addresses WHERE idx = $1'
+    const result = await client.query(query, [emailAddressIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    if (result.rows[0].owner_idx) {
+      return true
+    }
+    return false
+  }
+
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
     const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3) ' +
     'ON CONFLICT (email_idx) DO UPDATE SET token = $2'

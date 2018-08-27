@@ -1,28 +1,33 @@
 <template>
   <div>
-    <h1 class="welcome">{{ welcomeTrans[lang] }}</h1>
+    <h1 class="welcome">{{ welcomeTrans }}</h1>
     <el-row type="flex" justify="center">
       <el-col :span="8">
         <el-card class="account">
           <div slot="header" class="card-head">
-          <span>{{ passwordTrans[lang] }}</span>
+            <span>{{ passwordTrans[lang] }}</span>
           </div>
-          <h2>{{ pwdChangeTrans[lang] }}</h2>
-          <h3>{{ sendLinkTrans[lang] }}</h3>
-          <el-form @submit.native.prevent="submitEmail">
-            <el-form-item prop="email">
-            <el-select v-model="selectedEmail" placeholder="Please select your email">
-              <el-option v-for="email in emailList" :label="concatEmail(email)" :value="email" :key="concatEmail(email)">{{ concatEmail(email) }}</el-option>
-            </el-select>
-            </el-form-item>
-          </el-form>
-          <el-button :disabled="isSubmitted" class="button" type="warning" @click="submitEmail">{{ sendTrans[lang] }}</el-button>
+          <template v-if="!isEmailSent">
+            <h2>{{ pwdChangeTrans[lang] }}</h2>
+            <h3>{{ sendLinkTrans[lang] }}</h3>
+            <el-form @submit.native.prevent="submitEmail">
+              <el-form-item prop="email">
+              <el-select v-model="selectedEmail" placeholder="Please select your email">
+                <el-option v-for="email in emailList" :label="concatEmail(email)" :value="email" :key="concatEmail(email)">{{ concatEmail(email) }}</el-option>
+              </el-select>
+              </el-form-item>
+            </el-form>
+            <el-button :disabled="isEmailSendRequested" class="button" type="warning" @click="submitEmail">{{ sendTrans[lang] }}</el-button>
+          </template>
+          <template v-else>
+            <h2>{{ sentEmailSuccessfulTrans[lang] }}</h2>
+          </template>
         </el-card>
       </el-col>
       <el-col :span="8" :offset="1">
         <el-card class="account">
           <div slot="header" class="card-head">
-          <span>{{ shellTrans[lang] }}</span>
+            <span>{{ shellTrans[lang] }}</span>
           </div>
           <h2>{{ shellChangeTrans[lang] }}</h2>
           <h2>{{ chooseShellTrans[lang] }}</h2>
@@ -33,7 +38,7 @@
             </el-select>
             </el-form-item>
           </el-form>
-          <el-button :disabled="isRequested" class="button" type="warning" @click="submitShell">{{ changeTrans[lang] }}</el-button>
+          <el-button :disabled="isShellChangeRequested" class="button" type="warning" @click="submitShell">{{ changeTrans[lang] }}</el-button>
         </el-card>
       </el-col>
     </el-row>
@@ -47,22 +52,25 @@ import { Translation, Language } from '../types/translation'
 import { EmailAddress } from '../types/user'
 
 @Component({})
-export default class ChangeAccount extends Vue {
+export default class MyPage extends Vue {
   @Prop()
   private readonly shellList: Array<string>
   @Prop()
   private readonly emailList: Array<EmailAddress>
 
-  private isSubmitted: boolean = false
-  private isRequested: boolean = false
+  private isEmailSendRequested: boolean = false
+  private isShellChangeRequested: boolean = false
   private isEmailSent: boolean = false
   private isShellChanged: boolean = false
   private selectedEmail: EmailAddress = { local: '', domain: '' }
   private selectedShell: string = ''
 
-  private readonly welcomeTrans: Translation = {
-    ko: this.username + '님, 환영합니다.',
-    en: 'Welcome, ' + this.username + '.',
+  get welcomeTrans() {
+    if (this.lang === 'ko') {
+      return `${this.username}님, 환영합니다.`
+    } else {
+      return `Welcome, ${this.username}.`
+    }
   }
   private readonly passwordTrans: Translation = {
     ko: '비밀번호 변경',
@@ -104,6 +112,14 @@ export default class ChangeAccount extends Vue {
     ko: '비밀번호 재설정 이메일을 보내는 데에 실패하였습니다.',
     en: 'Failed to send password change email.',
   }
+  private readonly sentEmailSuccessfulTrans: Translation = {
+    ko: '비밀번호 재설정 링크가 메일로 전송되었습니다.',
+    en: 'Password reset email was sent successfully.',
+  }
+  private readonly successShellChangeTrans: Translation = {
+    ko: '성공적으로 셸이 변경되었습니다.',
+    en: 'Your shell was successfully changed.',
+  }
 
   get lang(): Language {
     return this.$store.state.language
@@ -113,12 +129,24 @@ export default class ChangeAccount extends Vue {
     return this.$store.state.username
   }
 
-  public async submitEmail() {
-    this.isSubmitted = true
+  private async mounted() {
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 200 && response.data.username) {
+      this.$store.commit('changeUsername', response.data.username)
+    } else {
+      this.$router.push('/')
+    }
+  }
+
+  private async submitEmail() {
+    this.isEmailSendRequested = true
     await this.sendEmail()
   }
 
-  public async sendEmail() {
+  private async sendEmail() {
     const response = await axios.post('/api/user/send-password-token', {
       emailLocal: this.selectedEmail.local,
       emailDomain: this.selectedEmail.domain,
@@ -132,17 +160,17 @@ export default class ChangeAccount extends Vue {
     this.isEmailSent = true
   }
 
-  public async submitShell() {
+  private async submitShell() {
     if (!this.selectedShell) {
       return
     }
 
-    this.isRequested = true
+    this.isShellChangeRequested = true
     await this.changeShell()
-    this.isRequested = false
+    this.isShellChangeRequested = false
   }
 
-  public async changeShell() {
+  private async changeShell() {
     const response = await axios.post('/api/user/shell', {
       shell: this.selectedShell,
     }, { validateStatus: () => true })
@@ -152,7 +180,7 @@ export default class ChangeAccount extends Vue {
       return
     }
 
-    this.isShellChanged = true
+    this.$notify.success(this.successShellChangeTrans[this.lang])
   }
 
   private concatEmail(email: EmailAddress): string {

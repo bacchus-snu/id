@@ -155,21 +155,12 @@ test('change password', async t => {
 
   const newPassword = uuid()
   response = await agent.post('/api/user/change-password').send({
-    currentPassword: password,
     newPassword,
     token: 'doge',
   })
   t.is(response.status, 401)
 
   response = await agent.post('/api/user/change-password').send({
-    currentPassword: 'doge',
-    newPassword,
-    token,
-  })
-  t.is(response.status, 401)
-
-  response = await agent.post('/api/user/change-password').send({
-    currentPassword: password,
     newPassword,
     token,
   })

@@ -26,7 +26,8 @@
     "password": "INSERT_PASSWORD_HERE",
     "verificationEmailSubject": "id.snucse.org 이메일 인증",
     "passwordChangeEmailSubject": "id.snucse.org 비밀번호 변경",
-    "url": "https://id.snucse.org"
+    "verificationEmailUrl": "https://id.snucse.org/sign-up",
+    "passwordChangeEmailUrl": "https://id.snucse.org/change-password"
   },
   "posix": {
     "userGroupName": "cseusers",

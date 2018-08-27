@@ -71,7 +71,7 @@ export default class SignUpForm extends Vue {
   }
   private readonly lengthErrorTrans: Translation = {
     ko: '비밀번호는 최소 8자리여야 합니다',
-    en: 'The password should be at leat 8 characters',
+    en: 'The password should be at least 8 characters',
   }
   private readonly usernameValidateTrans: Translation = {
     ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자, _ 만 포함된 20자 이하여야 합니다.',
@@ -128,7 +128,7 @@ export default class SignUpForm extends Vue {
     }
   }
 
-  public submitForm(formName) {
+  public submitForm() {
     const elementRef = 'signupForm'
     const formElement: any = this.$refs[elementRef]
     formElement.validate( valid => {

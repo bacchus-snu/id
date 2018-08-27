@@ -108,7 +108,7 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
 
     try {
       await sendEmail(`${emailLocal}@${emailDomain}`, token, config.email.passwordChangeEmailSubject,
-        changePasswordTemplate,  model.log, config)
+        config.email.passwordChangeEmailUrl, changePasswordTemplate,  model.log, config)
     } catch (e) {
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }
@@ -132,9 +132,14 @@ export function changePassword(model: Model): IMiddleware {
       return
     }
 
-    const { currentPassword, newPassword, token } = body
+    const { newPassword, token } = body
 
-    if (!currentPassword || !newPassword || !token) {
+    if (!newPassword || !token) {
+      ctx.status = 400
+      return
+    }
+
+    if (newPassword.length < 8) {
       ctx.status = 400
       return
     }
@@ -148,7 +153,6 @@ export function changePassword(model: Model): IMiddleware {
         if (user.username === null) {
           throw new Error()
         }
-        await model.users.authenticate(c, user.username, currentPassword)
         await model.users.changePassword(c, userIdx, newPassword)
         await model.users.removeToken(c, token)
       })

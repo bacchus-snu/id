@@ -126,9 +126,14 @@ export interface EmailConfig {
   passwordChangeEmailSubject: string
 
   /**
-   * URL of id.snucse.org
+   * URL of id.snucse.org/sign-up
    */
-  url: string
+  verificationEmailUrl: string
+
+  /**
+   * URL of id.snucse.org/change-password
+   */
+  passwordChangeEmailUrl: string
 }
 
 /**

@@ -62,7 +62,6 @@ export function createRouter(model: Model, config: Config): Router {
 
   /**
    * Change password for user.
-   * @param currentPassword current password.
    * @param newPassword new password.
    * @param token change password token.
    */

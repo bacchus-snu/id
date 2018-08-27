@@ -28,6 +28,10 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
       // create email address and generate token
       await model.pgDo(async c => {
         emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+        const isValidated = await model.emailAddresses.isValidatedEmail(c, emailIdx)
+        if (isValidated) {
+          throw new Error('already validated')
+        }
         token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
       })
     } catch (e) {
@@ -38,7 +42,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
     try {
       // send email
       await sendEmail(`${emailLocal}@${emailDomain}`, token, config.email.verificationEmailSubject,
-        emailVerificationTemplate,  model.log, config)
+        config.email.verificationEmailUrl, emailVerificationTemplate,  model.log, config)
     } catch (e) {
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }
