@@ -17,7 +17,7 @@
       <el-input type="password" v-model="models.pwdcheck"></el-input>
     </el-form-item>
   </el-form>
-  <el-button class="button" type="warning" @click="submitForm('signupForm')">{{ createTrans[lang] }}</el-button>
+  <el-button class="button" type="warning" @click="submitForm">{{ createTrans[lang] }}</el-button>
   </el-card>
 </template>
 
