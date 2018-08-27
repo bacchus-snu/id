@@ -14,9 +14,16 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
       return
     }
 
-    const { emailLocal, emailDomain } = body
+    let { emailLocal, emailDomain } = body
+    emailLocal = emailLocal.trim()
+    emailDomain = emailDomain.trim()
 
     if (!emailLocal || !emailDomain) {
+      ctx.status = 400
+      return
+    }
+
+    if (emailDomain !== 'snu.ac.kr') {
       ctx.status = 400
       return
     }
