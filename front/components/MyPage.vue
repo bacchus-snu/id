@@ -53,16 +53,14 @@ import { EmailAddress } from '../types/user'
 
 @Component({})
 export default class MyPage extends Vue {
-  @Prop()
-  private readonly shellList: Array<string>
-  @Prop()
-  private readonly emailList: Array<EmailAddress>
+  private shellList: Array<string> = []
+  private emailList: Array<EmailAddress> = []
 
   private isEmailSendRequested: boolean = false
   private isShellChangeRequested: boolean = false
   private isEmailSent: boolean = false
   private isShellChanged: boolean = false
-  private selectedEmail: EmailAddress = { local: '', domain: '' }
+  private selectedEmail: EmailAddress | null = null
   private selectedShell: string = ''
 
   get welcomeTrans() {
@@ -139,14 +137,27 @@ export default class MyPage extends Vue {
     } else {
       this.$router.push('/')
     }
+
+    const shellResponse = await axios.get('/api/shells', {
+      validateStatus: () => true,
+    })
+    const emailResponse = await axios.get('/api/user/emails',
+      { validateStatus: () => true })
+
+    this.shellList = shellResponse.data.shells
+    this.emailList = emailResponse.data.emails
   }
 
   private async submitEmail() {
     this.isEmailSendRequested = true
     await this.sendEmail()
+    this.isEmailSendRequested = false
   }
 
   private async sendEmail() {
+    if (this.selectedEmail === null) {
+      return
+    }
     const response = await axios.post('/api/user/send-password-token', {
       emailLocal: this.selectedEmail.local,
       emailDomain: this.selectedEmail.domain,
