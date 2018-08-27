@@ -1,8 +1,8 @@
 <template>
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
-    <el-row type="flex" justify="center">
-      <el-col :span="8">
+    <el-row>
+      <el-col :offset="4" :span="8" :md="{span: 12, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card class="account">
           <div slot="header" class="card-head">
             <span>{{ passwordTrans[lang] }}</span>
@@ -24,7 +24,7 @@
           </template>
         </el-card>
       </el-col>
-      <el-col :span="8" :offset="1">
+      <el-col :span="8" :md="{span: 12, offset: 0}" :xs="24">
         <el-card class="account">
           <div slot="header" class="card-head">
             <span>{{ shellTrans[lang] }}</span>
@@ -217,8 +217,9 @@ export default class MyPage extends Vue {
 .account {
   margin-top: 8%;
   text-align: center;
-  height: 380px;
   vertical-align: middle;
+  margin-right: 20px;
+  margin-left: 20px;
 }
 
 .button {
