@@ -4,7 +4,7 @@
     <span>Sign up</span>
   </div>
   <el-form @submit.native.prevent="submitForm" :model="models" status-icon size="medium" ref="signupForm" :rules="rules" label-width="150px">
-    <el-form-item :label="nameTrans[lang]" prop="name" required>
+    <el-form-item :label="nameTrans[lang]" prop="name">
       <el-input v-model="models.name"></el-input>
     </el-form-item>
     <el-form-item :label="usernameTrans[lang]" prop="username" style="margin-bottom: 40px">
