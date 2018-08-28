@@ -76,7 +76,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     await model.pgDo(async c => {
       const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
       const userIdx = await model.users.create(
-        c, username, password, name, emailAddressIdx, config.posix.defaultShell, preferredLanguage)
+        c, username, password, name, config.posix.defaultShell, preferredLanguage)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
       await model.emailAddresses.removeToken(c, token)
     })

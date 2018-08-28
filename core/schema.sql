@@ -44,8 +44,6 @@ create table users (
 
   -- Activated
   activated boolean not null default true
-
-  -- primary_email_address_idx integer not null unique references email_addresses(idx)
 );
 
 -- Email addresses
@@ -65,8 +63,6 @@ create table email_verification_tokens (
   token text unique not null check (token <> ''),
   expires timestamp with time zone not null
 );
-
-alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);
 
 -- SNU IDs
 create table snuids (
