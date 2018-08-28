@@ -66,6 +66,67 @@ export interface APIConfig {
 }
 
 /**
+ * Session configuration.
+ */
+export interface SessionConfig {
+  /**
+   * Session key name.
+   */
+  key: string
+
+  /**
+   * Session max age.
+   */
+  maxAge: number
+
+  /**
+   * Signed or not.
+   */
+  signed: boolean
+
+  /**
+   * Force to set session cookie for every response.
+   * Expiration will be reset on every resposne.
+   */
+  rolling: boolean
+
+  /**
+   * Renew session when session is nearly expired.
+   */
+  renew: boolean
+}
+
+/**
+ * Confituration for sending email
+ */
+export interface EmailConfig {
+  /**
+   * SMTP host. e.g. smtp.gmail.com
+   */
+  host: string
+
+  /**
+   * Username. e.g. no-reply@snucse.org
+   */
+  username: string
+
+  /**
+   * Password.
+   */
+  password: string
+
+  /**
+   * Verification email subject.
+   */
+  subject: string
+
+  /**
+   * URL of id.snucse.org
+   */
+  url: string
+}
+
+/**
  * Configurations for POSIX-compliant interface.
  */
 export interface PosixConfig {
@@ -126,6 +187,16 @@ export default interface Config {
    * API server configuration.
    */
   api: APIConfig
+
+  /**
+   * Session configuration.
+   */
+  session: SessionConfig
+
+  /**
+   * Email configuration.
+   */
+  email: EmailConfig
 
   /**
    * PostgreSQL connection configuration.

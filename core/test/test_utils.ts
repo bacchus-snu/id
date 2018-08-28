@@ -9,7 +9,8 @@ export async function createEmailAddress(c: PoolClient, model: Model): Promise<n
 export async function createUser(c: PoolClient, model: Model): Promise<number> {
   const emailIdx = await createEmailAddress(c, model)
 
-  return await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+  const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+  return userIdx
 }
 
 export async function createGroup(c: PoolClient, model: Model): Promise<number> {

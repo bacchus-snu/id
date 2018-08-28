@@ -1,17 +1,28 @@
 <template>
   <div class="login">
-  <h2> {{menuSel[0]}} </h2>
-  <el-form>
-    <el-form-item label="username">
-      <el-input v-model="username" size="small"/>
+  <h2> {{ pleaseLoginTrans[lang] }} </h2>
+  <el-form @submit.native.prevent="onLogin">
+    <el-form-item label="Username">
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" size="small"/>
     </el-form-item>
-    <el-form-item label="password">
-      <el-input v-model="password" size="small"/>
+    <el-form-item label="Password">
+      <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" type="password" v-model="password" size="small"/>
     </el-form-item>
     <el-form-item>
-      <el-button class="button" type="warning" @click="onLogin"> {{menuSel[1]}} </el-button>
+      <el-button class="button" :disabled="isLoggingIn" type="warning" @click="onLogin">
+      {{ loginTrans[lang] }}
+      </el-button>
+      <div>
+      {{ orTrans[lang] }}
+      <nuxt-link to="/validation">
+      <div class="signup">
+      {{ signupTrans[lang] }}
+      </div>
+      </nuxt-link>
+      </div>
     </el-form-item>
   </el-form>
+
   </div>
 </template>
 
@@ -19,27 +30,86 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
+import { Translation, Language } from '../types/translation'
 
+@Component({})
 export default class LoginForm extends Vue {
 
-  public username: string = ''
-  public password: string = ''
-  private menuEng: Array<string> = ['Please login to manage your integrated account.','Login']
-  private menuKor: Array<string> = ['통합 계정 관리를 위해 로그인하십시오.','로그인 ']
-
-  get menuSel() {
-    return (this.lang === 'ko') ? this.menuKor : this.menuEng
+  private username: string = ''
+  private password: string = ''
+  private isLoggingIn: boolean = false
+  private readonly pleaseLoginTrans: Translation = {
+    ko: '통합 계정 관리를 위해 로그인하십시오.',
+    en: 'Please login to manage your integrated account.',
+  }
+  private readonly loginTrans: Translation = {
+    ko: '로그인',
+    en: 'Sign in',
+  }
+  private readonly loginFieldErrorTrans: Translation = {
+    ko: '항목을 모두 입력해주세요.',
+    en: 'Please fill out all fields.',
+  }
+  private readonly loginFailedTrans: Translation = {
+    ko: '로그인에 실패했습니다.',
+    en: 'Failed to sign in.',
+  }
+  private readonly orTrans: Translation = {
+    ko: '아직 계정이 없으신가요?',
+    en: 'or',
+  }
+  private readonly signupTrans: Translation = {
+    ko: '가입 신청하기',
+    en: 'Sign up',
   }
 
-  get lang() {
+  private async mounted() {
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 200 && response.data.username) {
+      this.$store.commit('changeUsername', response.data.username)
+      // TODO: redirect to my page
+    }
+  }
+
+  get lang(): Language {
     return this.$store.state.language
   }
 
-  async onLogin() {
+  private async onLogin() {
     if (!this.username || !this.password) {
-      this.$notify.error('Field error!')
-      return      
+      this.$notify.error(this.loginFieldErrorTrans[this.lang])
+      return
     }
+
+    if (this.isLoggingIn) {
+      return
+    }
+
+    this.isLoggingIn = true
+
+    const data = {
+      username: this.username,
+      password: this.password,
+    }
+
+    const response = await axios.post('/api/login', data, {
+      validateStatus: () => true,
+    })
+    this.isLoggingIn = false
+
+    if (response.status !== 200) {
+      this.$notify.error(this.loginFailedTrans[this.lang])
+      return
+    }
+
+    this.$store.commit('changeUsername', this.username)
+
+    this.username = ''
+    this.password = ''
+    // TODO: do something (e.g. redirect to my page?)
   }
 
 }
@@ -49,6 +119,7 @@ export default class LoginForm extends Vue {
 .el-form {
   margin-top: 50px;
 }
+
 .login {
   width: 400px;
   height: 380px;
@@ -58,6 +129,7 @@ export default class LoginForm extends Vue {
   text-align: center;
   vertical-align: middle;
 }
+
 .button {
   margin-top: 20px;
   width: 120px;
@@ -67,7 +139,19 @@ export default class LoginForm extends Vue {
   border: 2px solid #f2a43e;
   color: black;
 }
+
 .button:hover {
   background-color: #f2a43e;
+}
+
+.signup {
+  margin-left: 5px;
+  font-size: 16px;
+  color: #ff6105;
+  display: inline;
+}
+
+.signup:hover {
+  font-weight: bold;
 }
 </style>

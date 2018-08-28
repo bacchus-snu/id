@@ -3,6 +3,7 @@ import Users from './users'
 import EmailAddresses from './email_addresses'
 import Groups from './groups'
 import Permissions from './permissions'
+import Shells from './shells'
 import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 
@@ -11,6 +12,7 @@ export default class Model {
   public readonly emailAddresses: EmailAddresses
   public readonly groups: Groups
   public readonly permissions: Permissions
+  public readonly shells: Shells
 
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
@@ -23,6 +25,7 @@ export default class Model {
     this.emailAddresses = new EmailAddresses(this)
     this.groups = new Groups(this)
     this.permissions = new Permissions(this)
+    this.shells = new Shells(this)
   }
 
   public async pgDo<T>(query: (client: pg.PoolClient) => Promise<T>): Promise<T> {

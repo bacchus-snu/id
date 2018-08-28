@@ -1,4 +1,5 @@
 import Model from '../../model/model'
+import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
 
@@ -26,18 +27,58 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    const { username, name, password, emailLocal, emailDomain, preferredLanguage } = body
+    if (!ctx.session) {
+      ctx.status = 500
+      return
+    }
 
-    if (!username || !name || !password || !emailLocal || !emailDomain || !preferredLanguage) {
+    if (!ctx.session.verificationToken) {
+      ctx.status = 401
+      return
+    }
+
+    const token = ctx.session.verificationToken
+    let emailAddress: EmailAddress
+
+    // check verification token
+    try {
+      await model.pgDo(async c => {
+        emailAddress = await model.emailAddresses.getEmailAddressByToken(c, token)
+      })
+    } catch (e) {
+      ctx.status = 401
+      return
+    }
+
+    const { username, name, password, preferredLanguage } = body
+
+    if (!username || !name || !password || !preferredLanguage) {
+      ctx.status = 400
+      return
+    }
+
+    // validates inputs
+    if (!/^[a-z][a-z0-9_]+$/.test(username) || username.length > 20) {
+      ctx.status = 400
+      return
+    }
+
+    if (password.length < 8) {
+      ctx.status = 400
+      return
+    }
+
+    if (!(['ko', 'en'].includes(preferredLanguage))) {
       ctx.status = 400
       return
     }
 
     await model.pgDo(async c => {
-      const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-      const userIdx = await model.users.create(c, username, password, name, emailAddressIdx,
-        config.posix.defaultShell, preferredLanguage)
+      const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
+      const userIdx = await model.users.create(
+        c, username, password, name, emailAddressIdx, config.posix.defaultShell, preferredLanguage)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
+      await model.emailAddresses.removeToken(c, token)
     })
     ctx.status = 201
     await next()

@@ -1,6 +1,6 @@
 {
   "instanceName": "id-core",
-  "logLevel": 30,
+  "logLevel": 61,
   "ldap": {
     "listenHost": "127.0.0.1",
     "listenPort": "50389",
@@ -11,6 +11,20 @@
   "api": {
     "listenHost": "127.0.0.1",
     "listenPort": "50080"
+  },
+  "session": {
+    "key": "id-session",
+    "maxAge": 3600000,
+    "signed": true,
+    "rolling": false,
+    "renew": true
+  },
+  "email": {
+    "host": "smtp.gmail.com",
+    "username": "INSERT_USERNAME_HERE",
+    "password": "INSERT_PASSWORD_HERE",
+    "subject": "id.snucse.org 이메일 인증",
+    "url": "http://localhost:3000"
   },
   "posix": {
     "userGroupName": "cseusers",

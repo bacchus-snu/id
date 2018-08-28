@@ -68,7 +68,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
-import { User, userFields } from '~/types/User'
+import { User, userFields } from '~/types/user'
 
 @Component({})
 export default class UserAdminTable extends Vue {
@@ -81,28 +81,28 @@ export default class UserAdminTable extends Vue {
   public emailLocal: string = ''
   public emailDomain: string = ''
 
-  async mounted(): Promise<void> {
+  public async mounted(): Promise<void> {
     this.userData = await this.fetchUsers()
   }
 
-  async fetchUsers(): Promise<Array<User>> {
+  public async fetchUsers(): Promise<Array<User>> {
     const response = await axios.get('/api/user')
     return response.data
   }
 
-  async addUser() {
+  public async addUser() {
     if (!this.username || !this.name ||
       !this.password || !this.emailLocal || !this.emailDomain) {
       this.$notify.error('Field error!')
       return
     }
 
-    let response = await axios.post('/api/user', {
+    const response = await axios.post('/api/user', {
       username: this.username,
       name: this.name,
       password: this.password,
       emailLocal: this.emailLocal,
-      emailDomain: this.emailDomain
+      emailDomain: this.emailDomain,
     })
 
     this.clearFields()
@@ -114,8 +114,8 @@ export default class UserAdminTable extends Vue {
     this.userData = await this.fetchUsers()
   }
 
-  async deleteUser(userIdx) {
-    let response = await axios.delete('/api/user/' + userIdx)
+  public async deleteUser(userIdx) {
+    const response = await axios.delete('/api/user/' + userIdx)
 
     if (response.status !== 204) {
       this.$notify.error('Request error!')
@@ -124,7 +124,7 @@ export default class UserAdminTable extends Vue {
     this.userData = await this.fetchUsers()
   }
 
-  clearFields() {
+  public clearFields() {
     this.username = ''
     this.name = ''
     this.password = ''

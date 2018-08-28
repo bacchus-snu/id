@@ -25,7 +25,7 @@ module.exports = {
       `http://${host}:${port}`
   },
   head: {
-    title: "tt1",
+    title: "Bacchus ID",
     meta: [
       { charset: "utf-8" },
       {
@@ -36,7 +36,7 @@ module.exports = {
       {
         hid: "description",
         name: "description",
-        content: "Nuxt.js project"
+        content: "Identity management service for SNUCSE"
       }
     ],
     link: [
@@ -70,7 +70,13 @@ module.exports = {
     "@nuxtjs/axios",
     "~/modules/typescript.js"
   ],
+
+  proxy: {
+    '/api/': 'http://localhost:50080',
+  },
+
   axios: {
     // baseURL: 'http://id-dev.snucse.org:10101',
+    proxy: true,
   }
 }
