@@ -208,3 +208,20 @@ test('change user shell', async t => {
     t.is(currentShell, newShell)
   })
 })
+
+test('reset resend count of expired password change token', async t => {
+  await model.pgDo(async c => {
+    const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+    const token = await model.users.generatePasswordChangeToken(c, userIdx)
+    const expiryResult = await c.query('SELECT expires FROM password_change_tokens WHERE token = $1', [token])
+    const originalExpires = expiryResult.rows[0].expires
+    const query = 'UPDATE email_verification_tokens SET expires = $1, resend_count = 100 WHERE token = $2'
+    const newExpiry = moment(originalExpires).subtract(2, 'day').toDate()
+    await c.query(query, [newExpiry, token])
+    await model.users.resetResendCountIfExpired(c, userIdx)
+
+    const resendCount = await model.users.getResendCount(c, token)
+    t.is(resendCount, 0)
+  })
+})
