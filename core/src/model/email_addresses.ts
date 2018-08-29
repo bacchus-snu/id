@@ -55,13 +55,22 @@ export default class EmailAddresses {
   }
 
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
-    const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (email_idx) DO UPDATE SET token = $2'
+    const query = 'INSERT INTO email_verification_tokens AS e(email_idx, token, expires) VALUES ($1, $2, $3) ' +
+    'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
     return token
+  }
+
+  public async getResendCount(client: PoolClient, token: string): Promise<number> {
+    const query = 'SELECT resend_count FROM email_verification_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].resend_count
   }
 
   public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {

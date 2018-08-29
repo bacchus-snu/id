@@ -116,6 +116,11 @@ export interface EmailConfig {
   password: string
 
   /**
+   * Resend limit.
+   */
+  resendLimit: number
+
+  /**
    * Verification email subject.
    */
   verificationEmailSubject: string

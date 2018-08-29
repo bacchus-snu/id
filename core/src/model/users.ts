@@ -121,13 +121,22 @@ export default class Users {
   }
 
   public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {
-    const query = 'INSERT INTO password_change_tokens(user_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (user_idx) DO UPDATE SET token = $2'
+    const query = 'INSERT INTO password_change_tokens AS p(user_idx, token, expires) VALUES ($1, $2, $3) ' +
+    'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [userIdx, token, expires])
     return token
+  }
+
+  public async getResendCount(client: PoolClient, token: string): Promise<number> {
+    const query = 'SELECT resend_count FROM password_change_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].resend_count
   }
 
   public async removeToken(client: PoolClient, token: string): Promise<number> {

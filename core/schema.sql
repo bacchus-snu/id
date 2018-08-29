@@ -64,7 +64,8 @@ create table email_verification_tokens (
   idx serial primary key,
   email_idx integer unique not null references email_addresses(idx) on delete cascade,
   token text unique not null check (token <> ''),
-  expires timestamp with time zone not null
+  expires timestamp with time zone not null,
+  resend_count integer not null default 0
 );
 
 -- Password change token.
@@ -72,7 +73,8 @@ create table password_change_tokens (
   idx serial primary key,
   user_idx integer unique not null references users(idx) on delete cascade,
   token text unique not null check (token <> ''),
-  expires timestamp with time zone not null
+  expires timestamp with time zone not null,
+  resend_count integer not null default 0
 );
 
 alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);

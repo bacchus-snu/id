@@ -2,15 +2,30 @@ import * as nodemailer from 'nodemailer'
 import Config from '../config'
 import * as Bunyan from 'bunyan'
 import * as fs from 'fs'
+import { ResendLimitExeededError } from '../model/errors'
 
-export async function sendEmail(emailAddrsss: string, token: string,
-  subject: string, url: string, template: string, logger: Bunyan, config: Config) {
+export interface EmailOption {
+  address: string
+  token: string
+  subject: string
+  url: string
+  template: string
+  resendCount: number
+}
+
+export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config) {
   if (config === null) {
     logger.warn('No config, so the verification email will not be sent.')
     return
   }
 
-  const emailOption = {
+  const { address, token, subject, url, template, resendCount } = opt
+
+  if (resendCount >= config.email.resendLimit) {
+    throw new ResendLimitExeededError()
+  }
+
+  const transporterOption = {
     host: config.email.host,
     port: 465,
     secure: true,
@@ -21,12 +36,12 @@ export async function sendEmail(emailAddrsss: string, token: string,
     logger: logger ? logger : false,
   }
 
-  const transporter = nodemailer.createTransport(emailOption)
+  const transporter = nodemailer.createTransport(transporterOption)
   const tokenAddress = `${url}?token=${token}`
 
   const messageOption = {
     from: config.email.username,
-    to: emailAddrsss,
+    to: address,
     subject,
     html: template.replace('VERIFICATION_LINK', tokenAddress),
   }

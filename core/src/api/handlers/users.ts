@@ -2,7 +2,8 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
-import { sendEmail } from '../email'
+import { EmailOption, sendEmail } from '../email'
+import { ResendLimitExeededError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
 
 export function createUser(model: Model, config: Config): IMiddleware {
@@ -95,10 +96,12 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
     }
 
     let token = ''
+    let resendCount = -1
     try {
       await model.pgDo(async c => {
         const userIdx = await model.users.getUserIdxByEmailAddress(c, emailLocal, emailDomain)
         token = await model.users.generatePasswordChangeToken(c, userIdx)
+        resendCount = await model.users.getResendCount(c, token)
       })
     } catch (e) {
       // no such entry, but do nothing and just return 200
@@ -107,9 +110,20 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
     }
 
     try {
-      await sendEmail(`${emailLocal}@${emailDomain}`, token, config.email.passwordChangeEmailSubject,
-        config.email.passwordChangeEmailUrl, changePasswordTemplate,  model.log, config)
+      const option = {
+        address: `${emailLocal}@${emailDomain}`,
+        token,
+        subject: config.email.passwordChangeEmailSubject,
+        url: config.email.passwordChangeEmailUrl,
+        template: changePasswordTemplate,
+        resendCount,
+      }
+      await sendEmail(option,  model.log, config)
     } catch (e) {
+      if (e instanceof ResendLimitExeededError) {
+        ctx.status = 400
+        return
+      }
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }
 

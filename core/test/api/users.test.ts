@@ -207,3 +207,61 @@ test('change shell', async t => {
   response = await agent.get('/api/user/shell').send({})
   t.is(response.body.shell, newShell)
 })
+
+test('verification email resend limit', async t => {
+  const emailLocal = uuid()
+  const emailDomain = 'snu.ac.kr'
+  const resendLimit = config.email.resendLimit
+  let emailIdx = -1
+
+  await model.pgDo(async c => {
+    emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+  })
+
+  const agent = request.agent(app)
+  let response
+
+  for (let i = 0; i < resendLimit; i++) {
+    response = await agent.post('/api/email/verify').send({
+      emailLocal,
+      emailDomain,
+    })
+    t.is(response.status, 200)
+  }
+
+  response = await agent.post('/api/email/verify').send({
+    emailLocal,
+    emailDomain,
+  })
+  t.is(response.status, 400)
+})
+
+test('password change email resend limit', async t => {
+  const emailLocal = uuid()
+  const emailDomain = 'snu.ac.kr'
+  const resendLimit = config.email.resendLimit
+  let emailIdx = -1
+
+  await model.pgDo(async c => {
+    emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+    await model.emailAddresses.validate(c, userIdx, emailIdx)
+  })
+
+  const agent = request.agent(app)
+  let response
+
+  for (let i = 0; i < resendLimit; i++) {
+    response = await agent.post('/api/user/send-password-token').send({
+      emailLocal,
+      emailDomain,
+    })
+    t.is(response.status, 200)
+  }
+
+  response = await agent.post('/api/user/send-password-token').send({
+    emailLocal,
+    emailDomain,
+  })
+  t.is(response.status, 400)
+})

@@ -2,7 +2,8 @@ import Model from '../../model/model'
 import Config from '../../config'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
-import { sendEmail } from '../email'
+import { EmailOption, sendEmail } from '../email'
+import { ResendLimitExeededError } from '../../model/errors'
 import emailVerificationTemplate from '../templates/verification_email_template'
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
@@ -30,6 +31,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     let emailIdx: number = -1
     let token: string = ''
+    let resendCount: number = -1
 
     try {
       // create email address and generate token
@@ -40,6 +42,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
           throw new Error('already validated')
         }
         token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
+        resendCount = await model.emailAddresses.getResendCount(c, token)
       })
     } catch (e) {
       ctx.status = 400
@@ -48,9 +51,20 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     try {
       // send email
-      await sendEmail(`${emailLocal}@${emailDomain}`, token, config.email.verificationEmailSubject,
-        config.email.verificationEmailUrl, emailVerificationTemplate,  model.log, config)
+      const option = {
+        address: `${emailLocal}@${emailDomain}`,
+        token,
+        subject: config.email.verificationEmailSubject,
+        url: config.email.verificationEmailUrl,
+        template: emailVerificationTemplate,
+        resendCount,
+      }
+      await sendEmail(option,  model.log, config)
     } catch (e) {
+      if (e instanceof ResendLimitExeededError) {
+        ctx.status = 400
+        return
+      }
       model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
     }
 
