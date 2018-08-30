@@ -30,7 +30,7 @@ create table users (
   -- Account credentials
   -- An username being null means the username is being changed
   username text unique check (username <> ''),
-  password_digest text,
+  password_digest bytea,
 
   -- Real name
   name text not null check (name <> ''),
