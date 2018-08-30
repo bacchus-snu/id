@@ -49,6 +49,58 @@ export function login(model: Model): IMiddleware {
   }
 }
 
+export function loginLegacy(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const query = ctx.request.query
+
+    const username = query.member_account
+    const password = query.member_password
+
+    if (!username || !password) {
+      // 200 means failure
+      ctx.status = 200
+      return
+    }
+
+    let userIdx: number
+
+    try {
+      await model.pgDo(async c => {
+        try {
+          userIdx = await model.users.authenticate(c, username, password)
+
+          if (ctx.session) {
+            // store information in session store
+            ctx.session.userIdx = userIdx
+            ctx.session.username = username
+          } else {
+            // 200 means failure
+            ctx.status = 200
+            throw new Error('session error')
+          }
+
+        } catch (e) {
+          if (e instanceof ControllableError) {
+            // 200 means failure
+            ctx.status = 200
+          } else {
+            // 200 means failure
+            ctx.status = 200
+          }
+
+          throw e
+        }
+      })
+    } catch (e) {
+      ctx.session = null
+      return
+    }
+
+    ctx.status = 301
+    return
+  }
+}
+
 export function logout(): IMiddleware {
   return async (ctx, next) => {
     ctx.session = null
