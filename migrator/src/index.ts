@@ -15,7 +15,8 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
-const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
+const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameToUid: {[username: string]: number},
+    pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
   if (user.account === null) {
     return
   }
@@ -39,10 +40,11 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
     addressIdxs.push(result.rows[0].idx)
   }
 
+  const posixUid = usernameToUid[user.account] === undefined ? null : usernameToUid[user.account]
   let userIdx: number
   try {
-    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language) ' +
-      'VALUES ($1, $2, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name])
+    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, uid, shell, preferred_language) ' +
+      'VALUES ($1, $2, $3, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name, posixUid])
     userIdx = userInsertResult.rows[0].idx
   } catch (e) {
     const userSelectResult = await pgClient.query('SELECT idx FROM users WHERE username=$1', [user.account])
@@ -71,6 +73,15 @@ const findDup = (allEmails: Array<any>) => {
 }
 
 const migrateAll = async () => {
+  const usernameToUid: {[username: string]: number} = {}
+  for (const line of fs.readFileSync('./passwd', {encoding: 'utf-8'}).split('\n')) {
+    const fields = line.split(':')
+    if (fields.length === 0) {
+      continue
+    }
+    usernameToUid[fields[0]] = Number.parseInt(fields[2])
+  }
+  
   const mssqlPool = new mssql.ConnectionPool(config.mssql)
   await mssqlPool.connect()
   const mssqlSelectUser = new mssql.PreparedStatement(mssqlPool)
@@ -84,7 +95,7 @@ const migrateAll = async () => {
   try {
     const duplicates = findDup((await mssqlSelectAllEmail.execute({})).recordset)
     for (const user of (await mssqlSelectUser.execute({})).recordset) {
-      await migrateUser(user, duplicates, pgClient, mssqlSelectEmail)
+      await migrateUser(user, duplicates, usernameToUid, pgClient, mssqlSelectEmail)
     }
   } finally {
     await mssqlSelectUser.unprepare()
