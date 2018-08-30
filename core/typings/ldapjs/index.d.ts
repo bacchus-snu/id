@@ -372,7 +372,7 @@ declare module 'ldapjs' {
 declare module '@phc/format' {
   export interface PHCObject {
     id: string
-    params: object
+    params?: object
     salt: Buffer
     hash: Buffer
   }
