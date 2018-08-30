@@ -6,6 +6,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/mssql": "^4.0.9",
+    "@types/node": "^10.9.3",
     "@types/pg": "^7.4.10",
     "typescript": "^3.0.1"
   },
