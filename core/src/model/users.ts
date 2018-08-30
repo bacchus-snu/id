@@ -91,6 +91,8 @@ export default class Users {
       throw new NotActivatedError()
     }
 
+    const idx: number = result.rows[0].idx
+
     const passwordDigest: string = result.rows[0].password_digest
     const phcObject = phc.deserialize(passwordDigest)
     if (['mssql-sha1', 'mssql-sha512'].includes(phcObject.id)) {
@@ -101,11 +103,12 @@ export default class Users {
       if (!hash.digest().equals(phcObject.hash)) {
         throw new AuthenticationError()
       }
+      await this.changePassword(client, idx, password)
     } else if (!await argon2.verify(passwordDigest, password)) {
       throw new AuthenticationError()
     }
 
-    return result.rows[0].idx
+    return idx
   }
 
   public async activate(client: PoolClient, userIdx: number): Promise<void> {
