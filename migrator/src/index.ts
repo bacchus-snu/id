@@ -54,10 +54,11 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
   }
 }
 
-const findDup = (allEmails: Array<string>) => {
+const findDup = (allEmails: Array<any>) => {
   const found: Array<string> = []
   const dup: Array<string> = []
-  for (const email of allEmails) {
+  for (const row of allEmails) {
+    const email: string = row.email
     if (found.includes(email)) {
       console.error(`dup: ${email}`)
       dup.push(email)
@@ -80,8 +81,7 @@ const migrateAll = async () => {
   await mssqlSelectAllEmail.prepare('SELECT * FROM user_email')
   const pgClient = await (new pg.Pool(config.postgresql)).connect()
   try {
-    const allEmails = (await mssqlSelectAllEmail.execute({})).recordset
-    const duplicates = findDup(allEmails)
+    const duplicates = findDup((await mssqlSelectAllEmail.execute({})).recordset)
     for (const user of (await mssqlSelectUser.execute({})).recordset) {
       await migrateUser(user, duplicates, pgClient, mssqlSelectEmail)
     }
