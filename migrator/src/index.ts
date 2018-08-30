@@ -21,7 +21,6 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
   if (user.account === null) {
     return
   }
-  console.log(user.account)
   const addresses: Array<string> = []
   for (const addrRecord of (await selectEmail.execute({userUid: user.uid})).recordset) {
     const address = addrRecord.email
@@ -45,9 +44,16 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
     }
   }
 
-  const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language) ' +
-    'VALUES ($1, $2, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name])
-  const userIdx = userInsertResult.rows[0].idx
+  let userIdx: number
+  try {
+    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language) ' +
+      'VALUES ($1, $2, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name])
+    userIdx = userInsertResult.rows[0].idx
+  } catch (e) {
+    console.error(e)
+    const userSelectResult = await pgClient.query('SELECT FROM users WHERE username=$1 RETURNING idx', [user.account])
+    userIdx = userSelectResult.rows[0].idx
+  }
 
   for (const emailAddressIdx of addressIdxs) {
     await pgClient.query('UPDATE email_addresses SET owner_idx=$1 where idx=$2', [userIdx, emailAddressIdx])
