@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 declare module '@phc/format' {
   export interface PHCObject {
     id: string
