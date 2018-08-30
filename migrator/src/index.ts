@@ -65,6 +65,7 @@ const findDup = (allEmails: Array<string>) => {
       found.push(email)
     }
   }
+  return dup
 }
 
 const migrateAll = async () => {
