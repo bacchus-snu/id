@@ -2,6 +2,7 @@ import Model from './model'
 import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError } from './errors'
 import * as argon2 from 'argon2'
+import * as phc from '@phc/format'
 import * as moment from 'moment'
 import * as crypto from 'crypto'
 
@@ -90,12 +91,24 @@ export default class Users {
       throw new NotActivatedError()
     }
 
-    const passwordDigest = result.rows[0].password_digest
-    if (!await argon2.verify(passwordDigest, password)) {
+    const idx: number = result.rows[0].idx
+
+    const passwordDigest: string = result.rows[0].password_digest
+    const phcObject = phc.deserialize(passwordDigest)
+    if (['mssql-sha1', 'mssql-sha512'].includes(phcObject.id)) {
+      const nullAppendedPassword = Buffer.from([...password].map(x => x + '\u0000').join(''))
+      const hash = crypto.createHash(phcObject.id === 'mssql-sha1' ? 'sha1' : 'sha512')
+      hash.update(nullAppendedPassword)
+      hash.update(phcObject.salt)
+      if (!hash.digest().equals(phcObject.hash)) {
+        throw new AuthenticationError()
+      }
+      await this.changePassword(client, idx, password)
+    } else if (!await argon2.verify(passwordDigest, password)) {
       throw new AuthenticationError()
     }
 
-    return result.rows[0].idx
+    return idx
   }
 
   public async activate(client: PoolClient, userIdx: number): Promise<void> {

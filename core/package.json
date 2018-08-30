@@ -36,6 +36,7 @@
     "@types/koa-bodyparser": "^5.0.1",
     "@types/koa-router": "^7.0.31",
     "@types/koa-session": "^5.7.4",
+    "@types/node": "^10.9.3",
     "@types/nodemailer": "^4.6.2",
     "@types/pg": "^7.4.10",
     "@types/supertest": "^2.0.5",
