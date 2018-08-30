@@ -135,8 +135,8 @@ test('change password', async t => {
   await model.pgDo(async c => {
     const username = uuid()
     const password = uuid()
-    const emailIdx = await createEmailAddress(c, model)
-    const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
+    const userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
 
     const newPassword = uuid()
     await model.users.changePassword(c, userIdx, newPassword)
@@ -151,7 +151,7 @@ test('change password token request with identical email idx', async t => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     const oldToken = await model.users.generatePasswordChangeToken(c, userIdx)
     const newToken = await model.users.generatePasswordChangeToken(c, userIdx)
 
@@ -168,7 +168,7 @@ test('token expiration', async t => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     const token = await model.users.generatePasswordChangeToken(c, userIdx)
     const expiryResult = await c.query('SELECT expires FROM password_change_tokens WHERE token = $1', [token])
     const originalExpires = expiryResult.rows[0].expires
@@ -197,7 +197,7 @@ test('change user shell', async t => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailAddressIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     const newShell = uuid()
     await model.shells.addShell(c, newShell)
     await model.users.changeShell(c, userIdx, newShell)
@@ -210,7 +210,7 @@ test('change user shell', async t => {
 test('reset resend count of expired password change token', async t => {
   await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     const token = await model.users.generatePasswordChangeToken(c, userIdx)
     const expiryResult = await c.query('SELECT expires FROM password_change_tokens WHERE token = $1', [token])
     const originalExpires = expiryResult.rows[0].expires

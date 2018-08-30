@@ -100,7 +100,7 @@ test('get user email addresses', async t => {
     const emailIdx1 = await model.emailAddresses.create(c, uuid(), uuid())
     const emailIdx2 = await model.emailAddresses.create(c, uuid(), uuid())
 
-    userIdx = await model.users.create(c, username, password, uuid(), emailIdx1, '/bin/bash', 'en')
+    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx1)
     await model.emailAddresses.validate(c, userIdx, emailIdx2)
   })
@@ -132,7 +132,7 @@ test('change password', async t => {
 
   await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
   })
 
@@ -181,7 +181,7 @@ test('change shell', async t => {
 
   await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
-    userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
     await model.shells.addShell(c, newShell)
   })
@@ -244,7 +244,7 @@ test('password change email resend limit', async t => {
 
   await model.pgDo(async c => {
     emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), emailIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
   })
 
