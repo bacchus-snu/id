@@ -233,11 +233,11 @@ test('legacy mssql password (sha512)', async t => {
       '60ED06D7AF5181986AC39563CE1356BA451468BD27F936FF5D1BAA9', 'hex')})
   await model.pgDo(async c => {
     await c.query('INSERT INTO users (username, password_digest, name, shell, preferred_language)' +
-      'VALUES ($1, $2, \'OLDoge\', \'/bin/bash\', \'en\'', [username, legacyPasswordDigest])
+      'VALUES ($1, $2, \'OLDoge\', \'/bin/bash\', \'en\')', [username, legacyPasswordDigest])
     // doge should be able to login using password stored in old doggy password format
     await model.users.authenticate(c, username, password)
     // doge should be automatically migrated to brand-new password format
-    const selectResult: string = (await c.query('SELECT password_digest where username=$1',
+    const selectResult: string = (await c.query('SELECT password_digest WHERE username=$1',
       [username])).rows[0].password_digest
     t.is(selectResult.split('$')[1], 'argon2i')
     // doge should be able to login using password stored in brand-new password format. wow.
