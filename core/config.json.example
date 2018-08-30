@@ -24,8 +24,11 @@
     "host": "smtp.gmail.com",
     "username": "INSERT_USERNAME_HERE",
     "password": "INSERT_PASSWORD_HERE",
-    "subject": "id.snucse.org 이메일 인증",
-    "url": "https://id.snucse.org"
+    "resendLimit": 3,
+    "verificationEmailSubject": "id.snucse.org 이메일 인증",
+    "passwordChangeEmailSubject": "id.snucse.org 비밀번호 변경",
+    "verificationEmailUrl": "https://id.snucse.org/sign-up",
+    "passwordChangeEmailUrl": "https://id.snucse.org/change-password"
   },
   "posix": {
     "userGroupName": "cseusers",

@@ -74,7 +74,7 @@ test('identical address should not create new row', async t => {
   })
 })
 
-test('token request with identical email idx', async t => {
+test('verification token request with identical email idx', async t => {
   await model.pgDo(async c => {
     const emailLocal = uuid()
     const emailDomain = uuid()
@@ -115,5 +115,39 @@ test('token expiration', async t => {
     }
 
     t.fail()
+  })
+})
+
+test('get user emails', async t => {
+  await model.pgDo(async c => {
+    const userIdx = await createUser(c, model)
+    const emailLocal = uuid()
+    const emailDomain = uuid()
+    const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+    const emailAddressIdx2 = await createEmailAddress(c, model)
+
+    await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
+    await model.emailAddresses.validate(c, userIdx, emailAddressIdx2)
+
+    const result = await model.emailAddresses.getEmailsByOwnerIdx(c, userIdx)
+    t.is(result.length, 2)
+    t.is(result[0].local, emailLocal)
+    t.is(result[0].domain, emailDomain)
+  })
+})
+
+test('reset resend count of expired verification token', async t => {
+  await model.pgDo(async c => {
+    const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
+    const token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
+    const expiryResult = await c.query('SELECT expires FROM email_verification_tokens WHERE token = $1', [token])
+    const originalExpires = expiryResult.rows[0].expires
+    const query = 'UPDATE email_verification_tokens SET expires = $1, resend_count = 100 WHERE token = $2'
+    const newExpiry = moment(originalExpires).subtract(2, 'day').toDate()
+    await c.query(query, [newExpiry, token])
+    await model.emailAddresses.resetResendCountIfExpired(c, emailIdx)
+
+    const resendCount = await model.emailAddresses.getResendCount(c, token)
+    t.is(resendCount, 0)
   })
 })

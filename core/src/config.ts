@@ -116,14 +116,29 @@ export interface EmailConfig {
   password: string
 
   /**
-   * Verification email subject.
+   * Resend limit.
    */
-  subject: string
+  resendLimit: number
 
   /**
-   * URL of id.snucse.org
+   * Verification email subject.
    */
-  url: string
+  verificationEmailSubject: string
+
+  /**
+   * Password change email subject.
+   */
+  passwordChangeEmailSubject: string
+
+  /**
+   * URL of id.snucse.org/sign-up
+   */
+  verificationEmailUrl: string
+
+  /**
+   * URL of id.snucse.org/change-password
+   */
+  passwordChangeEmailUrl: string
 }
 
 /**

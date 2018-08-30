@@ -4,7 +4,7 @@
     <span>Sign up</span>
   </div>
   <el-form @submit.native.prevent="submitForm" :model="models" status-icon size="medium" ref="signupForm" :rules="rules" label-width="150px">
-    <el-form-item :label="nameTrans[lang]" prop="name" required>
+    <el-form-item :label="nameTrans[lang]" prop="name">
       <el-input v-model="models.name"></el-input>
     </el-form-item>
     <el-form-item :label="usernameTrans[lang]" prop="username" style="margin-bottom: 40px">
@@ -16,13 +16,8 @@
     <el-form-item :label="checkTrans[lang]" prop="pwdcheck">
       <el-input type="password" v-model="models.pwdcheck"></el-input>
     </el-form-item>
-    <el-form-item :label="shellTrans[lang]" prop="shell">
-      <el-select v-model="models.shell" placeholder="Please select your shell">
-      <el-option v-for="shell in shellList" :value=shell :key="shell">{{ shell }}</el-option>
-      </el-select>
-    </el-form-item>
   </el-form>
-  <el-button class="button" type="warning" @click="submitForm('signupForm')">{{ createTrans[lang] }}</el-button>
+  <el-button class="button" type="warning" @click="submitForm">{{ createTrans[lang] }}</el-button>
   </el-card>
 </template>
 
@@ -40,11 +35,8 @@ export default class SignUpForm extends Vue {
     username: '',
     password: '',
     pwdcheck: '',
-    shell: '',
   }
 
-  @Prop()
-  private readonly shellList: Array<string>
   private readonly nameTrans: Translation = {
     ko: '이름',
     en: 'Name',
@@ -60,10 +52,6 @@ export default class SignUpForm extends Vue {
   private readonly checkTrans: Translation = {
     ko: '비밀번호 확인',
     en: 'Confirm password',
-  }
-  private readonly shellTrans: Translation = {
-    ko: '쉘',
-    en: 'Shell',
   }
   private readonly createTrans: Translation = {
     ko: '계정 생성',
@@ -83,7 +71,7 @@ export default class SignUpForm extends Vue {
   }
   private readonly lengthErrorTrans: Translation = {
     ko: '비밀번호는 최소 8자리여야 합니다',
-    en: 'The password should be at leat 8 characters',
+    en: 'The password should be at least 8 characters',
   }
   private readonly usernameValidateTrans: Translation = {
     ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자, _ 만 포함된 20자 이하여야 합니다.',
@@ -115,11 +103,6 @@ export default class SignUpForm extends Vue {
       validator: this.validatePassword,
       trigger: 'blur',
     }],
-    shell: [{
-      required: true,
-      message: ' ',
-      trigger: 'change',
-    }],
   }
 
   get lang(): Language {
@@ -145,7 +128,7 @@ export default class SignUpForm extends Vue {
     }
   }
 
-  public submitForm(formName) {
+  public submitForm() {
     const elementRef = 'signupForm'
     const formElement: any = this.$refs[elementRef]
     formElement.validate( valid => {
