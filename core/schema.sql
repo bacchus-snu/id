@@ -45,8 +45,6 @@ create table users (
 
   -- Activated
   activated boolean not null default true
-
-  -- primary_email_address_idx integer not null unique references email_addresses(idx)
 );
 
 -- Email addresses
@@ -76,8 +74,6 @@ create table password_change_tokens (
   expires timestamp with time zone not null,
   resend_count integer not null default 0
 );
-
-alter table users add column primary_email_address_idx integer not null unique references email_addresses(idx);
 
 -- SNU IDs
 create table snuids (

@@ -27,12 +27,11 @@ export default class Users {
   }
 
   public async create(client: PoolClient, username: string, password: string,
-      name: string, primaryEmailAddressIdx: number, shell: string, preferredLanguage: Language): Promise<number> {
-    const query = 'INSERT INTO users(username, password_digest, name, primary_email_address_idx, shell, ' +
-      'preferred_language) VALUES ($1, $2, $3, $4, $5, $6) RETURNING idx'
+      name: string, shell: string, preferredLanguage: Language): Promise<number> {
+    const query = 'INSERT INTO users(username, password_digest, name, shell, preferred_language) ' +
+      'VALUES ($1, $2, $3, $4, $5) RETURNING idx'
     const passwordDigest = await argon2.hash(password)
-    const result = await client.query(query, [username, passwordDigest, name,
-      primaryEmailAddressIdx, shell, preferredLanguage])
+    const result = await client.query(query, [username, passwordDigest, name, shell, preferredLanguage])
     return result.rows[0].idx
   }
 

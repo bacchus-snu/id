@@ -9,7 +9,7 @@ import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
 
-import { createEmailAddress, createUser, createGroup } from '../test_utils'
+import { createUser, createGroup } from '../test_utils'
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
 
@@ -52,8 +52,7 @@ test('authenticate user', async t => {
   await model.pgDo(async c => {
     const username = uuid()
     const password = uuid()
-    const emailIdx = await createEmailAddress(c, model)
-    const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.users.activate(c, userIdx)
 
     t.is(await model.users.authenticate(c, username, password), userIdx)
@@ -74,8 +73,7 @@ test('reject not activated user', async t => {
   await model.pgDo(async c => {
     const username = uuid()
     const password = uuid()
-    const emailIdx = await createEmailAddress(c, model)
-    const userIdx = await model.users.create(c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.users.deactivate(c, userIdx)
 
     try {
