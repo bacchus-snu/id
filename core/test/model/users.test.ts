@@ -237,7 +237,7 @@ test('legacy mssql password (sha512)', async t => {
     // doge should be able to login using password stored in old doggy password format
     await model.users.authenticate(c, username, password)
     // doge should be automatically migrated to brand-new password format
-    const selectResult: string = (await c.query('SELECT password_digest WHERE username=$1',
+    const selectResult: string = (await c.query('SELECT password_digest FROM users WHERE username=$1',
       [username])).rows[0].password_digest
     t.is(selectResult.split('$')[1], 'argon2i')
     // doge should be able to login using password stored in brand-new password format. wow.
