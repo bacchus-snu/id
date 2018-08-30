@@ -81,3 +81,32 @@ test('test checkLogin', async t => {
   response = await agent.get('/api/check-login').send()
   t.is(response.status, 401)
 })
+
+test('test legacy login', async t => {
+  let username: string = ''
+  let password: string = ''
+  let userIdx: number = -1
+
+  await model.pgDo(async c => {
+    username = uuid()
+    password = uuid()
+    userIdx = await model.users.create(
+      c, username, password, uuid(), '/bin/bash', 'en')
+  })
+
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.post('/Authentication/Login.aspx').query({
+    member_account: username,
+    member_password: 'doge!',
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post('/Authentication/Login.aspx').query({
+    member_account: username,
+    member_password: password,
+  })
+  t.is(response.status, 301)
+})
