@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../../src/config'
-import { Translation } from '../../src/model/translation'
+import * as phc from '@phc/format'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
@@ -221,5 +221,23 @@ test('reset resend count of expired password change token', async t => {
 
     const resendCount = await model.users.getResendCount(c, token)
     t.is(resendCount, 0)
+  })
+})
+
+test('legacy mssql password (sha512)', async t => {
+  const username = 'good_old_doge'
+  const password = 'dogepassword'
+  const legacyPasswordDigest = phc.serialize({id: 'mssql-sha512',
+    salt: Buffer.from('251C01B8', 'hex'),
+    hash: Buffer.from('CF413665AC3A350E2F61EF6A8845B729CE771DD70E3FA2808C0F24CE3945A19A43F16008760ED06D7AF5181986AC39563CE1356BA451468BD27F936FF5D1BAA9', 'hex')})
+  await model.pgDo(async c => {
+    await c.query('INSERT INTO users (username, password_digest, name, shell, preferred_language) VALUES ($1, $2, \'OLDoge\', \'/bin/bash\', \'en\'', [username, legacyPasswordDigest])
+    // doge should be able to login using password stored in old doggy password format
+    await model.users.authenticate(c, username, password)
+    // doge should be automatically migrated to brand-new password format
+    const selectResult: string = (await c.query('SELECT password_digest where username=$1', [username])).rows[0].password_digest
+    t.is(selectResult.split('$')[1], 'argon2i')
+    // doge should be able to login using password stored in brand-new password format. wow.
+    await model.users.authenticate(c, username, password)
   })
 })
