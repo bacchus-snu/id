@@ -6,7 +6,6 @@ import * as fs from 'fs'
 import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../../src/config'
-import { createEmailAddress } from '../test_utils'
 import app from '../setup'
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
@@ -26,9 +25,8 @@ test('test login with credential', async t => {
   await model.pgDo(async c => {
     username = uuid()
     password = uuid()
-    const emailIdx = await createEmailAddress(c, model)
     userIdx = await model.users.create(
-      c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+      c, username, password, uuid(), '/bin/bash', 'en')
   })
 
   const agent = request.agent(app)
@@ -56,9 +54,8 @@ test('test checkLogin', async t => {
   await model.pgDo(async c => {
     username = uuid()
     password = uuid()
-    const emailIdx = await createEmailAddress(c, model)
     userIdx = await model.users.create(
-      c, username, password, uuid(), emailIdx, '/bin/bash', 'en')
+      c, username, password, uuid(), '/bin/bash', 'en')
   })
 
   const agent = request.agent(app)

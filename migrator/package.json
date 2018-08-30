@@ -1,0 +1,16 @@
+{
+  "name": "bacchus-id-migrator",
+  "version": "0.0.1-dev",
+  "description": "Migration from SNUCSE 2.0 to Bacchus ID",
+  "author": "Bacchus <contact@bacchus.snucse.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mssql": "^4.0.9",
+    "@types/pg": "^7.4.10",
+    "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "mssql": "^4.1.0",
+    "pg": "^7.4.3"
+  }
+}
