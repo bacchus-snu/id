@@ -15,15 +15,29 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
-const lens: Set<number> = new Set()
+const migratePassword = (password: Buffer | null) => {
+  if (password === null) {
+    return null
+  }
+  const salt = password.slice(2, 6).toString('hex')
+  if (password.length === 70) {
+    const hash = password.slice(6).toString('hex')
+    return `$mssql-sha512$${salt}$${hash}`
+  } else if ([26, 46].includes(password.length)) {
+    const hash = password.slice(6, 26).toString('hex')
+    return `$mssql-sha1$${salt}$${hash}`
+  } else if (password.length === 16) {
+    // unsupported
+    return null
+  } else {
+    throw new Error('Unknown password length')
+  }
+}
 
 const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameToUid: {[username: string]: number},
     pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
   if (user.account === null) {
     return
-  }
-  if (user.password) {
-    lens.add(user.password.length)
   }
   const addresses: Array<string> = []
   for (const addrRecord of (await selectEmail.execute({userUid: user.uid})).recordset) {
@@ -48,8 +62,8 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameT
   const posixUid = usernameToUid[user.account] === undefined ? null : usernameToUid[user.account]
   let userIdx: number
   try {
-    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, uid, shell, preferred_language) ' +
-      'VALUES ($1, $2, $3, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name, posixUid])
+    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, password_digest, uid, shell, preferred_language) ' +
+      'VALUES ($1, $2, $3, $4, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name, migratePassword(user.password), posixUid])
     userIdx = userInsertResult.rows[0].idx
   } catch (e) {
     const userSelectResult = await pgClient.query('SELECT idx FROM users WHERE username=$1', [user.account])
@@ -111,4 +125,4 @@ const migrateAll = async () => {
   }
 }
 
-migrateAll().then(_ => console.log(`Migration done: ${Array.from(lens).join(',')}`)).catch(e => console.log(e))
+migrateAll().then(_ => console.log(`Migration done`)).catch(e => console.log(e))
