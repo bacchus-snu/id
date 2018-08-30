@@ -2,6 +2,7 @@ import Model from './model'
 import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from './errors'
 import * as argon2 from 'argon2'
+import * as phc from '@phc/format'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'
@@ -79,7 +80,7 @@ export default class Users {
       throw new NotActivatedError()
     }
 
-    const passwordDigest = result.rows[0].password_digest
+    const passwordDigest: string = result.rows[0].password_digest
     if (!await argon2.verify(passwordDigest, password)) {
       throw new AuthenticationError()
     }

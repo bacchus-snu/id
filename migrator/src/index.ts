@@ -1,6 +1,7 @@
 import * as mssql from 'mssql'
 import * as pg from 'pg'
 import * as fs from 'fs'
+import * as phc from '@phc/format'
 
 interface WingsUser {
   uid: number
@@ -19,13 +20,13 @@ const migratePassword = (password: Buffer | null) => {
   if (password === null) {
     return null
   }
-  const salt = password.slice(2, 6).toString('hex')
+  const salt = password.slice(2, 6)
   if (password.length === 70) {
-    const hash = password.slice(6).toString('hex')
-    return `$mssql-sha512$${salt}$${hash}`
+    const hash = password.slice(6)
+    return phc.serialize({id: 'mssql-sha512', salt, hash})
   } else if ([26, 46].includes(password.length)) {
-    const hash = password.slice(6, 26).toString('hex')
-    return `$mssql-sha1$${salt}$${hash}`
+    const hash = password.slice(6, 26)
+    return phc.serialize({id: 'mssql-sha1', salt, hash})
   } else if (password.length === 16) {
     // unsupported
     return null
