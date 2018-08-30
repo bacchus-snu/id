@@ -15,13 +15,15 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
+const lens: Set<number> = new Set()
+
 const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameToUid: {[username: string]: number},
     pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
   if (user.account === null) {
     return
   }
   if (user.password) {
-    console.log(user.password.length)
+    lens.add(user.password.length)
   }
   const addresses: Array<string> = []
   for (const addrRecord of (await selectEmail.execute({userUid: user.uid})).recordset) {
@@ -109,4 +111,4 @@ const migrateAll = async () => {
   }
 }
 
-migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
+migrateAll().then(_ => console.log(`Migration done: ${Array.from(lens).join(',')}`)).catch(e => console.log(e))
