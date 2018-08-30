@@ -1,5 +1,5 @@
 <template>
-  <el-card class="signup">
+  <el-card class="verify">
   <div slot="header" class="card-head">
     <span>Sign up</span>
   </div>
@@ -24,7 +24,7 @@ import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 
 @Component({})
-export default class ValidateForm extends Vue {
+export default class EmailVerification extends Vue {
   @Provide()
   public models = {
     email: '',
@@ -113,8 +113,6 @@ export default class ValidateForm extends Vue {
       this.$notify.error(this.failTrans[this.lang])
       return
     }
-
-    // this.$notify.success(this.successTrans[this.lang])
     this.isEmailSent = true
   }
 
@@ -122,7 +120,7 @@ export default class ValidateForm extends Vue {
 </script>
 
 <style scoped>
-.signup {
+.verify {
   width: 550px;
   margin-top: 4%;
   margin-left: auto;

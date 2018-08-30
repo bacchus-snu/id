@@ -1,7 +1,10 @@
 import * as mssql from 'mssql'
 import * as pg from 'pg'
 import * as fs from 'fs'
+<<<<<<< HEAD
 import * as phc from '@phc/format'
+=======
+>>>>>>> origin/master
 
 interface WingsUser {
   uid: number
@@ -16,6 +19,7 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
+<<<<<<< HEAD
 const migratePassword = (password: Buffer | null) => {
   if (password === null) {
     return null
@@ -37,6 +41,9 @@ const migratePassword = (password: Buffer | null) => {
 
 const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameToUid: {[username: string]: number},
     pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
+=======
+const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
+>>>>>>> origin/master
   if (user.account === null) {
     return
   }
@@ -60,11 +67,18 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameT
     addressIdxs.push(result.rows[0].idx)
   }
 
+<<<<<<< HEAD
   const posixUid = usernameToUid[user.account] === undefined ? null : usernameToUid[user.account]
   let userIdx: number
   try {
     const userInsertResult = await pgClient.query('INSERT INTO users (username, name, password_digest, uid, shell, preferred_language) ' +
       'VALUES ($1, $2, $3, $4, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name, migratePassword(user.password), posixUid])
+=======
+  let userIdx: number
+  try {
+    const userInsertResult = await pgClient.query('INSERT INTO users (username, name, shell, preferred_language) ' +
+      'VALUES ($1, $2, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name])
+>>>>>>> origin/master
     userIdx = userInsertResult.rows[0].idx
   } catch (e) {
     const userSelectResult = await pgClient.query('SELECT idx FROM users WHERE username=$1', [user.account])
@@ -93,6 +107,7 @@ const findDup = (allEmails: Array<any>) => {
 }
 
 const migrateAll = async () => {
+<<<<<<< HEAD
   const usernameToUid: {[username: string]: number} = {}
   for (const line of fs.readFileSync('./passwd', {encoding: 'utf-8'}).split('\n')) {
     const fields = line.split(':')
@@ -102,6 +117,8 @@ const migrateAll = async () => {
     usernameToUid[fields[0]] = Number.parseInt(fields[2])
   }
   
+=======
+>>>>>>> origin/master
   const mssqlPool = new mssql.ConnectionPool(config.mssql)
   await mssqlPool.connect()
   const mssqlSelectUser = new mssql.PreparedStatement(mssqlPool)
@@ -115,7 +132,11 @@ const migrateAll = async () => {
   try {
     const duplicates = findDup((await mssqlSelectAllEmail.execute({})).recordset)
     for (const user of (await mssqlSelectUser.execute({})).recordset) {
+<<<<<<< HEAD
       await migrateUser(user, duplicates, usernameToUid, pgClient, mssqlSelectEmail)
+=======
+      await migrateUser(user, duplicates, pgClient, mssqlSelectEmail)
+>>>>>>> origin/master
     }
   } finally {
     await mssqlSelectUser.unprepare()
@@ -126,4 +147,8 @@ const migrateAll = async () => {
   }
 }
 
+<<<<<<< HEAD
 migrateAll().then(_ => console.log(`Migration done`)).catch(e => console.log(e))
+=======
+migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
+>>>>>>> origin/master

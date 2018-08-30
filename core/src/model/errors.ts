@@ -34,3 +34,9 @@ export class ExpiredTokenError extends ControllableError {
     super('Token expired')
   }
 }
+
+export class ResendLimitExeededError extends ControllableError {
+  constructor() {
+    super('Resend limit exceeded')
+  }
+}

@@ -35,6 +35,7 @@
         {{ helpTrans[lang] }}<i class="el-icon-question"></i>
       </el-menu-item>
       <el-button class="topbutton" type="warning" @click="changeLang">{{ langTrans[lang] }}</el-button>
+      <el-button class="topbutton" v-if="loggedIn" :disabled="isLoggingOut" type="warning" @click="onLogout">{{ logoutTrans[lang] }}</el-button>
 	  </el-menu>
   </div>
 </template>
@@ -42,9 +43,12 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { Translation, Language } from '../types/translation'
+import axios from 'axios'
+import { AxiosResponse } from 'axios'
 
 @Component({})
 export default class TheHeading extends Vue {
+  private isLoggingOut: boolean = false
   private readonly snucseTrans: Translation = {
     ko: '스누씨',
     en: 'SNUCSE',
@@ -85,6 +89,11 @@ export default class TheHeading extends Vue {
     en: '한국어',
   }
 
+  private readonly logoutTrans: Translation = {
+    ko: '로그아웃',
+    en: 'Logout',
+  }
+
   public changeLang() {
     this.$store.commit('changeLang')
   }
@@ -93,8 +102,39 @@ export default class TheHeading extends Vue {
     return this.$store.state.language
   }
 
+  get loggedIn(): boolean {
+    return (this.$store.state.username !== '')
+  }
+
   public routeTo(route: string) {
     this.$router.push(route)
+  }
+
+  private async mounted() {
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 200 && response.data.username) {
+      this.$store.commit('changeUsername', response.data.username)
+    }
+  }
+
+  private async onLogout() {
+    if (this.isLoggingOut) {
+      return
+    }
+
+    this.isLoggingOut = true
+
+    const result = await axios.get('/api/logout', {
+      validateStatus: () => true,
+    })
+
+    this.isLoggingOut = false
+
+    this.$store.commit('changeUsername', '')
+    this.$router.push('/')
   }
 }
 </script>
@@ -120,7 +160,7 @@ export default class TheHeading extends Vue {
 .topbutton {
   float: right;
   margin: 4px 10px;
-  font-size: 20px;
+  font-size: 18px;
   color: black;
 }
 .div-link {

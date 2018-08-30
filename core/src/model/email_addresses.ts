@@ -42,14 +42,41 @@ export default class EmailAddresses {
     await client.query(query, [userIdx, emailAddressIdx])
   }
 
+  public async isValidatedEmail(client: PoolClient, emailAddressIdx: number): Promise<boolean> {
+    const query = 'SELECT owner_idx FROM email_addresses WHERE idx = $1'
+    const result = await client.query(query, [emailAddressIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    if (result.rows[0].owner_idx) {
+      return true
+    }
+    return false
+  }
+
   public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
-    const query = 'INSERT INTO email_verification_tokens(email_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (email_idx) DO UPDATE SET token = $2'
+    await this.resetResendCountIfExpired(client, emailIdx)
+    const query = 'INSERT INTO email_verification_tokens AS e(email_idx, token, expires) VALUES ($1, $2, $3) ' +
+    'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
     const result = await client.query(query, [emailIdx, token, expires])
     return token
+  }
+
+  public async resetResendCountIfExpired(client: PoolClient, emailIdx: number): Promise<void> {
+    const query = 'UPDATE email_verification_tokens SET resend_count = 0 WHERE email_idx = $1 AND expires <= now()'
+    await client.query(query, [emailIdx])
+  }
+
+  public async getResendCount(client: PoolClient, token: string): Promise<number> {
+    const query = 'SELECT resend_count FROM email_verification_tokens WHERE token = $1'
+    const result = await client.query(query, [token])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].resend_count
   }
 
   public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {
@@ -88,6 +115,19 @@ export default class EmailAddresses {
     if (moment().isSameOrAfter(expires)) {
       throw new ExpiredTokenError()
     }
+  }
+
+  public async getEmailsByOwnerIdx(client: PoolClient, ownerIdx: number): Promise<Array<EmailAddress>> {
+    const query = 'SELECT address_local, address_domain FROM email_addresses WHERE owner_idx = $1'
+    const result = await client.query(query, [ownerIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+
+    return result.rows.map(row => ({
+      local: row.address_local,
+      domain: row.address_domain,
+    }))
   }
 
   private asyncRandomBytes(n: number): Promise<Buffer> {
