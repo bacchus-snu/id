@@ -15,8 +15,6 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
-const failed: Array<string> = []
-
 const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient: pg.PoolClient, selectEmail: mssql.PreparedStatement) => {
   if (user.account === null) {
     return
@@ -36,12 +34,8 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
     if (!local || !domain) {
       continue
     }
-    try {
-      const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
-      addressIdxs.push(result.rows[0].idx)
-    } catch (e) {
-      failed.push(address)
-    }
+    const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
+    addressIdxs.push(result.rows[0].idx)
   }
 
   let userIdx: number
@@ -100,4 +94,4 @@ const migrateAll = async () => {
   }
 }
 
-migrateAll().then(_ => console.log(failed)).catch(e => console.log(e))
+migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
