@@ -1,7 +1,7 @@
 import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
-import { login, logout, checkLogin } from './handlers/login'
+import { login, logout, checkLogin, loginLegacy } from './handlers/login'
 import { getUserList, createUser, deleteUser } from './handlers/users'
 import { sendVerificationEmail, checkToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
@@ -16,6 +16,11 @@ export function createRouter(model: Model, config: Config): Router {
    * 200 if success, 401 if not.
    */
   router.post('/api/login', login(model))
+  /**
+   * Legacy login API route.
+   * CAUTION: response code 200 means failure in sign in.
+   */
+  router.post('/Authentication/Login.aspx', loginLegacy(model))
   /**
    * Logout API route.
    * Always set status code to 200, and clear session store.
