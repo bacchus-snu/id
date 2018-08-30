@@ -51,7 +51,7 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
     userIdx = userInsertResult.rows[0].idx
   } catch (e) {
     console.error(e)
-    const userSelectResult = await pgClient.query('SELECT FROM users WHERE username=$1 RETURNING idx', [user.account])
+    const userSelectResult = await pgClient.query('SELECT idx FROM users WHERE username=$1', [user.account])
     userIdx = userSelectResult.rows[0].idx
   }
 
