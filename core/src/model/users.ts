@@ -3,6 +3,7 @@ import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from './errors'
 import * as argon2 from 'argon2'
 import * as phc from '@phc/format'
+import * as crypto from 'crypto'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'
@@ -81,7 +82,16 @@ export default class Users {
     }
 
     const passwordDigest: string = result.rows[0].password_digest
-    if (!await argon2.verify(passwordDigest, password)) {
+    const phcObject = phc.deserialize(passwordDigest)
+    if (['mssql-sha1', 'mssql-sha512'].includes(phcObject.id)) {
+      const nullAppendedPassword = Buffer.from([...password].map(x => x + '\u0000').join(''))
+      const hash = crypto.createHash(phcObject.id === 'mssql-sha1' ? 'sha1' : 'sha512')
+      hash.update(nullAppendedPassword)
+      hash.update(phcObject.salt)
+      if (!hash.digest().equals(phcObject.hash)) {
+        throw new AuthenticationError()
+      }
+    } else if (!await argon2.verify(passwordDigest, password)) {
       throw new AuthenticationError()
     }
 
