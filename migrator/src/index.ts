@@ -44,9 +44,9 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
       'VALUES ($1, $2, \'/bin/bash\', \'ko\') RETURNING idx', [user.account, user.name])
     userIdx = userInsertResult.rows[0].idx
   } catch (e) {
-    console.error(e)
     const userSelectResult = await pgClient.query('SELECT idx FROM users WHERE username=$1', [user.account])
     userIdx = userSelectResult.rows[0].idx
+    console.log(`dup_username (merged): ${user.account}`)
   }
 
   for (const emailAddressIdx of addressIdxs) {
@@ -60,7 +60,7 @@ const findDup = (allEmails: Array<any>) => {
   for (const row of allEmails) {
     const email: string = row.email
     if (found.includes(email)) {
-      console.error(`dup: ${email}`)
+      console.error(`dup_email (ignored): ${email}`)
       dup.push(email)
     } else {
       found.push(email)
