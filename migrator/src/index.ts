@@ -20,6 +20,7 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, usernameT
   if (user.account === null) {
     return
   }
+  console.log(user.password)
   const addresses: Array<string> = []
   for (const addrRecord of (await selectEmail.execute({userUid: user.uid})).recordset) {
     const address = addrRecord.email
