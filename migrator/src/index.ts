@@ -32,6 +32,7 @@ const migrateUser = async (user: WingsUser, duplicates: Array<string>, pgClient:
     const local = address.split('@')[0]
     const domain = address.split('@')[1]
     if (!local || !domain) {
+      console.error(`bad_email (ignored): ${address}`)
       continue
     }
     const result = await pgClient.query('INSERT INTO email_addresses (address_local, address_domain) VALUES ($1, $2) RETURNING idx', [local, domain])
