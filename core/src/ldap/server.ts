@@ -1,6 +1,6 @@
 import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccountObjectClass } from './types'
-import { OrganizationalUnit, organizationalUnitObjectClass } from './types'
+import { PosixAccount, posixAccountObjectClass, PosixGroup } from './types'
+import { OrganizationalUnit, organizationalUnitObjectClass, posixGroupObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
 import * as bunyan from 'bunyan'
@@ -18,6 +18,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   const usersDN = `ou=${config.ldap.usersOU},${config.ldap.baseDN}`
   const groupsDN = `ou=${config.ldap.groupsOU},${config.ldap.baseDN}`
   const parsedUsersDN = ldap.parseDN(usersDN)
+  const parsedGroupsDN = ldap.parseDN(groupsDN)
 
   const userToPosixAccount: (user: User) => ldap.SearchEntry<PosixAccount> = user => {
     if (user.username === null || user.shell === null) {
@@ -48,6 +49,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     })
     return posixAccounts
   }
+
   const subschema: ldap.SearchEntry<Subschema> = {
     dn: config.ldap.subschemaDN,
     attributes: {
@@ -65,6 +67,14 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     },
   }
 
+  const groupsOU: ldap.SearchEntry<OrganizationalUnit> = {
+    dn: groupsDN,
+    attributes: {
+      objectClass: organizationalUnitObjectClass,
+      ou: config.ldap.groupsOU,
+    },
+  }
+
   const rootDSE: ldap.SearchEntry<RootDSE> = {
     dn: '',
     attributes: {
@@ -72,6 +82,15 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       subschemaSubentry: config.ldap.subschemaDN,
       supportedLDAPVersion: 3,
     },
+  }
+
+  const usersGroup: ldap.SearchEntry<PosixGroup> = {
+    dn: `cn=${config.posix.userGroupName},${groupsDN}`,
+    attributes: {
+      objectClass: posixGroupObjectClass,
+      cn: config.posix.userGroupName,
+      gidNumber: config.posix.userGroupGid
+    }
   }
 
   // Non-anonymous bind.
@@ -134,17 +153,31 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
           const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-          if (user.uid === null) {
-            await model.pgDo(c => model.users.assignUid(c, user.idx, config.posix.minUid))
-            res.send(userToPosixAccount(await model.pgDo(c => model.users.getByUserIdx(c, user.idx))))
-          } else {
-            res.send(userToPosixAccount(user))
-          }
+          res.send(userToPosixAccount(user))
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {
             throw e
           }
         }
+      }
+    }
+    res.end()
+    return next()
+  })
+
+  // groups lookup
+  server.search(groupsDN, async (req, res, next) => {
+    const parentDN = req.dn.parent()
+    if (req.dn.equals(parsedGroupsDN)) {
+      if (req.scope === 'base') {
+        res.send(groupsOU)
+      } else {
+        // Same results for 'one' and 'sub'
+        res.send(usersGroup)
+      }
+    } else if (parentDN != null && parentDN.equals(parsedGroupsDN) && req.scope === 'base') {
+      if (req.dn.rdns[0].attrs.cn.value == config.posix.userGroupName) {
+        res.send(usersGroup)
       }
     }
     res.end()
