@@ -89,8 +89,8 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     attributes: {
       objectClass: posixGroupObjectClass,
       cn: config.posix.userGroupName,
-      gidNumber: config.posix.userGroupGid
-    }
+      gidNumber: config.posix.userGroupGid,
+    },
   }
 
   // Non-anonymous bind.
@@ -176,7 +176,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.send(usersGroup)
       }
     } else if (parentDN != null && parentDN.equals(parsedGroupsDN) && req.scope === 'base') {
-      if (req.dn.rdns[0].attrs.cn.value == config.posix.userGroupName) {
+      if (req.dn.rdns[0].attrs.cn.value === config.posix.userGroupName) {
         res.send(usersGroup)
       }
     }
