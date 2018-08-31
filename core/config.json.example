@@ -37,6 +37,7 @@
     "sudoerGroupGid": 100600,
     "defaultShell": "/bin/bash",
     "minUid": 100000,
+    "nullUid": 99999,
     "homeDirectoryPrefix": "/csehome"
   },
   "postgresql": {

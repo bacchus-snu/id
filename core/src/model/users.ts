@@ -121,15 +121,16 @@ export default class Users {
     const result = await client.query(query, [userIdx])
   }
 
-  public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<void> {
+  public async assignUid(client: PoolClient, userIdx: number, minUid: number): Promise<boolean> {
     const getNewUidResult = await client.query('SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN ' +
       'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL ORDER BY b.uid LIMIT 1')
     if (getNewUidResult.rows.length !== 1) {
       throw new Error('Failed to assign posix uid')
     }
     const newUid = getNewUidResult.rows[0].uid === null ? minUid : getNewUidResult.rows[0].uid
-    const assignResult = await client.query('UPDATE users SET uid = $1 WHERE idx = $2 AND uid IS NULL',
+    const assignResult = await client.query('UPDATE users SET uid = $1 WHERE idx = $2 AND uid IS NULL RETURNING 1',
       [newUid, userIdx])
+    return assignResult.rows.length > 0
   }
 
   public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {

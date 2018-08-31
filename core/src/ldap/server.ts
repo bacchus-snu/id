@@ -20,7 +20,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   const parsedUsersDN = ldap.parseDN(usersDN)
 
   const userToPosixAccount: (user: User) => ldap.SearchEntry<PosixAccount> = user => {
-    if (user.username === null || user.shell === null || user.uid === null) {
+    if (user.username === null || user.shell === null) {
       throw new Error('Cannot convert to posixAccount')
     }
     return {
@@ -32,7 +32,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         homeDirectory: `${config.posix.homeDirectoryPrefix}/${user.username}`,
         loginShell: user.shell,
         objectClass: posixAccountObjectClass,
-        uidNumber: user.uid,
+        uidNumber: user.uid === null ? config.posix.nullUid : user.uid,
         gidNumber: config.posix.userGroupGid,
       },
     }
@@ -81,9 +81,15 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
-      res.end()
-      return next()
+      const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
+      if (await model.pgDo(c => model.users.assignUid(c, userIdx, config.posix.minUid))) {
+        // assigned uid
+        // user must log in agagin
+        return next(new ldap.InvalidCredentialsError())
+      } else {
+        res.end()
+        return next()
+      }
     } catch (e) {
       return next(new ldap.InvalidCredentialsError())
     }
@@ -116,14 +122,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.send(usersOU)
       } else {
         // Same results for 'one' and 'sub'
-        const users = await model.pgDo(c => model.users.getAll(c))
-        // TODO: assign uid to the account that matches the filter only
         // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-        for (const user of users) {
-          if (user.uid === null) {
-            await model.pgDo(c => model.users.assignUid(c, user.idx, config.posix.minUid))
-          }
-        }
         usersToPosixAccounts(await model.pgDo(c => model.users.getAll(c))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
