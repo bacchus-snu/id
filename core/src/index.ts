@@ -20,7 +20,13 @@ const model = new Model({
   port: config.postgresql.port,
 }, log)
 
-const ldapServer = createLDAPServer({log}, model, config)
+const ldapOptions = {
+  log,
+  certificate: fs.readFileSync(config.ldap.certificate),
+  key: fs.readFileSync(config.ldap.key),
+}
+
+const ldapServer = createLDAPServer(ldapOptions, model, config)
 ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost,
   () => log.info(`LDAP server listening on ${config.ldap.listenHost}:${config.ldap.listenPort}`))
 

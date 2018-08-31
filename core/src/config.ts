@@ -48,6 +48,16 @@ export interface LDAPConfig {
    * e.g. cn=subschema,dc=snucse,dc=org
    */
   subschemaDN: string
+
+  /**
+   * Path to x509 PEM-encoded certificate.
+   */
+  certificate: string
+
+  /**
+   * Path to x509 PEM-encoded private key.
+   */
+  key: string
 }
 
 /**
