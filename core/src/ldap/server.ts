@@ -1,13 +1,13 @@
 import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccountObjectClass } from './types'
-import { OrganizationalUnit, organizationalUnitObjectClass } from './types'
+import { PosixAccount, posixAccountObjectClass, PosixGroup } from './types'
+import { OrganizationalUnit, organizationalUnitObjectClass, posixGroupObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
 import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
-import { NoSuchEntryError } from '../model/errors'
+import { NoSuchEntryError, AuthenticationError } from '../model/errors'
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
@@ -18,9 +18,10 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   const usersDN = `ou=${config.ldap.usersOU},${config.ldap.baseDN}`
   const groupsDN = `ou=${config.ldap.groupsOU},${config.ldap.baseDN}`
   const parsedUsersDN = ldap.parseDN(usersDN)
+  const parsedGroupsDN = ldap.parseDN(groupsDN)
 
   const userToPosixAccount: (user: User) => ldap.SearchEntry<PosixAccount> = user => {
-    if (user.username === null || user.shell === null || user.uid === null) {
+    if (user.username === null || user.shell === null) {
       throw new Error('Cannot convert to posixAccount')
     }
     return {
@@ -32,7 +33,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         homeDirectory: `${config.posix.homeDirectoryPrefix}/${user.username}`,
         loginShell: user.shell,
         objectClass: posixAccountObjectClass,
-        uidNumber: user.uid,
+        uidNumber: user.uid === null ? config.posix.nullUid : user.uid,
         gidNumber: config.posix.userGroupGid,
       },
     }
@@ -48,6 +49,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     })
     return posixAccounts
   }
+
   const subschema: ldap.SearchEntry<Subschema> = {
     dn: config.ldap.subschemaDN,
     attributes: {
@@ -65,12 +67,29 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     },
   }
 
+  const groupsOU: ldap.SearchEntry<OrganizationalUnit> = {
+    dn: groupsDN,
+    attributes: {
+      objectClass: organizationalUnitObjectClass,
+      ou: config.ldap.groupsOU,
+    },
+  }
+
   const rootDSE: ldap.SearchEntry<RootDSE> = {
     dn: '',
     attributes: {
       namingContexts: [config.ldap.baseDN, usersDN, groupsDN],
       subschemaSubentry: config.ldap.subschemaDN,
       supportedLDAPVersion: 3,
+    },
+  }
+
+  const usersGroup: ldap.SearchEntry<PosixGroup> = {
+    dn: `cn=${config.posix.userGroupName},${groupsDN}`,
+    attributes: {
+      objectClass: posixGroupObjectClass,
+      cn: config.posix.userGroupName,
+      gidNumber: config.posix.userGroupGid,
     },
   }
 
@@ -81,11 +100,21 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
-      res.end()
-      return next()
+      const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
+      if (await model.pgDo(c => model.users.assignUid(c, userIdx, config.posix.minUid))) {
+        // assigned uid
+        // user must log in again
+        return next(new ldap.InvalidCredentialsError())
+      } else {
+        res.end()
+        return next()
+      }
     } catch (e) {
-      return next(new ldap.InvalidCredentialsError())
+      if (e instanceof AuthenticationError) {
+        return next(new ldap.InvalidCredentialsError())
+      }
+      server.log.error(e)
+      return next(new ldap.OtherError())
     }
   })
 
@@ -116,14 +145,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.send(usersOU)
       } else {
         // Same results for 'one' and 'sub'
-        const users = await model.pgDo(c => model.users.getAll(c))
-        // TODO: assign uid to the account that matches the filter only
         // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-        for (const user of users) {
-          if (user.uid === null) {
-            await model.pgDo(c => model.users.assignUid(c, user.idx, config.posix.minUid))
-          }
-        }
         usersToPosixAccounts(await model.pgDo(c => model.users.getAll(c))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
@@ -135,17 +157,31 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
           const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-          if (user.uid === null) {
-            await model.pgDo(c => model.users.assignUid(c, user.idx, config.posix.minUid))
-            res.send(userToPosixAccount(await model.pgDo(c => model.users.getByUserIdx(c, user.idx))))
-          } else {
-            res.send(userToPosixAccount(user))
-          }
+          res.send(userToPosixAccount(user))
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {
             throw e
           }
         }
+      }
+    }
+    res.end()
+    return next()
+  })
+
+  // groups lookup
+  server.search(groupsDN, async (req, res, next) => {
+    const parentDN = req.dn.parent()
+    if (req.dn.equals(parsedGroupsDN)) {
+      if (req.scope === 'base') {
+        res.send(groupsOU)
+      } else {
+        // Same results for 'one' and 'sub'
+        res.send(usersGroup)
+      }
+    } else if (parentDN != null && parentDN.equals(parsedGroupsDN) && req.scope === 'base') {
+      if (req.dn.rdns[0].attrs.cn.value === config.posix.userGroupName) {
+        res.send(usersGroup)
       }
     }
     res.end()

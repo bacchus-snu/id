@@ -64,6 +64,40 @@ export interface PosixAccount {
 }
 
  /**
+  * Array literal for 'posixGroup', and 'top'.
+  */
+export const posixGroupObjectClass = ['posixGroup', 'top']
+
+/**
+ * An object which is a member of RFC2307 'posixGroup', and RFC2256 'top'.
+ *
+ * Note back that some attributes defined in RFCs, namely 'description' and 'userPassword' are omitted.
+ *
+ * Array types are for multi-valued attributes.
+ */
+export interface PosixGroup {
+  /**
+   * Object class attribute.
+   */
+  objectClass: string | Array<string>
+
+  /**
+   * The common name for the group.
+   */
+  cn: string | Array<string>
+
+  /**
+   * Integer identifier for the group.
+   */
+  gidNumber: number
+
+  /**
+   * Members.
+   */
+  memberUid?: string | Array<string>
+}
+
+ /**
   * Array literal for 'organizationalUnit', and 'top'.
   */
 export const organizationalUnitObjectClass = ['organizationalUnit', 'top']
