@@ -3,7 +3,7 @@
   "description": "Identity management service for SNUCSE - Front",
   "author": "Bacchus <contact@bacchus.snucse.org>",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.0.2-dev",
   "private": true,
   "dependencies": {
     "@nuxtjs/axios": "^5.0.0",

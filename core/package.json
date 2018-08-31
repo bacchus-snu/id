@@ -1,6 +1,6 @@
 {
   "name": "bacchus-id",
-  "version": "0.0.1-dev",
+  "version": "0.0.2-dev",
   "description": "Identity management service for SNUCSE",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
