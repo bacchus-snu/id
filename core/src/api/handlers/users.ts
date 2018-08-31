@@ -67,6 +67,8 @@ export function createUser(model: Model, config: Config): IMiddleware {
         c, username, password, name, config.posix.defaultShell, preferredLanguage)
       await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
       await model.emailAddresses.removeToken(c, token)
+      // Make user state pending by deactivating user
+      await model.users.deactivate(c, userIdx)
     })
     ctx.status = 201
     ctx.session.verificationToken = null
