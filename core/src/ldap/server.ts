@@ -7,7 +7,7 @@ import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
-import { NoSuchEntryError } from '../model/errors'
+import { NoSuchEntryError, AuthenticationError } from '../model/errors'
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
@@ -103,14 +103,18 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
       if (await model.pgDo(c => model.users.assignUid(c, userIdx, config.posix.minUid))) {
         // assigned uid
-        // user must log in agagin
+        // user must log in again
         return next(new ldap.InvalidCredentialsError())
       } else {
         res.end()
         return next()
       }
     } catch (e) {
-      return next(new ldap.InvalidCredentialsError())
+      if (e instanceof AuthenticationError) {
+        return next(new ldap.InvalidCredentialsError())
+      }
+      server.log.error(e)
+      return next(new ldap.OtherError())
     }
   })
 
