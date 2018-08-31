@@ -7,7 +7,9 @@
     "baseDN": "dc=snucse,dc=org",
     "usersOU": "users",
     "groupsOU": "groups",
-    "subschemaDN": "cn=subschema,dc=snucse,dc=org"
+    "subschemaDN": "cn=subschema,dc=snucse,dc=org",
+    "certificate": "",
+    "key": ""
   },
   "api": {
     "listenHost": "127.0.0.1",

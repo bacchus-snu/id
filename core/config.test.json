@@ -6,7 +6,9 @@
     "listenPort": "50389",
     "usersDN": "ou=users,dc=snucse,dc=org",
     "groupsDN": "ou=groups,dc=snucse,dc=org",
-    "subschemaDN": "cn=subschema,dc=snucse,dc=org"
+    "subschemaDN": "cn=subschema,dc=snucse,dc=org",
+    "certificate": "",
+    "key": ""
   },
   "api": {
     "listenHost": "127.0.0.1",

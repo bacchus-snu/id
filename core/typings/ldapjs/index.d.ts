@@ -18,12 +18,12 @@ declare module 'ldapjs' {
     /**
      * PEM-encoded X.509 certificate.
      */
-    certificate?: string
+    certificate?: string | Buffer
 
     /**
      * PEM-encoded private key for the certificate.
      */
-    key?: string
+    key?: string | Buffer
   }
 
   /**
