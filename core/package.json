@@ -6,7 +6,7 @@
     "build": "rm -rf ./dist && tsc",
     "lint": "tslint --project ./tsconfig.json",
     "start": "node dist/src/index.js",
-    "test": "npm run lint && npm run build && ava --color --verbose"
+    "test": "npm run lint && npm run build && nyc ava --color --verbose"
   },
   "repository": {
     "type": "git",
@@ -42,6 +42,7 @@
     "@types/supertest": "^2.0.5",
     "@types/uuid": "^3.4.3",
     "ava": "^0.25.0",
+    "nyc": "^13.0.1",
     "supertest": "^3.1.0",
     "tslint": "^5.11.0",
     "typescript": "^3.0.1"

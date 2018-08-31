@@ -24,3 +24,7 @@ Thumbs.db
 *.sln
 bin/
 obj/
+
+# Code coverage
+coverage/
+.nyc_output
