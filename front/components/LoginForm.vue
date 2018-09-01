@@ -116,9 +116,9 @@ export default class LoginForm extends Vue {
 
     this.$store.commit('changeUsername', this.username)
 
+    await this.$router.push('/my-page')
     this.username = ''
     this.password = ''
-    this.$router.push('/my-page')
   }
 
 }
