@@ -13,6 +13,15 @@ export interface EmailOption {
   resendCount: number
 }
 
+export function sanitizeEmail(emailLocal: String) {
+  const clean = emailLocal.trim().toLowerCase()
+  if (!/^[a-z0-9\-_\.]+$/i.test(clean)) {
+    // throw "InvalidEmailError"?
+    return ""
+  }
+  return clean
+}
+
 export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config) {
   if (config === null) {
     logger.warn('No config, so the verification email will not be sent.')
