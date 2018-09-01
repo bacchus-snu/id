@@ -13,11 +13,11 @@ export interface EmailOption {
   resendCount: number
 }
 
-export function sanitizeEmail(emailLocal: String) {
+export function sanitizeEmail(emailLocal: string) {
   const clean = emailLocal.trim().toLowerCase()
   if (!/^[a-z0-9\-_\.]+$/i.test(clean)) {
     // throw "InvalidEmailError"?
-    return ""
+    return ''
   }
   return clean
 }
