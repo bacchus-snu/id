@@ -2,7 +2,7 @@ import Model from '../../model/model'
 import Config from '../../config'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
-import { EmailOption, sendEmail } from '../email'
+import { EmailOption, sanitizeEmail, sendEmail } from '../email'
 import { ResendLimitExeededError } from '../../model/errors'
 import emailVerificationTemplate from '../templates/verification_email_template'
 
@@ -16,7 +16,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
     }
 
     let { emailLocal, emailDomain } = body
-    emailLocal = emailLocal.trim()
+    emailLocal = sanitizeEmail(emailLocal)
     emailDomain = emailDomain.trim()
 
     if (!emailLocal || !emailDomain) {
