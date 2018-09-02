@@ -68,14 +68,20 @@ test('test email validation', async t => {
   let response
 
   response = await agent.post('/api/email/verify').send({
-    emailLocal = 'bad@example.com, example',
-    emailDomain = 'snu.ac.kr',
+    emailLocal: 'bad@example.com, example',
+    emailDomain: 'snu.ac.kr',
   })
   t.is(response.status, 400)
 
   response = await agent.post('/api/email/verify').send({
-    emailLocal = 'example',
-    emailDomain = 'snu.ac.kr',
+    emailLocal: 'example',
+    emailDomain: 'example.com',
+  })
+  t.is(response.status, 400)
+
+  response = await agent.post('/api/email/verify').send({
+    emailLocal: 'example',
+    emailDomain: 'snu.ac.kr',
   })
   t.is(response.status, 200)
 })
