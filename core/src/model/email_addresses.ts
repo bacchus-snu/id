@@ -22,7 +22,7 @@ export default class EmailAddresses {
    */
   public async create(client: PoolClient, local: string, domain: string): Promise<number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) ' +
-    'ON CONFLICT (address_local, address_domain) DO UPDATE SET address_local = $1 RETURNING idx'
+    'ON CONFLICT (LOWER(address_local), address_domain) DO UPDATE SET address_local = $1 RETURNING idx'
     const result = await client.query(query, [local, domain])
     const idx = result.rows[0].idx
     return idx
