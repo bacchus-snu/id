@@ -61,3 +61,21 @@ test('check token api', async t => {
   t.is(response.status, 200)
   t.deepEqual(response.body, { emailLocal: local, emailDomain: domain })
 })
+
+test('test email validation', async t => {
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.post('/api/email/verify').send({
+    emailLocal = 'bad@example.com, example',
+    emailDomain = 'snu.ac.kr',
+  })
+  t.is(response.status, 400)
+
+  response = await agent.post('/api/email/verify').send({
+    emailLocal = 'example',
+    emailDomain = 'snu.ac.kr',
+  })
+  t.is(response.status, 200)
+})
