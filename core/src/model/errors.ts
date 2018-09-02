@@ -40,3 +40,9 @@ export class ResendLimitExeededError extends ControllableError {
     super('Resend limit exceeded')
   }
 }
+
+export class InvalidEmailError extends ControllableError {
+  constructor() {
+    super('Invalid email')
+  }
+}

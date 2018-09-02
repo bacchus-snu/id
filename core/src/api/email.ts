@@ -2,7 +2,7 @@ import * as nodemailer from 'nodemailer'
 import Config from '../config'
 import * as Bunyan from 'bunyan'
 import * as fs from 'fs'
-import { ResendLimitExeededError } from '../model/errors'
+import { ResendLimitExeededError, InvalidEmailError } from '../model/errors'
 
 export interface EmailOption {
   address: string
@@ -21,6 +21,9 @@ export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config
 
   const { address, token, subject, url, template, resendCount } = opt
 
+  if (!/^[a-zA-Z0-9-_\.]+@[a-zA-Z0-9-\.]+$/.test(address)) {
+    throw new InvalidEmailError()
+  }
   if (resendCount >= config.email.resendLimit) {
     throw new ResendLimitExeededError()
   }
