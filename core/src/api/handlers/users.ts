@@ -2,7 +2,7 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
-import { EmailOption, sanitizeEmail, sendEmail } from '../email'
+import { EmailOption, sendEmail } from '../email'
 import { ResendLimitExeededError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
 
@@ -91,7 +91,7 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
     }
 
     let { emailLocal, emailDomain } = body
-    emailLocal = sanitizeEmail(emailLocal)
+    emailLocal = emailLocal.trim()
     emailDomain = emailDomain.trim()
 
     if (!emailLocal || !emailDomain) {

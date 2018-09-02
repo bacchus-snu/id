@@ -13,15 +13,6 @@ export interface EmailOption {
   resendCount: number
 }
 
-export function sanitizeEmail(emailLocal: string) {
-  const clean = emailLocal.trim().toLowerCase()
-  if (!/^[a-z0-9\-_\.]+$/i.test(clean)) {
-    // throw "InvalidEmailError"?
-    return ''
-  }
-  return clean
-}
-
 export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config) {
   if (config === null) {
     logger.warn('No config, so the verification email will not be sent.')
@@ -30,6 +21,9 @@ export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config
 
   const { address, token, subject, url, template, resendCount } = opt
 
+  if (!/^[a-zA-Z0-9-_\.]+@[a-zA-Z0-9-\.]+$/.test(address)) {
+    throw new InvalidEmailError()
+  }
   if (resendCount >= config.email.resendLimit) {
     throw new ResendLimitExeededError()
   }

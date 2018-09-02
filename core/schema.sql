@@ -53,9 +53,9 @@ create table email_addresses (
   -- An user_id being null means unverified email address
   owner_idx integer references users(idx) on delete cascade,
   address_local text not null check (address_local <> ''),
-  address_domain text not null check (address_domain <> ''),
-  unique(address_local, address_domain)
+  address_domain text not null check (address_domain <> '')
 );
+create unique index email_addresses_lower_idx on email_addresses (LOWER(address_local), address_domain);
 
 -- Verification token
 create table email_verification_tokens (

@@ -29,7 +29,7 @@ export default class EmailAddresses {
   }
 
   public async getIdxByAddress(client: PoolClient, local: string, domain: string): Promise<number> {
-    const query = 'SELECT idx FROM email_addresses WHERE address_local = $1 AND address_domain = $2'
+    const query = 'SELECT idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1) AND address_domain = $2'
     const result = await client.query(query, [local, domain])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
