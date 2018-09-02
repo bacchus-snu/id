@@ -1,5 +1,5 @@
 import Model from './model'
-import { NoSuchEntryError, ExpiredTokenError } from './errors'
+import { NoSuchEntryError, ExpiredTokenError, InvalidEmailError } from './errors'
 import { PoolClient } from 'pg'
 import * as crypto from 'crypto'
 import * as moment from 'moment'
