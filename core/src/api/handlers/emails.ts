@@ -3,7 +3,7 @@ import Config from '../../config'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import { EmailOption, sendEmail } from '../email'
-import { ResendLimitExeededError } from '../../model/errors'
+import { ResendLimitExeededError, InvalidEmailError } from '../../model/errors'
 import emailVerificationTemplate from '../templates/verification_email_template'
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
@@ -61,7 +61,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
       }
       await sendEmail(option,  model.log, config)
     } catch (e) {
-      if (e instanceof ResendLimitExeededError) {
+      if (e instanceof ResendLimitExeededError || e instanceof InvalidEmailError) {
         ctx.status = 400
         return
       }
