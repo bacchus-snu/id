@@ -55,7 +55,7 @@ create table email_addresses (
   address_local text not null check (address_local <> ''),
   address_domain text not null check (address_domain <> '')
 );
-create unique index email_addresses_lower_idx on email_addresses (LOWER(address_local), address_domain);
+create unique index email_addresses_lower_idx on email_addresses (LOWER(address_local), LOWER(address_domain));
 
 -- Verification token
 create table email_verification_tokens (
