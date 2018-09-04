@@ -39,9 +39,10 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    const { username, name, password, preferredLanguage, snuids } = body
+    const { username, name, password, preferredLanguage, studentNumbers } = body
 
-    if (!username || !name || !password || !preferredLanguage || !snuids || snuids.constructor !== Array) {
+    if (!username || !name || !password || !preferredLanguage ||
+      !studentNumbers || studentNumbers.constructor !== Array) {
       ctx.status = 400
       return
     }
@@ -72,8 +73,8 @@ export function createUser(model: Model, config: Config): IMiddleware {
         // Make user state pending by deactivating user
         await model.users.deactivate(c, userIdx)
 
-        for (const snuid of snuids) {
-          await model.users.addSnuid(c, userIdx, snuid)
+        for (const studentNumber of studentNumbers) {
+          await model.users.addStudentNumber(c, userIdx, studentNumber)
         }
 
         try {

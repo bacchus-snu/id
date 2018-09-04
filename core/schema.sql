@@ -3,7 +3,7 @@ drop table if exists users cascade;
 drop table if exists email_addresses cascade;
 drop table if exists email_verification_tokens cascade;
 drop table if exists password_change_tokens cascade;
-drop table if exists snuids cascade;
+drop table if exists student_numbers cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;
 drop table if exists group_relations cascade;
@@ -76,9 +76,9 @@ create table password_change_tokens (
 );
 
 -- SNU IDs
-create table snuids (
+create table student_numbers (
   idx serial primary key,
-  snuid text unique not null check (snuid <> ''),
+  student_number text unique not null check (student_number <> ''),
   owner_idx integer not null references users(idx) on delete cascade
 );
 

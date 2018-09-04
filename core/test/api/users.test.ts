@@ -28,7 +28,7 @@ test('create user step by step', async t => {
   const password = uuid()
   const name = uuid()
   const preferredLanguage = 'en'
-  const snuids = [uuid(), uuid()]
+  const studentNumbers = [uuid(), uuid()]
 
   response = await agent.post('/api/email/verify').send({
     emailLocal,
@@ -48,7 +48,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
-    snuids,
+    studentNumbers,
   })
   // request without session token will be fail
   t.is(response.status, 401)
@@ -64,7 +64,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
-    snuids,
+    studentNumbers,
   })
   t.is(response.status, 400)
 
@@ -74,7 +74,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
-    snuids,
+    studentNumbers,
   })
   t.is(response.status, 400)
 
@@ -83,7 +83,7 @@ test('create user step by step', async t => {
     password: 'asdf',
     name,
     preferredLanguage,
-    snuids,
+    studentNumbers,
   })
   t.is(response.status, 400)
 
@@ -100,7 +100,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
-    snuids,
+    studentNumbers,
   })
   t.is(response.status, 201)
 })
