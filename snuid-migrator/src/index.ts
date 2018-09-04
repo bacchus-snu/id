@@ -68,7 +68,6 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   } catch (e) {
     errors.push(e)
     duplicateUsername.push(user.account)
-    return
   }
   for (const s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
     if (s === null) {
@@ -89,11 +88,11 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
       continue
     }
     try {
-      await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
-      console.log(`snuid: ${user.account} ${snuid}`)
+      await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid + suffix, userIdx])
+      console.log(`snuid: ${user.account} ${snuid + suffix}`)
     } catch (e) {
       errors.push(e)
-      duplicateSnuids.push(snuid)
+      duplicateSnuids.push(snuid + suffix)
     }
   }
 }
@@ -124,6 +123,7 @@ const migrateAll = async () => {
     await pgClient.release()
   }
 
+  errors.forEach(e => console.error(e))
   invalidSnuids.forEach(e => console.error(`invalid: ${e}`))
   duplicateUsername.forEach(e => console.error(`duplicate username: ${e}`))
   duplicateSnuids.forEach(e => console.error(`duplicate id: ${e}`))
