@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "argon2": "^0.19.3",
+    "axios": "^0.18.0",
     "bunyan": "^1.8.12",
     "koa": "^2.5.2",
     "koa-bodyparser": "^4.2.1",

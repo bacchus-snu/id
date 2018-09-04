@@ -28,6 +28,11 @@ test('create user step by step', async t => {
   const password = uuid()
   const name = uuid()
   const preferredLanguage = 'en'
+  const studentNumbers = [
+    '1111-11111',
+    '11111-111',
+    '1111-1111',
+  ]
 
   response = await agent.post('/api/email/verify').send({
     emailLocal,
@@ -47,6 +52,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
+    studentNumbers,
   })
   // request without session token will be fail
   t.is(response.status, 401)
@@ -62,6 +68,7 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
+    studentNumbers,
   })
   t.is(response.status, 400)
 
@@ -71,12 +78,22 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
+    studentNumbers,
   })
   t.is(response.status, 400)
 
   response = await agent.post('/api/user').send({
     username,
     password: 'asdf',
+    name,
+    preferredLanguage,
+    studentNumbers,
+  })
+  t.is(response.status, 400)
+
+  response = await agent.post('/api/user').send({
+    username,
+    password,
     name,
     preferredLanguage,
   })
@@ -87,8 +104,13 @@ test('create user step by step', async t => {
     password,
     name,
     preferredLanguage,
+    studentNumbers,
   })
   t.is(response.status, 201)
+
+  await model.pgDo(async c => {
+    await c.query('TRUNCATE student_numbers')
+  })
 })
 
 test('get user email addresses', async t => {
