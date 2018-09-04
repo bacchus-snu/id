@@ -39,9 +39,9 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    const { username, name, password, preferredLanguage } = body
+    const { username, name, password, preferredLanguage, snuids } = body
 
-    if (!username || !name || !password || !preferredLanguage) {
+    if (!username || !name || !password || !preferredLanguage || !snuids || snuids.constructor !== Array) {
       ctx.status = 400
       return
     }
@@ -62,27 +62,37 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    await model.pgDo(async c => {
-      const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
-      const userIdx = await model.users.create(
-        c, username, password, name, config.posix.defaultShell, preferredLanguage)
-      await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
-      await model.emailAddresses.removeToken(c, token)
-      // Make user state pending by deactivating user
-      await model.users.deactivate(c, userIdx)
-      try {
-        const notificationMessage = `이름: ${name}
-        Username: ${username}
-        E-mail: ${emailAddress.local}@${emailAddress.domain}`
-        await axios.post(config.misc.slackAPIEndpoint, {
-          text: notificationMessage,
-          username: 'id watch',
-          channel: '#id-notifications',
-        })
-      } catch (e) {
-        model.log.warn(`No slack notification sent for: ${username}`)
-      }
-    })
+    try {
+      await model.pgDo(async c => {
+        const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
+        const userIdx = await model.users.create(
+          c, username, password, name, config.posix.defaultShell, preferredLanguage)
+        await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
+        await model.emailAddresses.removeToken(c, token)
+        // Make user state pending by deactivating user
+        await model.users.deactivate(c, userIdx)
+
+        for (const snuid of snuids) {
+          await model.users.addSnuid(c, userIdx, snuid)
+        }
+
+        try {
+          const notificationMessage = `이름: ${name}
+          Username: ${username}
+          E-mail: ${emailAddress.local}@${emailAddress.domain}`
+          await axios.post(config.misc.slackAPIEndpoint, {
+            text: notificationMessage,
+            username: 'id watch',
+            channel: '#id-notifications',
+          })
+        } catch (e) {
+          model.log.warn(`No slack notification sent for: ${username}`)
+        }
+      })
+    } catch (e) {
+      ctx.status = 400
+      return
+    }
     ctx.status = 201
     ctx.session.verificationToken = null
     await next()

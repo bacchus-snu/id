@@ -256,6 +256,12 @@ export default class Users {
     return result.rows[0].user_idx
   }
 
+  public async addSnuid(client: PoolClient, userIdx: number, snuid: string): Promise<number> {
+    const query = 'INSERT INTO snuids(snuid, owner_idx) VALUES ($1, $2) RETURNING idx'
+    const result = await client.query(query, [snuid, userIdx])
+    return result.rows[0].idx
+  }
+
   private rowToUser(row: any): User {
     return {
       idx: row.idx,
