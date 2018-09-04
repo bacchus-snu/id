@@ -23,7 +23,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     return
   }
 
-  const result = (await pgClient.query('SELECT * FROM users WHERE username = $1 RETURNING idx', [user.account]))
+  const result = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [user.account]))
   if (result.rows.length === 0) {
     console.log(` skip: ${user.account} does not exist in id.snucse.org`)
     return
