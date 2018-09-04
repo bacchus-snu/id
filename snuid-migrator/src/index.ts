@@ -39,8 +39,8 @@ const mergeAccount = async (merged: string, merger: string, pgClient: pg.PoolCli
   const mergedIdx = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [merged])).rows[0].idx
   const mergerIdx = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [merger])).rows[0].idx
   
-  for (const address of (await pgClient.query('SELECT * FROM email_addresses WHERE owner_idx = $1', [mergedIdx])).rows) {
-    await pgClient.query('INSERT INTO email_addresses (owner_idx, address_local, address_domain) VALUES ($1, $2, $3)', [mergerIdx, address.address_local, address.address_domain])
+  for (const address of (await pgClient.query('SELECT idx FROM email_addresses WHERE owner_idx = $1', [mergedIdx])).rows) {
+    await pgClient.query('UPDATE email_addresses SET owner_idx = $1 WHERE idx = $2', [mergerIdx, address.idx])
   }
 
   await pgClient.query('INSERT INTO reserved_usernames (reserved_username, owner_idx) VALUES ($1, $2)', [merged, mergerIdx])
