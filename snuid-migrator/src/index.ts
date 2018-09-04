@@ -18,6 +18,22 @@ interface WingsUser {
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 const errors: Array<Error> = []
+const duplicateUsername: Array<string> = []
+const duplicateSnuids: Array<string> = []
+const invalidSnuids: Array<string> = []
+
+const validate = (snuid: string) => {
+  for (const regex of [
+      /^\d\d\d\d\d-\d\d\d$/,    // 5-3
+      /^\d\d\d\d-\d\d\d\d$/,    // 4-4
+      /^\d\d\d\d-\d\d\d\d\d$/,  // 4-5
+      ]) {
+    if (regex.test(snuid)) {
+      return true
+    }
+  }
+  return false
+}
 
 const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   if (user.account === null) {
@@ -34,6 +50,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     await pgClient.query('INSERT INTO user_memberships (user_idx, group_idx) VALUES ($1, $2)', [userIdx, wingsUsersGroupIdx])
   } catch (e) {
     errors.push(e)
+    duplicateUsername.push(user.account)
     return
   }
   console.log(` join: ${user.account} added to wingsUser group`)
@@ -41,11 +58,16 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     if (snuid === null) {
       continue
     }
+    if (!validate(snuid)) {
+      invalidSnuids.push(snuid)
+      continue
+    }
     try {
       await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
       console.log(`snuid: ${user.account} ${snuid}`)
     } catch (e) {
       errors.push(e)
+      duplicateSnuids.push(snuid)
     }
   }
 }
@@ -67,7 +89,9 @@ const migrateAll = async () => {
     await pgClient.release()
   }
 
-  errors.forEach(console.error)
+  duplicateUsername.forEach(e => console.error(`duplicate: ${e}`))
+  duplicateSnuids.forEach(e => console.error(`duplicate: ${e}`))
+  invalidSnuids.forEach(e => console.error(`invalid: ${e}`))
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
