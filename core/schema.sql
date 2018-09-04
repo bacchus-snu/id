@@ -43,8 +43,13 @@ create table users (
   -- Language preference
   preferred_language language not null,
 
+  -- Timestamps
+  created_at timestamp with time zone default NOW(),
+  last_login_at timestamp with time zone,
+
   -- Activated
   activated boolean not null default true
+
 );
 
 -- Email addresses
@@ -140,6 +145,6 @@ create table pending_user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
   group_idx integer not null references groups(idx) on delete cascade,
-  created_at timestamp without time zone not null,
+  created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
 )

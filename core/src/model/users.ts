@@ -111,6 +111,11 @@ export default class Users {
     return idx
   }
 
+  public async updateLastLoginAt(client: PoolClient, userIdx: number): Promise<void> {
+    const query = 'UPDATE users SET last_login_at = NOW() WHERE idx = $1'
+    const result = await client.query(query, [userIdx])
+  }
+
   public async activate(client: PoolClient, userIdx: number): Promise<void> {
     const query = 'UPDATE users SET activated = TRUE WHERE idx = $1'
     const result = await client.query(query, [userIdx])
