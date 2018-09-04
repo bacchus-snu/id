@@ -5,6 +5,7 @@ import Config from '../../config'
 import { EmailOption, sendEmail } from '../email'
 import { ResendLimitExeededError, InvalidEmailError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
+import axios from 'axios'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
@@ -69,6 +70,18 @@ export function createUser(model: Model, config: Config): IMiddleware {
       await model.emailAddresses.removeToken(c, token)
       // Make user state pending by deactivating user
       await model.users.deactivate(c, userIdx)
+      try {
+        const notificationMessage = `이름: ${name}
+        Username: ${username}
+        E-mail: ${emailAddress.local}@${emailAddress.domain}`
+        await axios.post(config.misc.slackAPIEndpoint, {
+          text: notificationMessage,
+          username: 'id watch',
+          channel: '#id',
+        })
+      } catch (e) {
+        model.log.warn(`No slack notification sent for: ${username}`)
+      }
     })
     ctx.status = 201
     ctx.session.verificationToken = null
