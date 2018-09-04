@@ -22,6 +22,7 @@ const duplicateUsername: Array<string> = []
 const duplicateSnuids: Array<string> = []
 const invalidSnuids: Array<string> = []
 const mergedEmails: Array<number> = []
+const ignoredUsername: Array<string> = []
 
 const validate = (snuid: string) => {
   for (const regex of [
@@ -57,6 +58,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   const result = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [user.account]))
   if (result.rows.length === 0) {
     console.log(` skip: ${user.account} does not exist in id.snucse.org`)
+    ignoredUsername.push(user.account)
     return
   }
   const userIdx = result.rows[0].idx
@@ -74,10 +76,13 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     }
     if (s === user.ms_number && ['89419-011', '92419-018', '93419-031', '96419-001', '98419-016'].includes(s)) {
       s = s.trim() + '-masters-course'
+    } else if (s === user.phd_number && s === '98419-021') {
+      s = s.trim() + '-doctoral-course'
+    } else {
+      s = s.trim()
     }
-    s = s.trim()
-    if (s === '99419-521') {
-      s += '-' + user.name
+    if (s === '99419-521' || s === '2003-81064') {
+      continue
     }
     const snuid = s
     if (!validate(snuid)) {
@@ -120,18 +125,21 @@ const migrateAll = async () => {
     await pgClient.release()
   }
 
-  duplicateUsername.forEach(e => console.error(`duplicate: ${e}`))
-  duplicateSnuids.forEach(e => console.error(`duplicate: ${e}`))
   invalidSnuids.forEach(e => console.error(`invalid: ${e}`))
+  duplicateUsername.forEach(e => console.error(`duplicate username: ${e}`))
+  duplicateSnuids.forEach(e => console.error(`duplicate id: ${e}`))
 
   // query to invstigate duplicates
+  /*
   let query = 'select * from [user] where 1 = 2'
   for (const snuid of duplicateSnuids) {
     query += ` or [bs_number] = '${snuid}' or [ms_number] = '${snuid}' or [phd_number] = '${snuid}'`
   }
   console.log(query + ';')
+  */
 
-  mergedEmails.forEach(e => console.log(e))
+  mergedEmails.forEach(e => console.log(`merged email: ${e}`))
+  ignoredUsername.forEach(e => console.log(`not found on id: ${e}`))
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
