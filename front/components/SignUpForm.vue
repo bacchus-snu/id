@@ -10,6 +10,9 @@
     <el-form-item :label="usernameTrans[lang]" prop="username" style="margin-bottom: 40px">
       <el-input v-model="models.username"></el-input>
     </el-form-item>
+    <el-form-item :label="snuidTrans[lang]" prop="snuid">
+      <el-input v-model="models.snuid"></el-input>
+    </el-form-item>
     <el-form-item :label="pwdTrans[lang]" prop="password">
       <el-input type="password" v-model="models.password"></el-input>
     </el-form-item>
@@ -33,6 +36,7 @@ export default class SignUpForm extends Vue {
   public models: Account = {
     name: '',
     username: '',
+    snuid: '',
     password: '',
     pwdcheck: '',
   }
@@ -44,6 +48,10 @@ export default class SignUpForm extends Vue {
   private readonly usernameTrans: Translation = {
     ko: '아이디',
     en: 'Username',
+  }
+  private readonly snuidTrans: Translation = {
+    ko: '학번',
+    en: 'Student number',
   }
   private readonly pwdTrans: Translation = {
     ko: '비밀번호',
@@ -145,6 +153,8 @@ export default class SignUpForm extends Vue {
     const response = await axios.post('/api/user', {
       name: this.models.name,
       username: this.models.username,
+      // maybe array later?
+      snuids: [this.models.snuid],
       password: this.models.password,
       preferredLanguage: this.lang,
     }, { validateStatus: () => true })
