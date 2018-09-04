@@ -25,15 +25,18 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
 
   const result = (await pgClient.query('SELECT * FROM users WHERE username = $1 RETURNING idx', [user.account]))
   if (result.rows.length === 0) {
+    console.log(` skip: ${user.account} does not exist in id.snucse.org`)
     return
   }
   const userIdx = result.rows[0].idx
   await pgClient.query('INSERT INTO user_memberships (user_idx, group_idx) VALUES ($1, $2)', [userIdx, wingsUsersGroupIdx])
+  console.log(` join: ${user.account} added to wingsUser group`)
   for (const snuid of [user.bs_number, user.ms_number, user.phd_number]) {
     if (snuid === null) {
       continue
     }
     await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
+    console.log(`snuid: ${user.account} ${snuid}`)
   }
 }
 
