@@ -23,7 +23,11 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     return
   }
 
-  const userIdx = (await pgClient.query('SELECT * FROM users WHERE username = $1 RETURNING idx', [user.account])).rows[0].idx
+  const result = (await pgClient.query('SELECT * FROM users WHERE username = $1 RETURNING idx', [user.account]))
+  if (result.rows.length === 0) {
+    return
+  }
+  const userIdx = result.rows[0].idx
   await pgClient.query('INSERT INTO user_memberships (user_idx, group_idx) VALUES ($1, $2)', [userIdx, wingsUsersGroupIdx])
   for (const snuid of [user.bs_number, user.ms_number, user.phd_number]) {
     if (snuid === null) {
