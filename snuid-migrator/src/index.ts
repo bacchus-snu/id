@@ -70,21 +70,20 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     duplicateUsername.push(user.account)
     return
   }
-  for (let s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
+  for (const s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
     if (s === null) {
       continue
     }
-    if (s === user.ms_number && ['89419-011', '92419-018', '93419-031', '96419-001', '98419-016'].includes(s)) {
-      s = s.trim() + '-masters-course'
-    } else if (s === user.phd_number && s === '98419-021') {
-      s = s.trim() + '-doctoral-course'
-    } else {
-      s = s.trim()
-    }
-    if (s === '99419-521' || s === '2003-81064') {
+    const snuid = s.trim()
+    if (snuid === '99419-521' || snuid === '2003-81064') {
       continue
     }
-    const snuid = s
+    let suffix = ''
+    if (user.ms_number !== null && snuid === user.ms_number.trim() && ['89419-011', '92419-018', '93419-031', '96419-001', '98419-016'].includes(snuid)) {
+      suffix = '-masters-course'
+    } else if (user.phd_number !== null && snuid === user.phd_number.trim() && snuid === '98419-021') {
+      suffix = '-doctoral-course'
+    }
     if (!validate(snuid)) {
       invalidSnuids.push(snuid)
       continue
