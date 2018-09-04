@@ -3,7 +3,7 @@ drop table if exists users cascade;
 drop table if exists email_addresses cascade;
 drop table if exists email_verification_tokens cascade;
 drop table if exists password_change_tokens cascade;
-drop table if exists snuids cascade;
+drop table if exists student_numbers cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;
 drop table if exists group_relations cascade;
@@ -43,8 +43,13 @@ create table users (
   -- Language preference
   preferred_language language not null,
 
+  -- Timestamps
+  created_at timestamp with time zone default NOW(),
+  last_login_at timestamp with time zone,
+
   -- Activated
   activated boolean not null default true
+
 );
 
 -- Email addresses
@@ -76,9 +81,9 @@ create table password_change_tokens (
 );
 
 -- SNU IDs
-create table snuids (
+create table student_numbers (
   idx serial primary key,
-  snuid text unique not null check (snuid <> ''),
+  student_number text unique not null check (student_number <> ''),
   owner_idx integer not null references users(idx) on delete cascade
 );
 
@@ -140,6 +145,6 @@ create table pending_user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
   group_idx integer not null references groups(idx) on delete cascade,
-  created_at timestamp without time zone not null,
+  created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
 )

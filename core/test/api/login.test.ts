@@ -1,6 +1,7 @@
 import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
+import * as moment from 'moment'
 
 import * as fs from 'fs'
 import Model from '../../src/model/model'
@@ -44,6 +45,13 @@ test('test login with credential', async t => {
     password,
   })
   t.is(response.status, 200)
+
+  await model.pgDo(async c => {
+    const query = 'SELECT last_login_at FROM users WHERE idx = $1'
+    const result = await c.query(query, [userIdx])
+    const lastLogin = moment(result.rows[0].last_login_at)
+    t.true(lastLogin.isBetween(moment().subtract(10, 'seconds'), moment().add(10, 'seconds')))
+  })
 })
 
 test('test checkLogin', async t => {

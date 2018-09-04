@@ -108,7 +108,13 @@ export default class Users {
       throw new AuthenticationError()
     }
 
+    await this.model.users.updateLastLoginAt(client, idx)
     return idx
+  }
+
+  public async updateLastLoginAt(client: PoolClient, userIdx: number): Promise<void> {
+    const query = 'UPDATE users SET last_login_at = NOW() WHERE idx = $1'
+    const result = await client.query(query, [userIdx])
   }
 
   public async activate(client: PoolClient, userIdx: number): Promise<void> {
@@ -254,6 +260,12 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     return result.rows[0].user_idx
+  }
+
+  public async addStudentNumber(client: PoolClient, userIdx: number, studentNumber: string): Promise<number> {
+    const query = 'INSERT INTO student_numbers(student_number, owner_idx) VALUES ($1, $2) RETURNING idx'
+    const result = await client.query(query, [studentNumber, userIdx])
+    return result.rows[0].idx
   }
 
   private rowToUser(row: any): User {
