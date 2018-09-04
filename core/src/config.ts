@@ -194,6 +194,16 @@ export interface PosixConfig {
   homeDirectoryPrefix: string
 }
 
+/**
+ * Miscellaneous configurations.
+ */
+export interface MiscConfig {
+  /**
+   * Slack chat message API Endpoint.
+   */
+  slackAPIEndpoint: string
+}
+
 export default interface Config {
   /**
    * Name of this id core instance.
@@ -234,4 +244,9 @@ export default interface Config {
    * POSIX configuration.
    */
   posix: PosixConfig
+
+  /**
+   * Miscellaneous configuration.
+   */
+  misc: MiscConfig
 }
