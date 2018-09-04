@@ -108,6 +108,7 @@ export default class Users {
       throw new AuthenticationError()
     }
 
+    await this.model.users.updateLastLoginAt(client, idx)
     return idx
   }
 

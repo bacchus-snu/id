@@ -24,7 +24,6 @@ export function login(model: Model): IMiddleware {
             // store information in session store
             ctx.session.userIdx = userIdx
             ctx.session.username = username
-            await model.users.updateLastLoginAt(c, userIdx)
           } else {
             ctx.status = 500
             throw new Error('session error')
