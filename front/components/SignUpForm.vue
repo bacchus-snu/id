@@ -69,9 +69,17 @@ export default class SignUpForm extends Vue {
     ko: '계정이 생성되었습니다',
     en: 'Your account is created',
   }
+  private readonly successTransTemp: Translation = {
+    ko: '계정 생성 신청이 완료되었습니다. 승인을 기다려주십시오.',
+    en: 'Your account was created. Please wait for the confirmation of admin.',
+  }
   private readonly failTrans: Translation = {
     ko: '계정 생성 실패',
     en: 'Account not created',
+  }
+  private readonly studentNumberErrorTrans: Translation = {
+    ko: '유효하지 않은 학번입니다.',
+    en: 'Invalid student number.',
   }
   private readonly pwdErrorTrans: Translation = {
     ko: '비밀번호가 다릅니다',
@@ -100,6 +108,11 @@ export default class SignUpForm extends Vue {
       max: 20,
       trigger: 'blur',
     }],
+    studentNumber: [{
+      required: true,
+      validator: this.validateStudentNumber,
+      trigger: 'blur',
+    }],
     password: [{
       required: true,
       min: 8,
@@ -117,7 +130,7 @@ export default class SignUpForm extends Vue {
     return this.$store.state.language
   }
 
-  public validateUsername(rule, value, callback) {
+  private validateUsername(rule, value, callback) {
     if (!/^[a-z][a-z0-9_]+$/.test(value) || value.length > 20) {
       callback(new Error(this.usernameValidateTrans[this.lang]))
     } else {
@@ -125,7 +138,28 @@ export default class SignUpForm extends Vue {
     }
   }
 
-  public validatePassword(rule, value, callback) {
+  private validateStudentNumber(rule, value, callback) {
+    const validate = (snuid: string) => {
+      const regexList = [
+        /^\d\d\d\d\d-\d\d\d$/,
+        /^\d\d\d\d-\d\d\d\d$/,
+        /^\d\d\d\d-\d\d\d\d\d$/,
+      ]
+      for (const regex of regexList) {
+        if (regex.test(snuid)) {
+          return true
+        }
+      }
+      return false
+    }
+    if (validate(value)) {
+      callback()
+    } else {
+      callback(new Error(this.studentNumberErrorTrans[this.lang]))
+    }
+  }
+
+  private validatePassword(rule, value, callback) {
     // TODO: more password rules?
     if (value === '') {
       callback(new Error(' '))
@@ -136,25 +170,24 @@ export default class SignUpForm extends Vue {
     }
   }
 
-  public submitForm() {
+  private submitForm() {
     const elementRef = 'signupForm'
     const formElement: any = this.$refs[elementRef]
-    formElement.validate( valid => {
+    formElement.validate(valid => {
       if (valid) {
         this.signUpAccount()
-        formElement.resetFields()
       } else {
         return false
       }
     })
   }
 
-  public async signUpAccount() {
+  private async signUpAccount() {
     const response = await axios.post('/api/user', {
       name: this.models.name,
       username: this.models.username,
       // maybe array later?
-      student_numbers: [this.models.studentNumber],
+      studentNumbers: [this.models.studentNumber],
       password: this.models.password,
       preferredLanguage: this.lang,
     }, { validateStatus: () => true })
@@ -164,7 +197,8 @@ export default class SignUpForm extends Vue {
       return
     }
 
-    this.$notify.success(this.successTrans[this.lang])
+    // this.$notify.success(this.successTrans[this.lang])
+    this.$notify.success(this.successTransTemp[this.lang])
     this.$router.push('/')
   }
 
