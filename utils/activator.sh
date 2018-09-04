@@ -42,16 +42,16 @@ function parse_arguments() {
     case "$1" in
       -p)
         psql_options="$2"
-	    shift
+        shift
         ;;
-	  -o)
-	    output_file="$2"
-		shift
-		;;
+      -o)
+        output_file="$2"
+        shift
+        ;;
       *)
         echo "Unknown option: $1"
-		help
-		exit 1
+        help
+        exit 1
         ;;
     esac
     shift
@@ -62,11 +62,11 @@ function parse_arguments() {
 function validate_parsed_arguments() {
   if [ "$csv_file" == "" ]; then
     error "Error: csv file is not given."
-	help
-	exit 1
+    help
+    exit 1
   elif [ ! -f "$csv_file" ]; then
     error "Error: $csv_file does not exist."
-	exit 1
+    exit 1
   fi
 }
 
@@ -75,25 +75,25 @@ function load_csv() {
   local i=0
   while read username; do
     usernames[$i]="$username"
-	i=`expr $i + 1`
+    i=`expr $i + 1`
   done <<< `csvtool drop 1 "$csv_file" | csvtool col 3 -`
 
   # Read email
   i=0
   while read email; do
     emails[$i]="$email"
-	i=`expr $i + 1`
+    i=`expr $i + 1`
   done <<< `csvtool drop 1 "$csv_file" | csvtool col 4 -`
 
   # Read major
   i=0
   while read major; do
     if [ "$major" == "예" ]; then
-	  majors[$i]="$TRUE"
-	else
+      majors[$i]="$TRUE"
+    else
       majors[$i]="$FALSE"
-	fi
-	i=`expr $i + 1`
+    fi
+    i=`expr $i + 1`
   done <<< `csvtool drop 1 "$csv_file" | csvtool col 6 -`
   total_users="$i"
 }
@@ -102,21 +102,21 @@ function validate_rows() {
   local i=0
   while [ $i -lt $total_users ]; do
     if match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
-	  if [ ${majors[$i]} == $TRUE ]; then
-	    error "Warning: ${usernames[$i]} ignored, reason: cse major user."
-		valids[$i]=$FALSE
-	  else
-	    valids[$i]=$TRUE
+      if [ ${majors[$i]} == $TRUE ]; then
+        error "Warning: ${usernames[$i]} ignored, reason: cse major user."
+        valids[$i]=$FALSE
+      else
+        valids[$i]=$TRUE
       fi
-	elif user_exists "${usernames[$i]}"; then
-	  error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
-	  valids[$i]=$FALSE
-	else
-	  error "Warning: ${usernames[$i]} ignored, reason: user is not in our database."
-	  valids[$i]=$FALSE
-	fi
+    elif user_exists "${usernames[$i]}"; then
+      error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
+      valids[$i]=$FALSE
+    else
+      error "Warning: ${usernames[$i]} ignored, reason: user is not in our database."
+      valids[$i]=$FALSE
+    fi
 
-	i=`expr $i + 1`
+    i=`expr $i + 1`
   done
 }
 
@@ -124,10 +124,10 @@ function validate_rows() {
 function query_insertion_check() {
   while [ $# -gt 0 ]; do
     if [ -z "${1##*\'*}" ] || [ -z "${1##*\;*}" ]; then
-	  error "Error: possible sql injection attack by string: $1"
-	  exit 2
-	fi
-	shift
+      error "Error: possible sql injection attack by string: $1"
+      exit 2
+    fi
+    shift
   done
 }
 
@@ -139,7 +139,7 @@ function user_exists() {
   local result=`psql --no-align --tuples-only $psql_options <<< "$query"`
 
   if [ "$result" == "$username" ]; then
-	return $TRUE
+    return $TRUE
   else
     return $FALSE
   fi
@@ -161,11 +161,11 @@ function match_username_and_email() {
   else
     query_insertion_check "$owner_idx"
     query="select username from users where idx = '$owner_idx'"
-	local result=`psql --no-align --tuples-only $psql_options <<< "$query"`
-	if [ "$result" == "$username" ]; then
-	  return $TRUE
-	else
-	  return $FALSE
+    local result=`psql --no-align --tuples-only $psql_options <<< "$query"`
+    if [ "$result" == "$username" ]; then
+      return $TRUE
+    else
+      return $FALSE
     fi
   fi
 }
@@ -176,10 +176,10 @@ function write_sql() {
   local i=0
   while [ $i -lt $total_users ]; do
     if [ ${valids[$i]} == $TRUE ]; then
-	  echo "update users set activated = true where username = '${usernames[$i]}';" >> "$output_file"
-	fi
+      echo "update users set activated = true where username = '${usernames[$i]}';" >> "$output_file"
+    fi
 
-	i=`expr $i + 1`
+    i=`expr $i + 1`
   done
 }
 
