@@ -45,5 +45,8 @@
     "user": "postgres",
     "password": "",
     "database": "id"
+  },
+  "misc": {
+    "slackAPIEndpoint": ""
   }
 }
