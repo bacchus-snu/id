@@ -22,14 +22,15 @@ export default class EmailAddresses {
    */
   public async create(client: PoolClient, local: string, domain: string): Promise<number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) ' +
-    'ON CONFLICT (LOWER(address_local), address_domain) DO UPDATE SET address_local = $1 RETURNING idx'
+    'ON CONFLICT (LOWER(address_local), LOWER(address_domain)) DO UPDATE SET address_local = $1 RETURNING idx'
     const result = await client.query(query, [local, domain])
     const idx = result.rows[0].idx
     return idx
   }
 
   public async getIdxByAddress(client: PoolClient, local: string, domain: string): Promise<number> {
-    const query = 'SELECT idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1) AND address_domain = $2'
+    const query = 'SELECT idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1)' +
+      ' AND LOWER(address_domain) = LOWER($2)'
     const result = await client.query(query, [local, domain])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()

@@ -71,6 +71,10 @@ test('identical address should not create new row', async t => {
     const newEmailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
 
     t.is(emailAddressIdx, newEmailAddressIdx)
+
+    const upperCasedIdx = await model.emailAddresses.create(c, emailLocal.toUpperCase(), emailDomain.toUpperCase())
+
+    t.is(emailAddressIdx, upperCasedIdx)
   })
 })
 
