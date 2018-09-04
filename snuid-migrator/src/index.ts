@@ -62,17 +62,24 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   const userIdx = result.rows[0].idx
   try {
     await pgClient.query('INSERT INTO user_memberships (user_idx, group_idx) VALUES ($1, $2)', [userIdx, wingsUsersGroupIdx])
+    console.log(` join: ${user.account} added to wingsUser group`)
   } catch (e) {
     errors.push(e)
     duplicateUsername.push(user.account)
     return
   }
-  console.log(` join: ${user.account} added to wingsUser group`)
-  for (const s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
+  for (let s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
     if (s === null) {
       continue
     }
-    const snuid = s.trim()
+    if (s === user.ms_number && ['89419-011', '92419-018', '93419-031', '96419-001', '98419-016'].includes(s)) {
+      s = s.trim() + '-masters-course'
+    }
+    s = s.trim()
+    if (s === '99419-521') {
+      s += '-' + user.name
+    }
+    const snuid = s
     if (!validate(snuid)) {
       invalidSnuids.push(snuid)
       continue
