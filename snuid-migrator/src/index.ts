@@ -54,10 +54,11 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     return
   }
   console.log(` join: ${user.account} added to wingsUser group`)
-  for (const snuid of [user.bs_number, user.ms_number, user.phd_number]) {
-    if (snuid === null) {
+  for (const s of [user.bs_number, user.ms_number, user.phd_number]) {
+    if (s === null) {
       continue
     }
+    const snuid = s.trim()
     if (!validate(snuid)) {
       invalidSnuids.push(snuid)
       continue
