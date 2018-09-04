@@ -28,7 +28,11 @@ test('create user step by step', async t => {
   const password = uuid()
   const name = uuid()
   const preferredLanguage = 'en'
-  const studentNumbers = [uuid(), uuid()]
+  const studentNumbers = [
+    '1111-11111',
+    '11111-111',
+    '1111-1111',
+  ]
 
   response = await agent.post('/api/email/verify').send({
     emailLocal,
@@ -103,6 +107,10 @@ test('create user step by step', async t => {
     studentNumbers,
   })
   t.is(response.status, 201)
+
+  await model.pgDo(async c => {
+    await c.query('TRUNCATE student_numbers')
+  })
 })
 
 test('get user email addresses', async t => {

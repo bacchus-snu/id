@@ -42,7 +42,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     const { username, name, password, preferredLanguage, studentNumbers } = body
 
     if (!username || !name || !password || !preferredLanguage ||
-      !studentNumbers || studentNumbers.constructor !== Array) {
+      !studentNumbers || studentNumbers.constructor !== Array || studentNumbers.length === 0) {
       ctx.status = 400
       return
     }
@@ -73,13 +73,29 @@ export function createUser(model: Model, config: Config): IMiddleware {
         // Make user state pending by deactivating user
         await model.users.deactivate(c, userIdx)
 
+        const validateStudentNumber = (snuid: string) => {
+          const regexList = [
+            /^\d\d\d\d\d-\d\d\d$/,
+            /^\d\d\d\d-\d\d\d\d$/,
+            /^\d\d\d\d-\d\d\d\d\d$/,
+          ]
+          for (const regex of regexList) {
+            if (regex.test(snuid)) {
+              return
+            }
+          }
+          throw new Error('Invalid student number')
+        }
+
         for (const studentNumber of studentNumbers) {
+          validateStudentNumber(studentNumber)
           await model.users.addStudentNumber(c, userIdx, studentNumber)
         }
 
         try {
           const notificationMessage = `이름: ${name}
           Username: ${username}
+          Student number: ${studentNumbers[0]}
           E-mail: ${emailAddress.local}@${emailAddress.domain}`
           await axios.post(config.misc.slackAPIEndpoint, {
             text: notificationMessage,
