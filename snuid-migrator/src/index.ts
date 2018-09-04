@@ -88,7 +88,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
       continue
     }
     try {
-      await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid + suffix, userIdx])
+      await pgClient.query('INSERT INTO student_numbers (student_number, owner_idx) VALUES ($1, $2)', [snuid + suffix, userIdx])
       console.log(`snuid: ${user.account} ${snuid + suffix}`)
     } catch (e) {
       errors.push(e)
