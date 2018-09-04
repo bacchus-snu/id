@@ -35,6 +35,9 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     if (snuid === null) {
       continue
     }
+    if (snuid === user.ms_number && user.ms_number === '89419-011') {
+      continue
+    }
     await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
     console.log(`snuid: ${user.account} ${snuid}`)
   }
