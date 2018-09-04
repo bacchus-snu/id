@@ -35,6 +35,18 @@ const validate = (snuid: string) => {
   return false
 }
 
+const mergeAccount = async (merged: string, merger: string, pgClient: pg.PoolClient) => {
+  const mergedIdx = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [merged])).rows[0].idx
+  const mergerIdx = (await pgClient.query('SELECT idx FROM users WHERE username = $1', [merger])).rows[0].idx
+  
+  for (const address of (await pgClient.query('SELECT * FROM email_addresses WHERE owner_idx = $1', [mergedIdx])).rows) {
+    await pgClient.query('INSERT INTO email_addresses (owner_idx, address_local, address_domain) VALUES ($1, $2, $3)', [mergerIdx, address.address_local, address.address_domain])
+  }
+
+  await pgClient.query('INSERT INTO reserved_usernames (reserved_username, owner_idx) VALUES ($1, $2)', [merged, mergerIdx])
+  await pgClient.query('DELETE FROM users WHERE username = $1', [merged])
+}
+
 const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   if (user.account === null) {
     return
@@ -81,6 +93,15 @@ const migrateAll = async () => {
   await mssqlSelectUser.prepare('SELECT * FROM [user]')
   const pgClient = await (new pg.Pool(config.postgresql)).connect()
   try {
+    await mergeAccount('bryansjkim0', 'bryansjkim', pgClient)
+    await mergeAccount('myxymg', 'ohsori', pgClient)
+    await mergeAccount('entermin', 'min0', pgClient)
+    await mergeAccount('nopanderer', 'hjlee', pgClient)
+    await mergeAccount('yblim', 'trop100', pgClient)
+    await mergeAccount('lrocky1229', 'rockylim', pgClient)
+    await mergeAccount('jigajut', 'kidcoder', pgClient)
+    await mergeAccount('khan000', 'raoakhan', pgClient)
+    await mergeAccount('cefm2001', 'cefm', pgClient)
     for (const user of (await mssqlSelectUser.execute({})).recordset) {
       await migrateUser(user, pgClient)
     }
