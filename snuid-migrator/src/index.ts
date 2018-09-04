@@ -54,7 +54,7 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     return
   }
   console.log(` join: ${user.account} added to wingsUser group`)
-  for (const s of [user.bs_number, user.ms_number, user.phd_number]) {
+  for (const s of new Set([user.bs_number, user.ms_number, user.phd_number])) {
     if (s === null) {
       continue
     }
