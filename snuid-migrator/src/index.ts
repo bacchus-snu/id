@@ -93,6 +93,13 @@ const migrateAll = async () => {
   duplicateUsername.forEach(e => console.error(`duplicate: ${e}`))
   duplicateSnuids.forEach(e => console.error(`duplicate: ${e}`))
   invalidSnuids.forEach(e => console.error(`invalid: ${e}`))
+
+  // query to invstigate duplicates
+  let query = 'select * from [user] where 1 = 2'
+  for (const snuid of duplicateSnuids) {
+    query += ` or [bs_number] = '${snuid}' or [ms_number] = '${snuid}' or [phd_number] = '${snuid}'`
+  }
+  console.log(query + ';')
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
