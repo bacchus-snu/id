@@ -21,6 +21,7 @@ const errors: Array<Error> = []
 const duplicateUsername: Array<string> = []
 const duplicateSnuids: Array<string> = []
 const invalidSnuids: Array<string> = []
+const mergedEmails: Array<number> = []
 
 const validate = (snuid: string) => {
   for (const regex of [
@@ -41,6 +42,7 @@ const mergeAccount = async (merged: string, merger: string, pgClient: pg.PoolCli
   
   for (const address of (await pgClient.query('SELECT idx FROM email_addresses WHERE owner_idx = $1', [mergedIdx])).rows) {
     await pgClient.query('UPDATE email_addresses SET owner_idx = $1 WHERE idx = $2', [mergerIdx, address.idx])
+    mergedEmails.push(address.idx)
   }
 
   await pgClient.query('INSERT INTO reserved_usernames (reserved_username, owner_idx) VALUES ($1, $2)', [merged, mergerIdx])
@@ -121,6 +123,8 @@ const migrateAll = async () => {
     query += ` or [bs_number] = '${snuid}' or [ms_number] = '${snuid}' or [phd_number] = '${snuid}'`
   }
   console.log(query + ';')
+
+  mergedEmails.forEach(console.log)
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
