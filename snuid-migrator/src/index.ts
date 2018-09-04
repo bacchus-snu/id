@@ -124,7 +124,7 @@ const migrateAll = async () => {
   }
   console.log(query + ';')
 
-  mergedEmails.forEach(console.log)
+  mergedEmails.forEach(e => console.log(e))
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
