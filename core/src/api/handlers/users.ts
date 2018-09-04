@@ -77,7 +77,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
         await axios.post(config.misc.slackAPIEndpoint, {
           text: notificationMessage,
           username: 'id watch',
-          channel: '#id',
+          channel: '#id-notifications',
         })
       } catch (e) {
         model.log.warn(`No slack notification sent for: ${username}`)
