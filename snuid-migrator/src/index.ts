@@ -17,6 +17,7 @@ interface WingsUser {
 }
 
 const config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
+const errors: Array<Error> = []
 
 const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
   if (user.account === null) {
@@ -35,11 +36,12 @@ const migrateUser = async (user: WingsUser, pgClient: pg.PoolClient) => {
     if (snuid === null) {
       continue
     }
-    if (snuid === user.ms_number && user.ms_number === '89419-011') {
-      continue
+    try {
+      await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
+      console.log(`snuid: ${user.account} ${snuid}`)
+    } catch (e) {
+      errors.push(e)
     }
-    await pgClient.query('INSERT INTO snuids (snuid, owner_idx) VALUES ($1, $2)', [snuid, userIdx])
-    console.log(`snuid: ${user.account} ${snuid}`)
   }
 }
 
@@ -59,6 +61,8 @@ const migrateAll = async () => {
     await mssqlPool.close()
     await pgClient.release()
   }
+
+  errors.forEach(console.error)
 }
 
 migrateAll().then(_ => console.log('Migration done')).catch(e => console.log(e))
