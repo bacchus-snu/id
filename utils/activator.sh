@@ -4,6 +4,17 @@
 readonly TRUE=0
 readonly FALSE=1
 
+readonly VALID=0
+readonly INVALID_EMAIL_MISMATCH=1
+readonly INVALID_USER_NOT_EXIST=2
+readonly INVALID_CSE_MAJOR=3
+readonly INVALID_ALREADY_ACTIVATED=4
+
+ERROR_FILE_NAMES[$INVALID_EMAIL_MISMATCH]="email-mismatch.csv"
+ERROR_FILE_NAMES[$INVALID_USER_NOT_EXIST]="user-not-exist.csv"
+ERROR_FILE_NAMES[$INVALID_CSE_MAJOR]="cse-major.csv"
+readonly ERROR_FILE_NAMES
+
 # Global variables
 program_name=''
 psql_options=''
@@ -11,6 +22,7 @@ csv_file=''
 total_users=0
 output_file='activate.sql'
 group_idx=3
+error_directory="activator-error"
 
 # Global arrays
 usernames=''
@@ -35,6 +47,7 @@ function help() {
   echo "  -p: Additional arguments to be passed to psql"
   echo "  -o: Output sql file. Default is activate.sql"
   echo "  -g: Group index to insert. Default is 3"
+  echo "  -e: Error log directory. Default is activator-error"
 }
 
 function parse_arguments() {
@@ -52,6 +65,10 @@ function parse_arguments() {
         ;;
       -g)
         group_idx="$2"
+        shift
+        ;;
+      -e)
+        error_directory="$2"
         shift
         ;;
       *)
@@ -73,6 +90,10 @@ function validate_parsed_arguments() {
   elif [ ! -f "$csv_file" ]; then
     error "Error: $csv_file does not exist."
     exit 1
+  elif [ ! -d "$error_directory" ] && ! mkdir "$error_directory"; then
+      error "Error: creating error directory failed."
+      exit 1
+    fi
   fi
 }
 
@@ -109,18 +130,18 @@ function validate_rows() {
   while [ $i -lt $total_users ]; do
     if is_activated "${usernames[$i]}"; then
       echo "Info: ${usernames[$i]} ignored, reason: already activated."
-      valids[$i]=$FALSE
+      valids[$i]=$INVALID_ALREADY_ACTIVATED
     elif [ ${majors[$i]} == $TRUE ]; then
       error "Warning: ${usernames[$i]} ignored, reason: cse major user."
-      valids[$i]=$FALSE
+      valids[$i]=$INVALID_CSE_MAJOR
     elif match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
-      valids[$i]=$TRUE
+      valids[$i]=$VALID
     elif user_exists "${usernames[$i]}"; then
       error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
-      valids[$i]=$FALSE
+      valids[$i]=$INVALID_EMAIL_MISMATCH
     else
       error "Warning: ${usernames[$i]} ignored, reason: user is not in our database."
-      valids[$i]=$FALSE
+      valids[$i]=$INVALID_USER_NOT_EXIST
     fi
 
     i=`expr $i + 1`
@@ -196,7 +217,7 @@ function write_sql() {
 
   local i=0
   while [ $i -lt $total_users ]; do
-    if [ ${valids[$i]} == $TRUE ]; then
+    if [ ${valids[$i]} == $VALID ]; then
       local user_idx=`get_user_idx "${usernames[$i]}"`
       echo "update users set activated = true where username = '${usernames[$i]}';" >> "$output_file"
       echo "insert into user_memberships (user_idx, group_idx) values ('$user_idx', '$group_idx');" >> "$output_file"
@@ -212,6 +233,26 @@ function get_user_idx() {
   query_insertion_check "$username"
   query="select idx from users where username = '${usernames[$i]}';"
   psql --no-align --tuples-only $psql_options <<< "$query"
+}
+
+function write_error_csv() {
+  rm "$error_directory/${ERROR_FILE_NAMES[$INVALID_EMAIL_MISMATCH]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_USER_NOT_EXIST]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_CSE_MAJOR]}"
+
+  local i=0
+  while [ $i -lt $total_users ]; do
+    case "${valids[$i]}" in
+      "$VALID")
+        ;;
+      "$INVALID_EMAIL_MISMATCH","$INVALID_USER_NOT_EXIST","$INVALID_CSE_MAJOR")
+        echo "${usernames[$i]},${emails[$i]}" >> "$error_directory/$ERROR_FILE_NAMES[${valids[$i]}]"
+        ;;
+      *)
+        error "Error: Invalid valid value: ${valids[$i]}"
+        ;;
+    esac
+
+    i=`expr $i + 1`
+  done
 }
 
 main "$@"
