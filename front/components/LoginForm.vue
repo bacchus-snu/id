@@ -1,6 +1,7 @@
 <template>
   <div class="login">
   <h2> {{ pleaseLoginTrans[lang] }} </h2>
+  <h3>{{ youCanTrans[lang] }}</h3>
   <el-form @submit.native.prevent="onLogin" status-icon>
     <el-form-item label="Username">
       <el-input @keyup.native.enter="onLogin" :disabled="isLoggingIn" v-model="username" required size="small"/>
@@ -20,9 +21,9 @@
       <div>
       {{ orTrans[lang] }}
       <nuxt-link to="/verify">
-      <div class="signup">
-      {{ signupTrans[lang] }}
-      </div>
+        <div class="signup">
+        {{ signupTrans[lang] }}
+        </div>
       </nuxt-link>
       </div>
     </el-form-item>
@@ -62,6 +63,10 @@ export default class LoginForm extends Vue {
   private readonly orTrans: Translation = {
     ko: '아직 계정이 없으신가요?',
     en: 'or',
+  }
+  private readonly youCanTrans: Translation = {
+    ko: '기존 통합계정으로도 로그인이 가능합니다.',
+    en: 'You can still use the service with existing SNUCSE account.',
   }
   private readonly signupTrans: Translation = {
     ko: '가입 신청하기',
