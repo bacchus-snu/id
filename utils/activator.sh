@@ -91,9 +91,8 @@ function validate_parsed_arguments() {
     error "Error: $csv_file does not exist."
     exit 1
   elif [ ! -d "$error_directory" ] && ! mkdir "$error_directory"; then
-      error "Error: creating error directory failed."
-      exit 1
-    fi
+    error "Error: creating error directory failed."
+    exit 1
   fi
 }
 
