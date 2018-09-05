@@ -128,20 +128,20 @@ function load_csv() {
 function validate_rows() {
   local i=0
   while [ $i -lt $total_users ]; do
-    if is_activated "${usernames[$i]}"; then
+    if ! user_exists "${usernames[$i]}"; then
+      error "Warning: ${usernames[$i]} ignored, reason: user is not in our database."
+      valids[$i]=$INVALID_USER_NOT_EXIST
+    elif is_activated "${usernames[$i]}"; then
       echo "Info: ${usernames[$i]} ignored, reason: already activated."
       valids[$i]=$INVALID_ALREADY_ACTIVATED
+    elif ! match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
+      error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
+      valids[$i]=$INVALID_EMAIL_MISMATCH
     elif [ ${majors[$i]} == $TRUE ]; then
       error "Warning: ${usernames[$i]} ignored, reason: cse major user."
       valids[$i]=$INVALID_CSE_MAJOR
-    elif match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
-      valids[$i]=$VALID
-    elif user_exists "${usernames[$i]}"; then
-      error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
-      valids[$i]=$INVALID_EMAIL_MISMATCH
     else
-      error "Warning: ${usernames[$i]} ignored, reason: user is not in our database."
-      valids[$i]=$INVALID_USER_NOT_EXIST
+      valids[$i]=$VALID
     fi
 
     i=`expr $i + 1`
