@@ -101,13 +101,14 @@ function load_csv() {
 function validate_rows() {
   local i=0
   while [ $i -lt $total_users ]; do
-    if match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
-      if [ ${majors[$i]} == $TRUE ]; then
-        error "Warning: ${usernames[$i]} ignored, reason: cse major user."
-        valids[$i]=$FALSE
-      else
-        valids[$i]=$TRUE
-      fi
+    if is_activated "${usernames[$i]}"; then
+      echo "Info: ${usernames[$i]} ignored, reason: already activated."
+      valids[$i]=$FALSE
+    elif [ ${majors[$i]} == $TRUE ]; then
+      error "Warning: ${usernames[$i]} ignored, reason: cse major user."
+      valids[$i]=$FALSE
+    elif match_username_and_email "${usernames[$i]}" "${emails[$i]}"; then
+      valids[$i]=$TRUE
     elif user_exists "${usernames[$i]}"; then
       error "Warning: ${usernames[$i]} ignored, reason: email does not match in database."
       valids[$i]=$FALSE
@@ -129,6 +130,20 @@ function query_insertion_check() {
     fi
     shift
   done
+}
+
+function is_activated() {
+  local username="$1"
+
+  query_insertion_check "$username"
+  local query="select activated from users where username = '$username';"
+  local result=`psql --no-align --tuples-only $psql_options <<< "$query"`
+
+  if [ "$result" == "t" ]; then
+    return $TRUE
+  else
+    return $FALSE
+  fi
 }
 
 function user_exists() {
