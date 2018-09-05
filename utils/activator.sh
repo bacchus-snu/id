@@ -10,6 +10,7 @@ psql_options=''
 csv_file=''
 total_users=0
 output_file='activate.sql'
+group_idx=3
 
 # Global arrays
 usernames=''
@@ -33,6 +34,7 @@ function help() {
   echo "$program_name [options] [csv_file]"
   echo "  -p: Additional arguments to be passed to psql"
   echo "  -o: Output sql file. Default is activate.sql"
+  echo "  -g: Group index to insert. Default is 3"
 }
 
 function parse_arguments() {
@@ -46,6 +48,10 @@ function parse_arguments() {
         ;;
       -o)
         output_file="$2"
+        shift
+        ;;
+      -g)
+        group_idx="$2"
         shift
         ;;
       *)
@@ -191,11 +197,21 @@ function write_sql() {
   local i=0
   while [ $i -lt $total_users ]; do
     if [ ${valids[$i]} == $TRUE ]; then
+      local user_idx=`get_user_idx "${usernames[$i]}"`
       echo "update users set activated = true where username = '${usernames[$i]}';" >> "$output_file"
+      echo "insert into user_memberships (user_idx, group_idx) values ('$user_idx', '$group_idx');" >> "$output_file"
     fi
 
     i=`expr $i + 1`
   done
+}
+
+function get_user_idx() {
+  local username="$1"
+
+  query_insertion_check "$username"
+  query="select idx from users where username = '${usernames[$i]}';"
+  psql --no-align --tuples-only $psql_options <<< "$query"
 }
 
 main "$@"
