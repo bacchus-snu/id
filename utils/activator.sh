@@ -242,7 +242,7 @@ function write_error_csv() {
     case "${valids[$i]}" in
       "$VALID")
         ;;
-      "$INVALID_EMAIL_MISMATCH","$INVALID_USER_NOT_EXIST","$INVALID_CSE_MAJOR")
+      "$INVALID_EMAIL_MISMATCH"|"$INVALID_USER_NOT_EXIST"|"$INVALID_CSE_MAJOR")
         echo "${usernames[$i]},${emails[$i]}" >> "$error_directory/$ERROR_FILE_NAMES[${valids[$i]}]"
         ;;
       *)
