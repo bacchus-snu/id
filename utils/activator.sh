@@ -36,6 +36,7 @@ function main() {
   load_csv
   validate_rows
   write_sql
+  write_error_csv
 }
 
 function error() {
@@ -235,21 +236,16 @@ function get_user_idx() {
 }
 
 function write_error_csv() {
-  rm "$error_directory/${ERROR_FILE_NAMES[$INVALID_EMAIL_MISMATCH]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_USER_NOT_EXIST]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_CSE_MAJOR]}"
+  rm "$error_directory/${ERROR_FILE_NAMES[$INVALID_EMAIL_MISMATCH]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_USER_NOT_EXIST]}" "$error_directory/${ERROR_FILE_NAMES[$INVALID_CSE_MAJOR]}" 1>/dev/null 2>/dev/null
 
   local i=0
   while [ $i -lt $total_users ]; do
-    case "${valids[$i]}" in
-      "$VALID")
-        ;;
-      "$INVALID_EMAIL_MISMATCH"|"$INVALID_USER_NOT_EXIST"|"$INVALID_CSE_MAJOR")
-        echo "${usernames[$i]},${emails[$i]}" >> "$error_directory/$ERROR_FILE_NAMES[${valids[$i]}]"
-        ;;
-      *)
-        error "Error: Invalid valid value: ${valids[$i]}"
-        ;;
-    esac
-
+    if [ "${valids[$i]}" != "$VALID" ]; then
+      local error_file="${ERROR_FILE_NAMES[${valids[$i]}]}"
+      if [ "$error_file" != "" ]; then
+        echo "${usernames[$i]},${emails[$i]}" >> "$error_directory/$error_file"
+      fi
+    fi
     i=`expr $i + 1`
   done
 }
