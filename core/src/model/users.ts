@@ -77,7 +77,8 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
-  public async getByUsernameAsPosixAccount(client: PoolClient, username: string): Promise<ldap.SearchEntry<PosixAccount>> {
+  public async getByUsernameAsPosixAccount(client: PoolClient, username: string):
+      Promise<ldap.SearchEntry<PosixAccount>> {
     return this.userToPosixAccount(await this.getByUsername(client, username))
   }
 
