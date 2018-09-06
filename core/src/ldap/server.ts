@@ -130,7 +130,8 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
           res.send(user)
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {
-            throw e
+            server.log.error(e)
+            return next(new ldap.OtherError())
           }
         }
       }
