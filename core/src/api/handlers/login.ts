@@ -51,10 +51,15 @@ export function login(model: Model): IMiddleware {
 
 export function loginLegacy(model: Model): IMiddleware {
   return async (ctx, next) => {
-    const query = ctx.request.query
+    const body: any = ctx.request.body
 
-    const username = query.member_account
-    const password = query.member_password
+    if (!body || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const username = body.member_account
+    const password = body.member_password
 
     if (!username || !password) {
       // 200 means failure
@@ -68,35 +73,16 @@ export function loginLegacy(model: Model): IMiddleware {
       await model.pgDo(async c => {
         try {
           userIdx = await model.users.authenticate(c, username, password)
-
-          if (ctx.session) {
-            // store information in session store
-            ctx.session.userIdx = userIdx
-            ctx.session.username = username
-          } else {
-            // 200 means failure
-            ctx.status = 200
-            throw new Error('session error')
-          }
-
         } catch (e) {
-          if (e instanceof ControllableError) {
-            // 200 means failure
-            ctx.status = 200
-          } else {
-            // 200 means failure
-            ctx.status = 200
-          }
-
+          ctx.status = 200
           throw e
         }
       })
     } catch (e) {
-      ctx.session = null
       return
     }
 
-    ctx.status = 301
+    ctx.status = 302
     return
   }
 }

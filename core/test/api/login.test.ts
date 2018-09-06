@@ -106,15 +106,15 @@ test('test legacy login', async t => {
 
   let response
 
-  response = await agent.post('/Authentication/Login.aspx').query({
+  response = await agent.post('/Authentication/Login.aspx').send({
     member_account: username,
     member_password: 'doge!',
   })
   t.is(response.status, 200)
 
-  response = await agent.post('/Authentication/Login.aspx').query({
+  response = await agent.post('/Authentication/Login.aspx').send({
     member_account: username,
     member_password: password,
   })
-  t.is(response.status, 301)
+  t.is(response.status, 302)
 })
