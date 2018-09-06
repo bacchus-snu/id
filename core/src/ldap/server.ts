@@ -1,5 +1,5 @@
 import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccountObjectClass, PosixGroup } from './types'
+import { PosixGroup } from './types'
 import { OrganizationalUnit, organizationalUnitObjectClass, posixGroupObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
@@ -19,36 +19,6 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   const groupsDN = `ou=${config.ldap.groupsOU},${config.ldap.baseDN}`
   const parsedUsersDN = ldap.parseDN(usersDN)
   const parsedGroupsDN = ldap.parseDN(groupsDN)
-
-  const userToPosixAccount: (user: User) => ldap.SearchEntry<PosixAccount> = user => {
-    if (user.username === null || user.shell === null) {
-      throw new Error('Cannot convert to posixAccount')
-    }
-    return {
-      dn: `cn=${user.username},${usersDN}`,
-      attributes: {
-        uid: user.username,
-        cn: user.username,
-        gecos: user.name,
-        homeDirectory: `${config.posix.homeDirectoryPrefix}/${user.username}`,
-        loginShell: user.shell,
-        objectClass: posixAccountObjectClass,
-        uidNumber: user.uid === null ? config.posix.nullUid : user.uid,
-        gidNumber: config.posix.userGroupGid,
-      },
-    }
-  }
-  const usersToPosixAccounts: (users: Array<User>) => Array<ldap.SearchEntry<PosixAccount>> = users => {
-    const posixAccounts: Array<ldap.SearchEntry<PosixAccount>> = []
-    users.forEach(user => {
-      try {
-        posixAccounts.push(userToPosixAccount(user))
-      } catch (e) {
-        // do nothing
-      }
-    })
-    return posixAccounts
-  }
 
   const subschema: ldap.SearchEntry<Subschema> = {
     dn: config.ldap.subschemaDN,
@@ -146,7 +116,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       } else {
         // Same results for 'one' and 'sub'
         // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-        usersToPosixAccounts(await model.pgDo(c => model.users.getAll(c))).forEach(account => {
+       (await model.pgDo(c => model.users.getAllAsPosixAccounts(c))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
           }
@@ -156,8 +126,8 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       if (parentDN.equals(parsedUsersDN)) {
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
-          const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-          res.send(userToPosixAccount(user))
+          const user = await model.pgDo(c => model.users.getByUsernameAsPosixAccount(c, wantedUid))
+          res.send(user)
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {
             throw e

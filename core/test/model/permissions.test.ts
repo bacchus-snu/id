@@ -17,7 +17,7 @@ const log = bunyan.createLogger({
   level: config.logLevel,
 })
 
-const model = new Model(config.postgresql, log)
+const model = new Model(config, log)
 
 const name: Translation = {
   ko: '도지',

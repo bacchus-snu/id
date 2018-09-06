@@ -5,6 +5,8 @@ import * as argon2 from 'argon2'
 import * as phc from '@phc/format'
 import * as moment from 'moment'
 import * as crypto from 'crypto'
+import * as ldap from 'ldapjs'
+import { PosixAccount, posixAccountObjectClass } from '../ldap/types'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'
@@ -24,7 +26,11 @@ export interface UserMembership {
 }
 
 export default class Users {
+  private readonly usersDN: string
+  private posixAccountsCache: Array<ldap.SearchEntry<PosixAccount>> | null
   constructor(private readonly model: Model) {
+    this.usersDN = `ou=${this.model.config.ldap.usersOU},${this.model.config.ldap.baseDN}`
+    this.posixAccountsCache = null
   }
 
   public async create(client: PoolClient, username: string, password: string,
@@ -33,6 +39,7 @@ export default class Users {
       'VALUES ($1, $2, $3, $4, $5) RETURNING idx'
     const passwordDigest = await argon2.hash(password)
     const result = await client.query(query, [username, passwordDigest, name, shell, preferredLanguage])
+    this.posixAccountsCache = null
     return result.rows[0].idx
   }
 
@@ -42,6 +49,7 @@ export default class Users {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+    this.posixAccountsCache = null
     return result.rows[0].idx
   }
 
@@ -53,6 +61,13 @@ export default class Users {
     return users
   }
 
+  public async getAllAsPosixAccounts(client: PoolClient): Promise<Array<ldap.SearchEntry<PosixAccount>>> {
+    if (this.posixAccountsCache === null) {
+      this.posixAccountsCache = this.usersToPosixAccounts(await this.getAll(client))
+    }
+    return this.posixAccountsCache
+  }
+
   public async getByUsername(client: PoolClient, username: string): Promise<User> {
     const query = 'SELECT idx, username, name, uid, shell FROM users WHERE username = $1'
     const result = await client.query(query, [username])
@@ -60,6 +75,10 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     return this.rowToUser(result.rows[0])
+  }
+
+  public async getByUsernameAsPosixAccount(client: PoolClient, username: string): Promise<ldap.SearchEntry<PosixAccount>> {
+    return this.userToPosixAccount(await this.getByUsername(client, username))
   }
 
   public async getByUserIdx(client: PoolClient, userIdx: number): Promise<User> {
@@ -136,7 +155,12 @@ export default class Users {
     const newUid = getNewUidResult.rows[0].uid === null ? minUid : getNewUidResult.rows[0].uid
     const assignResult = await client.query('UPDATE users SET uid = $1 WHERE idx = $2 AND uid IS NULL RETURNING 1',
       [newUid, userIdx])
-    return assignResult.rows.length > 0
+    if (assignResult.rows.length > 0) {
+      this.posixAccountsCache = null
+      return true
+    } else {
+      return false
+    }
   }
 
   public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {
@@ -203,6 +227,7 @@ export default class Users {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+    this.posixAccountsCache = null
     return result.rows[0].idx
   }
 
@@ -296,5 +321,36 @@ export default class Users {
         resolve(buf)
       })
     })
+  }
+
+  private usersToPosixAccounts(users: Array<User>): Array<ldap.SearchEntry<PosixAccount>> {
+    const posixAccounts: Array<ldap.SearchEntry<PosixAccount>> = []
+    users.forEach(user => {
+      try {
+        posixAccounts.push(this.userToPosixAccount(user))
+      } catch (e) {
+        // do nothing
+      }
+    })
+    return posixAccounts
+  }
+
+  private userToPosixAccount(user: User): ldap.SearchEntry<PosixAccount> {
+    if (user.username === null || user.shell === null) {
+      throw new Error('Cannot convert to posixAccount')
+    }
+    return {
+      dn: `cn=${user.username},${this.usersDN}`,
+      attributes: {
+        uid: user.username,
+        cn: user.username,
+        gecos: user.name,
+        homeDirectory: `${this.model.config.posix.homeDirectoryPrefix}/${user.username}`,
+        loginShell: user.shell,
+        objectClass: posixAccountObjectClass,
+        uidNumber: user.uid === null ? this.model.config.posix.nullUid : user.uid,
+        gidNumber: this.model.config.posix.userGroupGid,
+      },
+    }
   }
 }

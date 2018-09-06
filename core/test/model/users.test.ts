@@ -18,7 +18,7 @@ const log = bunyan.createLogger({
   level: config.logLevel,
 })
 
-const model = new Model(config.postgresql, log)
+const model = new Model(config, log)
 
 test('create and delete user', async t => {
   await model.pgDo(async c => {
