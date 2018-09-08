@@ -154,13 +154,12 @@ create table pending_user_memberships (
 create table host_groups (
   idx serial primary key,
   name text not null check (name <> ''),
-  required_permission integer not null references permissions(idx) on delete cascade
+  required_permission integer references permissions(idx) on delete cascade
 );
 
 create table hosts (
   idx serial primary key,
   name text not null check (name <> ''),
   host inet unique not null check (host(host) = text(host)),
-  host_group integer not null references host_groups(idx)
+  host_group integer references host_groups(idx)
 );
-
