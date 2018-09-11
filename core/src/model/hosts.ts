@@ -60,7 +60,15 @@ export default class Hosts {
   }
 
   public async authorizeUser(client: PoolClient, userIdx: number, host: Host): Promise<void> {
+    if (host.hostGroupIdx === null) {
+      // unknown host
+      throw new AuthorizationError()
+    }
     const hostGroup = await this.getHostGroupByIdx(client, host.hostGroupIdx)
+    if (hostGroup.requiredPermissionIdx === null) {
+      // this means that no permission is required
+      return
+    }
     const havePermission = await this.model.permissions.checkUserHavePermission(
       client, userIdx, hostGroup.requiredPermissionIdx)
     if (!havePermission) {
