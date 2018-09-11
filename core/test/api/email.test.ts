@@ -69,5 +69,10 @@ test('test email validation', async t => {
     emailLocal: 'example',
     emailDomain: 'snu.ac.kr',
   })
+  // if test repeated serveral times, then it will be blocked by
+  // resend limit and make test fails. so clean it up
+  await model.pgDo(async c => {
+    await c.query('DELETE FROM email_addresses WHERE address_local = $1', ['example'])
+  })
   t.is(response.status, 200)
 })
