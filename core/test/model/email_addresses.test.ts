@@ -143,15 +143,15 @@ test('get user emails', async t => {
 test('reset resend count of expired verification token', async t => {
   await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
-    const token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
+    let token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
     const expiryResult = await c.query('SELECT expires FROM email_verification_tokens WHERE token = $1', [token])
     const originalExpires = expiryResult.rows[0].expires
     const query = 'UPDATE email_verification_tokens SET expires = $1, resend_count = 100 WHERE token = $2'
     const newExpiry = moment(originalExpires).subtract(2, 'day').toDate()
     await c.query(query, [newExpiry, token])
-    await model.emailAddresses.resetResendCountIfExpired(c, emailIdx)
+    token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
 
     const resendCount = await model.emailAddresses.getResendCount(c, token)
-    t.is(resendCount, 0)
+    t.is(resendCount, 1)
   })
 })
