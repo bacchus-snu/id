@@ -246,3 +246,50 @@ test('legacy mssql password (sha512)', async t => {
     await model.users.delete(c, userIdx)
   })
 })
+
+test.serial('user ldap search result cache test', async t => {
+  const username = uuid()
+  const password = uuid()
+  const name = uuid()
+  const newName = uuid()
+  let userIdx = -1
+
+  await model.pgDo(async c => {
+    userIdx = await model.users.create(c, username, password, name, '/bin/bash', 'en')
+    // cache it
+    await model.users.getAllAsPosixAccounts(c)
+    const query = 'UPDATE users SET name = $1 WHERE idx = $2'
+    await c.query(query, [newName, userIdx])
+    let allPosixUsers = await model.users.getAllAsPosixAccounts(c)
+    let posixUser = allPosixUsers.find(elem => elem.attributes.gecos === name)
+    if (!posixUser) {
+      t.fail()
+      return
+    }
+    // ensure that there is no user having `newName` name in cache
+    posixUser = allPosixUsers.find(elem => elem.attributes.gecos === newName)
+    if (posixUser) {
+      t.fail()
+      return
+    }
+    // okay, we now know the cache exists. then how about cache update?
+    // this will make cache invalid
+    userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
+
+    allPosixUsers = await model.users.getAllAsPosixAccounts(c)
+    posixUser = allPosixUsers.find(elem => elem.attributes.gecos === name)
+    // this should not exist
+    if (posixUser) {
+      t.fail()
+      return
+    }
+    posixUser = allPosixUsers.find(elem => elem.attributes.gecos === newName)
+    // if user with name `newName` exists, then we can believe that cache was successfully updated
+    if (!posixUser) {
+      t.fail()
+      return
+    }
+
+    t.pass()
+  })
+})
