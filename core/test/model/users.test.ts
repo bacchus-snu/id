@@ -247,7 +247,7 @@ test('legacy mssql password (sha512)', async t => {
   })
 })
 
-test.serial('user ldap search result cache test', async t => {
+test('user ldap search result cache test', async t => {
   const username = uuid()
   const password = uuid()
   const name = uuid()
