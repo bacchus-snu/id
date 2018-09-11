@@ -252,10 +252,9 @@ test.serial('user ldap search result cache test', async t => {
   const password = uuid()
   const name = uuid()
   const newName = uuid()
-  let userIdx = -1
 
   await model.pgDo(async c => {
-    userIdx = await model.users.create(c, username, password, name, '/bin/bash', 'en')
+    const userIdx = await model.users.create(c, username, password, name, '/bin/bash', 'en')
     // cache it
     await model.users.getAllAsPosixAccounts(c)
     const query = 'UPDATE users SET name = $1 WHERE idx = $2'
@@ -274,7 +273,7 @@ test.serial('user ldap search result cache test', async t => {
     }
     // okay, we now know the cache exists. then how about cache update?
     // this will make cache invalid
-    userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
+    await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
 
     allPosixUsers = await model.users.getAllAsPosixAccounts(c)
     posixUser = allPosixUsers.find(elem => elem.attributes.gecos === name)
