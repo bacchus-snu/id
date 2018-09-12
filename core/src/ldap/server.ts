@@ -116,7 +116,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       } else {
         // Same results for 'one' and 'sub'
         // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-       (await model.pgDo(c => model.users.getAllAsPosixAccounts(c))).forEach(account => {
+        (await model.pgDo(c => model.users.getAllAsPosixAccounts(c))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
           }
