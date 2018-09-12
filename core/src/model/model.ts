@@ -6,6 +6,7 @@ import Permissions from './permissions'
 import Shells from './shells'
 import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
+import Config from '../config'
 
 export default class Model {
   public readonly users: Users
@@ -17,8 +18,8 @@ export default class Model {
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
 
-  constructor(postgresConfig: pg.PoolConfig, public readonly log: Bunyan) {
-    this.pgConfig = postgresConfig
+  constructor(public readonly config: Config, public readonly log: Bunyan) {
+    this.pgConfig = config.postgresql
     this.pgPool = new pg.Pool(this.pgConfig)
 
     this.users = new Users(this)

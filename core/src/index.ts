@@ -12,13 +12,7 @@ const log = bunyan.createLogger({
   level: config.logLevel,
 })
 
-const model = new Model({
-  user: config.postgresql.user,
-  host: config.postgresql.host,
-  database: config.postgresql.database,
-  password: config.postgresql.password,
-  port: config.postgresql.port,
-}, log)
+const model = new Model(config, log)
 
 const ldapOptions = {
   log,

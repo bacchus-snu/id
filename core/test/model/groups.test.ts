@@ -26,7 +26,7 @@ const description: Translation = {
   en: 'dog',
 }
 
-const model = new Model(config.postgresql, log)
+const model = new Model(config, log)
 
 test('create and delete group', async t => {
   await model.pgDo(async c => {
