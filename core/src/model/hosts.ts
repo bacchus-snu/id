@@ -59,7 +59,7 @@ export default class Hosts {
     return this.rowToHostGroup(result.rows[0])
   }
 
-  public async authorizeUser(client: PoolClient, userIdx: number, host: Host): Promise<void> {
+  public async authorizeUserByHost(client: PoolClient, userIdx: number, host: Host): Promise<void> {
     if (host.hostGroupIdx === null) {
       // unknown host
       throw new AuthorizationError()
