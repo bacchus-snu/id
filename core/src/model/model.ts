@@ -7,6 +7,7 @@ import Shells from './shells'
 import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 import Config from '../config'
+import * as AsyncLock from 'async-lock'
 
 export default class Model {
   public readonly users: Users
@@ -15,14 +16,18 @@ export default class Model {
   public readonly permissions: Permissions
   public readonly shells: Shells
 
-  public readonly advisoryLockKeyForUidGeneration = 1
+  public readonly KEYS = {
+    USER_CREATION: 'USER_CREATION',
+  }
 
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
+  private readonly asyncLock: AsyncLock
 
   constructor(public readonly config: Config, public readonly log: Bunyan) {
     this.pgConfig = config.postgresql
     this.pgPool = new pg.Pool(this.pgConfig)
+    this.asyncLock = new AsyncLock()
 
     this.users = new Users(this)
     this.emailAddresses = new EmailAddresses(this)
@@ -48,5 +53,10 @@ export default class Model {
     } finally {
       client.release()
     }
+  }
+
+  public async pgDoWithLock<T>(keys: string | Array<string>,
+      query: (client: pg.PoolClient) => Promise<T>): Promise<T> {
+    return this.asyncLock.acquire(keys, async () => await this.pgDo(query))
   }
 }

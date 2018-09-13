@@ -23,7 +23,7 @@ test('test login with credential', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
@@ -59,7 +59,7 @@ test('test checkLogin', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
@@ -95,7 +95,7 @@ test('test legacy login', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(

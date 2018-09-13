@@ -69,7 +69,7 @@ test('create and delete permission requirements', async t => {
 })
 
 test('check user permission', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const g: Array<number> = []
     const range: Array<number> = [...Array(5).keys()]
     for (const _ of range) {

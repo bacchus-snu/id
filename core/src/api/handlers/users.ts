@@ -64,7 +64,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     }
 
     try {
-      await model.pgDo(async c => {
+      await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
         const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
         const userIdx = await model.users.create(
           c, username, password, name, config.posix.defaultShell, preferredLanguage)

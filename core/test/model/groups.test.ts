@@ -53,7 +53,7 @@ test('create and delete group', async t => {
 })
 
 test('set owner user', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const groupIdx = await createGroup(c, model)
     const userIdx = await createUser(c, model)
 

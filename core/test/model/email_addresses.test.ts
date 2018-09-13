@@ -21,7 +21,7 @@ const log = bunyan.createLogger({
 const model = new Model(config, log)
 
 test('create extra email', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const userIdx = await createUser(c, model)
     const emailAddressIdx = await createEmailAddress(c, model)
 
@@ -34,7 +34,7 @@ test('create extra email', async t => {
 })
 
 test('generate verification token', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const userIdx = await createUser(c, model)
     const emailAddressIdx = await createEmailAddress(c, model)
     await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
@@ -46,7 +46,7 @@ test('generate verification token', async t => {
 })
 
 test('get email address by token', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const userIdx = await createUser(c, model)
     const emailLocal = uuid()
     const emailDomain = uuid()
@@ -123,7 +123,7 @@ test('token expiration', async t => {
 })
 
 test('get user emails', async t => {
-  await model.pgDo(async c => {
+  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
     const userIdx = await createUser(c, model)
     const emailLocal = uuid()
     const emailDomain = uuid()
