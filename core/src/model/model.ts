@@ -15,10 +15,10 @@ export default class Model {
   public readonly permissions: Permissions
   public readonly shells: Shells
 
+  public readonly advisoryLockKeyForUidGeneration = 1
+
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
-
-  public readonly advisoryLockKeyForUidGeneration = 1
 
   constructor(public readonly config: Config, public readonly log: Bunyan) {
     this.pgConfig = config.postgresql
