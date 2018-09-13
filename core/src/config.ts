@@ -186,8 +186,6 @@ export interface PosixConfig {
    */
   minUid: number
 
-  nullUid: number
-
   /**
    * Prefix for home directory.
    */

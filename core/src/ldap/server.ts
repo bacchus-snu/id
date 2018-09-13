@@ -71,14 +71,8 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
       const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
-      if (await model.pgDo(c => model.users.assignUid(c, userIdx, config.posix.minUid))) {
-        // assigned uid
-        // user must log in again
-        return next(new ldap.InvalidCredentialsError())
-      } else {
-        res.end()
-        return next()
-      }
+      res.end()
+      return next()
     } catch (e) {
       if (e instanceof AuthenticationError) {
         return next(new ldap.InvalidCredentialsError())
