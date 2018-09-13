@@ -149,13 +149,11 @@ export default class Users {
   }
 
   public async generateUid(client: PoolClient): Promise<number> {
+    const minUid = this.model.config.posix.minUid
     await client.query('LOCK TABLE users IN ACCESS EXCLUSIVE MODE')
     const getNewUidResult = await client.query('SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN ' +
-      'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL ORDER BY b.uid LIMIT 1')
-    if (getNewUidResult.rows.length !== 1) {
-      throw new Error('Failed to assign posix uid')
-    }
-    return getNewUidResult.rows[0].uid === null ? this.model.config.posix.minUid : getNewUidResult.rows[0].uid
+      'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL AND b.uid + 1 >= $1 ORDER BY b.uid LIMIT 1', [minUid])
+    return getNewUidResult.rows.length ? getNewUidResult.rows[0].uid : minUid;
   }
 
   public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {
