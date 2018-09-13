@@ -37,7 +37,7 @@ create table users (
   name text not null check (name <> ''),
 
   -- posixAccount
-  uid integer unique,
+  uid integer unique not null,
   shell text not null references shells(shell),
 
   -- Language preference
