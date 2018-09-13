@@ -232,8 +232,8 @@ test('legacy mssql password (sha512)', async t => {
     hash: Buffer.from('CF413665AC3A350E2F61EF6A8845B729CE771DD70E3FA2808C0F24CE3945A19A43F160087' +
       '60ED06D7AF5181986AC39563CE1356BA451468BD27F936FF5D1BAA9', 'hex')})
   await model.pgDo(async c => {
-    const result = await c.query('INSERT INTO users (username, password_digest, name, shell, preferred_language)' +
-      'VALUES ($1, $2, \'OLDoge\', \'/bin/bash\', \'en\') RETURNING idx', [username, legacyPasswordDigest])
+    const result = await c.query('INSERT INTO users (username, password_digest, name, uid, shell, preferred_language)' +
+      'VALUES ($1, $2, \'OLDoge\', 10, \'/bin/bash\', \'en\') RETURNING idx', [username, legacyPasswordDigest])
     const userIdx = result.rows[0].idx
     // doge should be able to login using password stored in old doggy password format
     await model.users.authenticate(c, username, password)
