@@ -16,6 +16,7 @@ export default class Model {
   public readonly permissions: Permissions
   public readonly shells: Shells
 
+  // todo: use enum for this? (to prevent key duplicates)
   public readonly KEYS = {
     USER_CREATION: 'USER_CREATION',
   }
