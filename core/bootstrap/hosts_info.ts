@@ -115,3 +115,8 @@ export const LOUNGE: Array<HostTemplate> = [
   { name: '314-C09', host: '147.46.127.126' },
   { name: '314-C10', host: '147.46.127.127' },
 ]
+
+export const PRACTICE_SERVER: Array<HostTemplate> = [
+  { name: 'martini', host: '147.46.240.44' },
+  { name: 'mimosa', host: '147.46.240.46' },
+]

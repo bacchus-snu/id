@@ -3,7 +3,7 @@ import Model from '../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../src/config'
 
-import { HARDWARE_LAB, SOFTWARE_LAB, LOUNGE } from './hosts_info'
+import { HARDWARE_LAB, SOFTWARE_LAB, LOUNGE, PRACTICE_SERVER } from './hosts_info'
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
 
@@ -35,6 +35,13 @@ async function bootstrapHost() {
     for (const hostTemplate of LOUNGE) {
       const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
       await model.hosts.addHostToGroup(c, hostIdx, loungeIdx)
+    }
+
+    // practice server
+    const serverIdx = await model.hosts.addHostGroup(c, '실습 서버')
+    for (const hostTemplate of PRACTICE_SERVER) {
+      const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
+      await model.hosts.addHostToGroup(c, hostIdx, serverIdx)
     }
   })
 }
