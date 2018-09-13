@@ -47,8 +47,11 @@ export default class Permissions {
   }
 
   public async checkUserHavePermission(tr: Transaction, userIdx: number, permissionIdx: number): Promise<boolean> {
-    const userReachableGroups = Array.from(await this.model.users.getUserReachableGroups(tr, userIdx))
     const permissionRequirements = await this.getAllPermissionRequirements(tr, permissionIdx)
+    if (permissionRequirements.length === 0) {
+      return false
+    }
+    const userReachableGroups = Array.from(await this.model.users.getUserReachableGroups(tr, userIdx))
 
     for (const pr of permissionRequirements) {
       if (!userReachableGroups.includes(pr)) {

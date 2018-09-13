@@ -25,13 +25,18 @@ export default class Hosts {
     return result.rows[0].idx
   }
 
+  public async deleteHost(client: PoolClient, idx: number): Promise<void> {
+    const query = 'DELETE FROM hosts WHERE idx = $1'
+    const result = await client.query(query, [idx])
+  }
+
   public async addHostGroup(client: PoolClient, name: string): Promise<number> {
     const query = 'INSERT INTO host_groups(name) VALUES ($1) RETURNING idx'
     const result = await client.query(query, [name])
     return result.rows[0].idx
   }
 
-  public async addHostGroupPermission(client: PoolClient, hostGroupIdx: number, permissionIdx: number): Promise<void> {
+  public async setHostGroupPermission(client: PoolClient, hostGroupIdx: number, permissionIdx: number): Promise<void> {
     const query = 'UPDATE host_groups SET required_permission = $1 WHERE idx = $2'
     const result = await client.query(query, [permissionIdx, hostGroupIdx])
   }
