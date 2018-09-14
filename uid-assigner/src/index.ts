@@ -12,12 +12,6 @@ const log = bunyan.createLogger({
 
 const model = new Model(config, log)
 
-const ldapOptions = {
-  log,
-  certificate: fs.readFileSync(config.ldap.certificate),
-  key: fs.readFileSync(config.ldap.key),
-}
-
 const doAssignUid = async () => {
   model.pgDo(async c => {
     const usersWithNullUid = (await c.query('SELECT idx FROM users WHERE uid IS NULL')).rows
@@ -25,6 +19,9 @@ const doAssignUid = async () => {
       const idx = row.idx
       const uid = await model.users.generateUid(c)
       await c.query('UPDATE users SET uid = $1 WHERE idx = $2', [uid, idx])
+      log.info(`${idx} => ${uid}`)
     }
   })
 }
+
+doAssignUid().then(_ => log.info('OK')).catch(e => log.error(e))
