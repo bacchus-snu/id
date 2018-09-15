@@ -53,7 +53,7 @@ test('create and delete permission requirements', async t => {
     const emptyResult = await tr.query(query, [idx])
 
     t.is(emptyResult.rows.length, 0)
-  })
+  }, ['group_reachable_cache'])
 })
 
 test('check user permission', async t => {
@@ -88,5 +88,5 @@ test('check user permission', async t => {
     await model.users.addUserMembership(tr, userIdx3, g[2])
 
     t.true(await model.permissions.checkUserHavePermission(tr, userIdx3, permissionIdx))
-  }, ['users'])
+  }, ['users', 'group_reachable_cache'])
 })

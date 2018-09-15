@@ -37,7 +37,7 @@ test('create and delete group', async t => {
     }
 
     t.fail()
-  })
+  }, ['group_reachable_cache'])
 })
 
 test('set owner user', async t => {
@@ -50,7 +50,7 @@ test('set owner user', async t => {
 
     await model.groups.setOwnerUser(tr, groupIdx, null)
     t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
-  }, ['users'])
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('set owner group', async t => {
@@ -63,7 +63,7 @@ test('set owner group', async t => {
 
     await model.groups.setOwnerGroup(tr, groupIdx, null)
     t.is((await model.groups.getByIdx(tr, groupIdx)).ownerGroupIdx, null)
-  })
+  }, ['group_reachable_cache'])
 })
 
 test('get reachable group object', async t => {
@@ -95,5 +95,5 @@ test('get reachable group object', async t => {
 
     result = await model.groups.getGroupReachableArray(tr, g[4])
     t.deepEqual(result, [g[4]])
-  })
+  }, ['group_reachable_cache'])
 })

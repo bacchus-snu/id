@@ -101,7 +101,7 @@ test('add and delete user membership', async t => {
     }
 
     t.fail()
-  }, ['users'])
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('get all user memberships', async t => {
@@ -116,7 +116,7 @@ test('get all user memberships', async t => {
     const result = await model.users.getAllUserMemberships(tr, userIdx)
 
     t.deepEqual(result.map(um => um.groupIdx).sort(), [groupIdx1, groupIdx2].sort())
-  }, ['users'])
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('change password', async t => {
