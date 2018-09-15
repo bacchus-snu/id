@@ -28,7 +28,7 @@ export default class Groups {
     const query = 'INSERT INTO groups(name_ko, name_en, description_ko, ' +
       'description_en) VALUES ($1, $2, $3, $4) RETURNING idx'
     const result = await tr.query(query, [name.ko, name.en, description.ko, description.en])
-    await this.updateGroupReachableCache(client)
+    await this.updateGroupReachableCache(tr)
     return result.rows[0].idx
   }
 
@@ -38,7 +38,7 @@ export default class Groups {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
-    await this.updateGroupReachableCache(client)
+    await this.updateGroupReachableCache(tr)
     return result.rows[0].idx
   }
 
@@ -77,7 +77,7 @@ export default class Groups {
     const query = 'INSERT INTO group_relations(supergroup_idx, subgroup_idx) ' +
       'VALUES ($1, $2) RETURNING idx'
     const result = await tr.query(query, [supergroupIdx, subgroupIdx])
-    await this.updateGroupReachableCache(client)
+    await this.updateGroupReachableCache(tr)
     return result.rows[0].idx
   }
 
@@ -87,7 +87,7 @@ export default class Groups {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
-    await this.updateGroupReachableCache(client)
+    await this.updateGroupReachableCache(tr)
     return result.rows[0].idx
   }
 
@@ -133,8 +133,8 @@ export default class Groups {
     await tr.query('TRUNCATE group_reachable_cache')
 
     // these queries should be executed AFTER acquiring lock
-    groupIdxArray = await this.getAllIdx(client)
-    groupRelationArray = await this.getAllGroupRelation(client)
+    groupIdxArray = await this.getAllIdx(tr)
+    groupRelationArray = await this.getAllGroupRelation(tr)
 
     groupIdxArray.forEach(groupIdx => {
       firstGroupReachable[groupIdx] = []

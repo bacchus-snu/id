@@ -15,7 +15,7 @@ export default class EmailAddresses {
 
   /**
    * Create an email address record.
-   * @param client provides access to the database
+   * @param tr provides access to the database
    * @param local local part of the address
    * @param domain domain part of the address
    * @return promise of the index of the new record
@@ -56,7 +56,7 @@ export default class EmailAddresses {
   }
 
   public async generateVerificationToken(tr: Transaction, emailIdx: number): Promise<string> {
-    await this.resetResendCountIfExpired(client, emailIdx)
+    await this.resetResendCountIfExpired(tr, emailIdx)
     const query = 'INSERT INTO email_verification_tokens AS e(email_idx, token, expires) VALUES ($1, $2, $3) ' +
     'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1, expires = $3'
     const randomBytes = await this.asyncRandomBytes(32)

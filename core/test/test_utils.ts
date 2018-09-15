@@ -1,17 +1,17 @@
 import Model from '../src/model/model'
-import { PoolClient } from 'pg'
+import Transaction from '../src/model/transaction'
 import * as uuid from 'uuid/v4'
 
-export async function createEmailAddress(c: PoolClient, model: Model): Promise<number> {
-  return await model.emailAddresses.create(c, uuid(), uuid())
+export async function createEmailAddress(tr: Transaction, model: Model): Promise<number> {
+  return await model.emailAddresses.create(tr, uuid(), uuid())
 }
 
-export async function createUser(c: PoolClient, model: Model): Promise<number> {
-  const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
+export async function createUser(tr: Transaction, model: Model): Promise<number> {
+  const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en')
   return userIdx
 }
 
-export async function createGroup(c: PoolClient, model: Model): Promise<number> {
+export async function createGroup(tr: Transaction, model: Model): Promise<number> {
   const name = {
     ko: uuid(),
     en: uuid(),
@@ -22,14 +22,14 @@ export async function createGroup(c: PoolClient, model: Model): Promise<number> 
     en: uuid(),
   }
 
-  return await model.groups.create(c, name, description)
+  return await model.groups.create(tr, name, description)
 }
 
-export async function createGroupRelation(c: PoolClient, model: Model, supergroupIdx: number, subgroupIdx: number) {
-  return await model.groups.addGroupRelation(c, supergroupIdx, subgroupIdx)
+export async function createGroupRelation(tr: Transaction, model: Model, supergroupIdx: number, subgroupIdx: number) {
+  return await model.groups.addGroupRelation(tr, supergroupIdx, subgroupIdx)
 }
 
-export async function createPermission(c: PoolClient, model: Model): Promise<number> {
+export async function createPermission(tr: Transaction, model: Model): Promise<number> {
   const name = {
     ko: uuid(),
     en: uuid(),
@@ -39,5 +39,5 @@ export async function createPermission(c: PoolClient, model: Model): Promise<num
     ko: uuid(),
     en: uuid(),
   }
-  return await model.permissions.create(c, name, description)
+  return await model.permissions.create(tr, name, description)
 }
