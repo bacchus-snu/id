@@ -111,7 +111,7 @@ test('get user email addresses', async t => {
     userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(tr, userIdx, emailIdx1)
     await model.emailAddresses.validate(tr, userIdx, emailIdx2)
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -142,7 +142,7 @@ test('change password', async t => {
     const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
     userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(tr, userIdx, emailIdx)
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -192,7 +192,7 @@ test('change shell', async t => {
     userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(tr, userIdx, emailIdx)
     await model.shells.addShell(tr, newShell)
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -254,7 +254,7 @@ test('password change email resend limit', async t => {
     emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(tr, userIdx, emailIdx)
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
   let response
@@ -284,7 +284,7 @@ test('password change email resend limit', async t => {
     for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
       promises[i] = model.pgDo(async tr => {
         indices[i] = await model.users.create(tr, i.toString(), 'password' + i, i.toString(), '/bin/bash', 'en')
-      }).then(async () => {
+      }, ['users']).then(async () => {
         count++
         if (count === NUMBER_OF_USERS_TO_CREATE) {
           await verifyResult(t, indices)

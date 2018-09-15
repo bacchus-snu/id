@@ -14,7 +14,7 @@ test('test login with credential', async t => {
     password = uuid()
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -50,7 +50,7 @@ test('test checkLogin', async t => {
     password = uuid()
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -86,7 +86,7 @@ test('test legacy login', async t => {
     password = uuid()
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
-  })
+  }, ['users'])
 
   const agent = request.agent(app)
 

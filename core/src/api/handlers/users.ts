@@ -64,6 +64,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     }
 
     try {
+      // acquires access exclusive lock on 'users'
       await model.pgDo(async tr => {
         const emailAddressIdx = await model.emailAddresses.getIdxByAddress(tr, emailAddress.local, emailAddress.domain)
         const userIdx = await model.users.create(
@@ -105,7 +106,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
         } catch (e) {
           model.log.warn(`No slack notification sent for: ${username}`)
         }
-      })
+      }, ['users'])
     } catch (e) {
       ctx.status = 400
       return

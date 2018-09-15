@@ -1,7 +1,5 @@
 import test from 'ava'
 import * as uuid from 'uuid/v4'
-
-import { createGroup, createUser, createGroupRelation } from '../test_utils'
 import { model } from '../setup'
 
 test('get, add, and remove shells', async t => {

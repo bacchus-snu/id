@@ -33,7 +33,7 @@ test('create and delete user', async t => {
     }
 
     t.fail()
-  })
+  }, ['users'])
 })
 
 test('authenticate user', async t => {
@@ -54,7 +54,7 @@ test('authenticate user', async t => {
     }
 
     t.fail()
-  })
+  }, ['users'])
 })
 
 test('reject not activated user', async t => {
@@ -74,7 +74,7 @@ test('reject not activated user', async t => {
     }
 
     t.fail()
-  })
+  }, ['users'])
 })
 
 test('add and delete user membership', async t => {
@@ -101,7 +101,7 @@ test('add and delete user membership', async t => {
     }
 
     t.fail()
-  })
+  }, ['users'])
 })
 
 test('get all user memberships', async t => {
@@ -116,7 +116,7 @@ test('get all user memberships', async t => {
     const result = await model.users.getAllUserMemberships(tr, userIdx)
 
     t.deepEqual(result.map(um => um.groupIdx).sort(), [groupIdx1, groupIdx2].sort())
-  })
+  }, ['users'])
 })
 
 test('change password', async t => {
@@ -131,7 +131,7 @@ test('change password', async t => {
 
     await model.users.authenticate(tr, username, newPassword)
     t.pass()
-  })
+  }, ['users'])
 })
 
 test('change password token request with identical email idx', async t => {
@@ -148,7 +148,7 @@ test('change password token request with identical email idx', async t => {
     const token = result.rows[0].token
     t.is(newToken, token)
     t.not(oldToken, token)
-  })
+  }, ['users'])
 })
 
 test('token expiration', async t => {
@@ -177,7 +177,7 @@ test('token expiration', async t => {
     }
 
     t.fail()
-  })
+  }, ['users'])
 })
 
 test('change user shell', async t => {
@@ -192,7 +192,7 @@ test('change user shell', async t => {
 
     const currentShell = await model.users.getShell(tr, userIdx)
     t.is(currentShell, newShell)
-  })
+  }, ['users'])
 })
 
 test('reset resend count of expired password change token', async t => {
@@ -209,7 +209,7 @@ test('reset resend count of expired password change token', async t => {
 
     const resendCount = await model.users.getResendCount(tr, token)
     t.is(resendCount, 1)
-  })
+  }, ['users'])
 })
 
 test('legacy mssql password (sha512)', async t => {
@@ -279,5 +279,5 @@ test('user ldap search result cache test', async t => {
     }
 
     t.pass()
-  })
+  }, ['users'])
 })

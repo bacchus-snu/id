@@ -50,7 +50,7 @@ test('set owner user', async t => {
 
     await model.groups.setOwnerUser(tr, groupIdx, null)
     t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
-  })
+  }, ['users'])
 })
 
 test('set owner group', async t => {

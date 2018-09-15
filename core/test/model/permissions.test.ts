@@ -88,5 +88,5 @@ test('check user permission', async t => {
     await model.users.addUserMembership(tr, userIdx3, g[2])
 
     t.true(await model.permissions.checkUserHavePermission(tr, userIdx3, permissionIdx))
-  })
+  }, ['users'])
 })

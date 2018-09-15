@@ -18,7 +18,7 @@ test('create extra email', async t => {
     const query = 'SELECT * FROM email_addresses WHERE idx = $1'
     const result = await tr.query(query, [emailAddressIdx])
     t.is(result.rows[0].owner_idx, userIdx)
-  })
+  }, ['users'])
 })
 
 test('generate verification token', async t => {
@@ -30,7 +30,7 @@ test('generate verification token', async t => {
     const query = 'SELECT * FROM email_verification_tokens WHERE email_idx = $1'
     const result = await tr.query(query, [emailAddressIdx])
     t.is(result.rows.length, 1)
-  })
+  }, ['users'])
 })
 
 test('get email address by token', async t => {
@@ -49,7 +49,7 @@ test('get email address by token', async t => {
 
     t.is(result.local, emailLocal)
     t.is(result.domain, emailDomain)
-  })
+  }, ['users'])
 })
 
 test('identical address should not create new row', async t => {
@@ -126,7 +126,7 @@ test('get user emails', async t => {
     t.is(result.length, 2)
     t.is(result[0].local, emailLocal)
     t.is(result[0].domain, emailDomain)
-  })
+  }, ['users'])
 })
 
 test('reset resend count of expired verification token', async t => {
