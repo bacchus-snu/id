@@ -6,13 +6,13 @@ import { model } from '../setup'
 
 test('get, add, and remove shells', async t => {
   const newShell = uuid()
-  await model.pgDo(async c => {
-    await model.shells.addShell(c, newShell)
-    const result = await model.shells.getShells(c)
+  await model.pgDo(async tr => {
+    await model.shells.addShell(tr, newShell)
+    const result = await model.shells.getShells(tr)
     t.true(result.includes(newShell))
 
-    await model.shells.removeShell(c, newShell)
-    const result2 = await model.shells.getShells(c)
+    await model.shells.removeShell(tr, newShell)
+    const result2 = await model.shells.getShells(tr)
     t.false(result2.includes(newShell))
   })
 })
