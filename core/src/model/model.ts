@@ -48,7 +48,7 @@ export default class Model {
         await client.query('SELECT pg_advisory_xact_lock($1)', [key])
       }
       for (const table of lockTables) {
-        await client.query('LOCK TABLE $1 IN ACCESS EXCLUSIVE MODE', [table])
+        await client.query(`LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE`)
       }
       const result = await query(transaction)
       await client.query('COMMIT')
