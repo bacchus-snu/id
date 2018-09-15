@@ -71,8 +71,6 @@ export function createUser(model: Model, config: Config): IMiddleware {
           tr, username, password, name, config.posix.defaultShell, preferredLanguage)
         await model.emailAddresses.validate(tr, userIdx, emailAddressIdx)
         await model.emailAddresses.removeToken(tr, token)
-        // Make user state pending by deactivating user
-        await model.users.deactivate(tr, userIdx)
 
         const validateStudentNumber = (snuid: string) => {
           const regexList = [
