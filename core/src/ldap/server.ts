@@ -70,7 +70,9 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      const userIdx = await model.pgDo(tr => model.users.authenticate(tr, cn, req.credentials))
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.authenticate(tr, cn, req.credentials)
+      })
       res.end()
       return next()
     } catch (e) {
