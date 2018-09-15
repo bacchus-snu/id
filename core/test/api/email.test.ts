@@ -2,21 +2,7 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as nodemailer from 'nodemailer'
 import * as uuid from 'uuid/v4'
-
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
-import * as fs from 'fs'
-import app from '../setup'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config, log)
+import { app, model, config } from '../setup'
 
 test.skip('email configuration is correct', async t => {
   const emailOption = {

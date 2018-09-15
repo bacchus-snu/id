@@ -1,24 +1,12 @@
 import test from 'ava'
 
-import * as fs from 'fs'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
 import * as phc from '@phc/format'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
 
 import { createUser, createGroup } from '../test_utils'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config, log)
+import { model } from '../setup'
 
 test('create and delete user', async t => {
   await model.pgDo(async c => {
@@ -211,16 +199,16 @@ test('reset resend count of expired password change token', async t => {
   await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
     const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
-    const token = await model.users.generatePasswordChangeToken(c, userIdx)
+    let token = await model.users.generatePasswordChangeToken(c, userIdx)
     const expiryResult = await c.query('SELECT expires FROM password_change_tokens WHERE token = $1', [token])
     const originalExpires = expiryResult.rows[0].expires
-    const query = 'UPDATE email_verification_tokens SET expires = $1, resend_count = 100 WHERE token = $2'
+    const query = 'UPDATE password_change_tokens SET expires = $1, resend_count = 100 WHERE token = $2'
     const newExpiry = moment(originalExpires).subtract(2, 'day').toDate()
     await c.query(query, [newExpiry, token])
-    await model.users.resetResendCountIfExpired(c, userIdx)
+    token = await model.users.generatePasswordChangeToken(c, userIdx)
 
     const resendCount = await model.users.getResendCount(c, token)
-    t.is(resendCount, 0)
+    t.is(resendCount, 1)
   })
 })
 

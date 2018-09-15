@@ -1,23 +1,11 @@
 import test from 'ava'
 
-import * as fs from 'fs'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
 import { createUser, createGroup, createPermission, createGroupRelation } from '../test_utils'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config, log)
+import { model } from '../setup'
 
 const name: Translation = {
   ko: '도지',
