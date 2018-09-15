@@ -36,7 +36,7 @@ export default class Model {
    * @param accessExclusiveLockTables tables that require stronger isolation than 'read committed' model
    * @param advisoryLockKeys keys for acquiring advisory locks before executing queries
    */
-  public async pgDo<T>(query: (client: pg.PoolClient) => Promise<T>,
+  public async pgDo<T>(query: (transaction: Transaction) => Promise<T>,
       accessExclusiveLockTables?: Array<string>, advisoryLockKeys?: Array<number>): Promise<T> {
     const client = await this.pgPool.connect()
     const lockTables = accessExclusiveLockTables ? accessExclusiveLockTables.sort() : []
@@ -50,7 +50,7 @@ export default class Model {
       for (const table of lockTables) {
         await client.query('LOCK TABLE $1 IN ACCESS EXCLUSIVE MODE', [table])
       }
-      const result = await query(client)
+      const result = await query(transaction)
       await client.query('COMMIT')
       return result
     } catch (e) {
