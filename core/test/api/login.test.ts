@@ -80,13 +80,22 @@ test('test legacy login', async t => {
   let username: string = ''
   let password: string = ''
   let userIdx: number = -1
+  const trans = {
+    ko: uuid(),
+    en: uuid(),
+  }
 
   await model.pgDo(async tr => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
-  }, ['users'])
+    const groupIdx = await model.groups.create(tr, trans, trans)
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+    const permissionIdx = await model.permissions.create(tr, trans, trans)
+    await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
+    config.permissions.snucse = permissionIdx
+  }, ['users', 'group_reachable_cache'])
 
   const agent = request.agent(app)
 
@@ -103,4 +112,12 @@ test('test legacy login', async t => {
     member_password: password,
   })
   t.is(response.status, 302)
+
+  // test with insufficient permission
+  config.permissions.snucse = -1
+  response = await agent.post('/Authentication/Login.aspx').send({
+    member_account: username,
+    member_password: password,
+  })
+  t.is(response.status, 200)
 })

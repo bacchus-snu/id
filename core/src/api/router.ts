@@ -21,7 +21,7 @@ export function createRouter(model: Model, config: Config): Router {
    * Legacy login API route.
    * CAUTION: response code 200 means failure in sign in.
    */
-  router.post('/Authentication/Login.aspx', loginLegacy(model))
+  router.post('/Authentication/Login.aspx', loginLegacy(model, config))
   /**
    * Logout API route.
    * Always set status code to 200, and clear session store.
