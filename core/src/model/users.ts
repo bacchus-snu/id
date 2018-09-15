@@ -159,7 +159,7 @@ export default class Users {
   public async generatePasswordChangeToken(client: PoolClient, userIdx: number): Promise<string> {
     await this.resetResendCountIfExpired(client, userIdx)
     const query = 'INSERT INTO password_change_tokens AS p(user_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1'
+    'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1, expires = $3'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
