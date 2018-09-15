@@ -12,7 +12,7 @@ export default class Transaction {
 
   public ensureHasAccessExclusiveLock(table: string) {
     if (!this.accessExclusiveLockTables.includes(table)) {
-      throw new Error(`AccessExclusiveLock on table '${table}' is required but missing`)
+      throw new Error(`Access Exclusive lock on table '${table}' is required but missing`)
     }
   }
 
