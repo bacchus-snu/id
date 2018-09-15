@@ -67,8 +67,8 @@ export default class Hosts {
 
   public async authorizeUserByHost(tr: Transaction, userIdx: number, host: Host): Promise<void> {
     if (host.hostGroupIdx === null) {
-      // unknown host
-      throw new AuthorizationError()
+      // no host group, so just pass it
+      return
     }
     const hostGroup = await this.getHostGroupByIdx(tr, host.hostGroupIdx)
     if (hostGroup.requiredPermissionIdx === null) {

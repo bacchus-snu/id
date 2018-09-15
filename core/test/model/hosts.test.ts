@@ -17,7 +17,7 @@ const model = new Model(config, log)
 
 test('add host and host group', async t => {
   const name = uuid()
-  const host = '127.0.0.1'
+  const host = '127.0.1.1'
   const hostGroupName = uuid()
   await model.pgDo(async tr => {
     const hostIdx = await model.hosts.addHost(tr, name, host)
@@ -40,7 +40,7 @@ test('add host and host group', async t => {
 
 test('host authorization', async t => {
   const name = uuid()
-  const hostname = '127.0.0.2'
+  const hostname = '127.0.1.2'
   const hostGroupName = uuid()
   const trans = { ko: uuid(), en: uuid() }
   await model.pgDo(async tr => {

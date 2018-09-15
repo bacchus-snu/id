@@ -30,7 +30,13 @@ function bindPromise(client: Client, dn: string, password: string) {
   })
 }
 
-test('bind password test', async t => {
+test.afterEach.always(async t => {
+  await model.pgDo(async tr => {
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+  })
+})
+
+test.serial('bind password test', async t => {
   const username = uuid()
   const password = uuid()
   const client = ldap.createClient({
@@ -39,6 +45,7 @@ test('bind password test', async t => {
   })
 
   await model.pgDo(async tr => {
+    await model.hosts.addHost(tr, 'test', '127.0.0.1')
     await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
   }, ['users'])
 
@@ -58,7 +65,7 @@ test('bind password test', async t => {
   t.fail()
 })
 
-test('bind with non-exist user', async t => {
+test.serial('bind with non-exist user', async t => {
   const username = uuid()
   const password = uuid()
   const client = ldap.createClient({
@@ -67,6 +74,7 @@ test('bind with non-exist user', async t => {
   })
 
   await model.pgDo(async tr => {
+    await model.hosts.addHost(tr, 'test', '127.0.0.1')
     await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
   }, ['users'])
 
