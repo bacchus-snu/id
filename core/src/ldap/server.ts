@@ -70,7 +70,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
+      const userIdx = await model.pgDo(tr => model.users.authenticate(tr, cn, req.credentials))
       res.end()
       return next()
     } catch (e) {
@@ -110,7 +110,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       } else {
         // Same results for 'one' and 'sub'
         // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-        (await model.pgDo(c => model.users.getAllAsPosixAccounts(c))).forEach(account => {
+        (await model.pgDo(tr => model.users.getAllAsPosixAccounts(tr))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
           }
@@ -120,7 +120,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       if (parentDN.equals(parsedUsersDN)) {
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
-          const user = await model.pgDo(c => model.users.getByUsernameAsPosixAccount(c, wantedUid))
+          const user = await model.pgDo(tr => model.users.getByUsernameAsPosixAccount(tr, wantedUid))
           res.send(user)
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {

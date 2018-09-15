@@ -1,6 +1,6 @@
 import Model from './model'
 import { NoSuchEntryError, ExpiredTokenError } from './errors'
-import { PoolClient } from 'pg'
+import Transaction from './transaction'
 import * as crypto from 'crypto'
 import * as moment from 'moment'
 
@@ -20,32 +20,32 @@ export default class EmailAddresses {
    * @param domain domain part of the address
    * @return promise of the index of the new record
    */
-  public async create(client: PoolClient, local: string, domain: string): Promise<number> {
+  public async create(tr: Transaction, local: string, domain: string): Promise<number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) ' +
     'ON CONFLICT (LOWER(address_local), LOWER(address_domain)) DO UPDATE SET address_local = $1 RETURNING idx'
-    const result = await client.query(query, [local, domain])
+    const result = await tr.query(query, [local, domain])
     const idx = result.rows[0].idx
     return idx
   }
 
-  public async getIdxByAddress(client: PoolClient, local: string, domain: string): Promise<number> {
+  public async getIdxByAddress(tr: Transaction, local: string, domain: string): Promise<number> {
     const query = 'SELECT idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1)' +
       ' AND LOWER(address_domain) = LOWER($2)'
-    const result = await client.query(query, [local, domain])
+    const result = await tr.query(query, [local, domain])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
   }
 
-  public async validate(client: PoolClient, userIdx: number, emailAddressIdx: number): Promise<void> {
+  public async validate(tr: Transaction, userIdx: number, emailAddressIdx: number): Promise<void> {
     const query = 'UPDATE email_addresses SET owner_idx = $1 WHERE idx = $2'
-    await client.query(query, [userIdx, emailAddressIdx])
+    await tr.query(query, [userIdx, emailAddressIdx])
   }
 
-  public async isValidatedEmail(client: PoolClient, emailAddressIdx: number): Promise<boolean> {
+  public async isValidatedEmail(tr: Transaction, emailAddressIdx: number): Promise<boolean> {
     const query = 'SELECT owner_idx FROM email_addresses WHERE idx = $1'
-    const result = await client.query(query, [emailAddressIdx])
+    const result = await tr.query(query, [emailAddressIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
@@ -55,36 +55,36 @@ export default class EmailAddresses {
     return false
   }
 
-  public async generateVerificationToken(client: PoolClient, emailIdx: number): Promise<string> {
+  public async generateVerificationToken(tr: Transaction, emailIdx: number): Promise<string> {
     await this.resetResendCountIfExpired(client, emailIdx)
     const query = 'INSERT INTO email_verification_tokens AS e(email_idx, token, expires) VALUES ($1, $2, $3) ' +
     'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1, expires = $3'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
-    const result = await client.query(query, [emailIdx, token, expires])
+    const result = await tr.query(query, [emailIdx, token, expires])
     return token
   }
 
-  public async resetResendCountIfExpired(client: PoolClient, emailIdx: number): Promise<void> {
+  public async resetResendCountIfExpired(tr: Transaction, emailIdx: number): Promise<void> {
     const query = 'UPDATE email_verification_tokens SET resend_count = 0 WHERE email_idx = $1 AND expires <= now()'
-    await client.query(query, [emailIdx])
+    await tr.query(query, [emailIdx])
   }
 
-  public async getResendCount(client: PoolClient, token: string): Promise<number> {
+  public async getResendCount(tr: Transaction, token: string): Promise<number> {
     const query = 'SELECT resend_count FROM email_verification_tokens WHERE token = $1'
-    const result = await client.query(query, [token])
+    const result = await tr.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
     return result.rows[0].resend_count
   }
 
-  public async getEmailAddressByToken(client: PoolClient, token: string): Promise<EmailAddress> {
+  public async getEmailAddressByToken(tr: Transaction, token: string): Promise<EmailAddress> {
     const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
     ' FROM email_addresses AS e' +
     ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx'
-    const result = await client.query(query, [token])
+    const result = await tr.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
@@ -95,18 +95,18 @@ export default class EmailAddresses {
     return ret
   }
 
-  public async removeToken(client: PoolClient, token: string): Promise<number> {
+  public async removeToken(tr: Transaction, token: string): Promise<number> {
     const query = 'DELETE FROM email_verification_tokens WHERE token = $1 RETURNING idx'
-    const result = await client.query(query, [token])
+    const result = await tr.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
   }
 
-  public async ensureTokenNotExpired(client: PoolClient, token: string): Promise<void> {
+  public async ensureTokenNotExpired(tr: Transaction, token: string): Promise<void> {
     const query = 'SELECT expires FROM email_verification_tokens WHERE token = $1'
-    const result = await client.query(query, [token])
+    const result = await tr.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
@@ -118,9 +118,9 @@ export default class EmailAddresses {
     }
   }
 
-  public async getEmailsByOwnerIdx(client: PoolClient, ownerIdx: number): Promise<Array<EmailAddress>> {
+  public async getEmailsByOwnerIdx(tr: Transaction, ownerIdx: number): Promise<Array<EmailAddress>> {
     const query = 'SELECT address_local, address_domain FROM email_addresses WHERE owner_idx = $1'
-    const result = await client.query(query, [ownerIdx])
+    const result = await tr.query(query, [ownerIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }

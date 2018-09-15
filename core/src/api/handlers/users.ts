@@ -31,8 +31,8 @@ export function createUser(model: Model, config: Config): IMiddleware {
 
     // check verification token
     try {
-      await model.pgDo(async c => {
-        emailAddress = await model.emailAddresses.getEmailAddressByToken(c, token)
+      await model.pgDo(async tr => {
+        emailAddress = await model.emailAddresses.getEmailAddressByToken(tr, token)
       })
     } catch (e) {
       ctx.status = 401
@@ -64,14 +64,14 @@ export function createUser(model: Model, config: Config): IMiddleware {
     }
 
     try {
-      await model.pgDo(async c => {
-        const emailAddressIdx = await model.emailAddresses.getIdxByAddress(c, emailAddress.local, emailAddress.domain)
+      await model.pgDo(async tr => {
+        const emailAddressIdx = await model.emailAddresses.getIdxByAddress(tr, emailAddress.local, emailAddress.domain)
         const userIdx = await model.users.create(
-          c, username, password, name, config.posix.defaultShell, preferredLanguage)
-        await model.emailAddresses.validate(c, userIdx, emailAddressIdx)
-        await model.emailAddresses.removeToken(c, token)
+          tr, username, password, name, config.posix.defaultShell, preferredLanguage)
+        await model.emailAddresses.validate(tr, userIdx, emailAddressIdx)
+        await model.emailAddresses.removeToken(tr, token)
         // Make user state pending by deactivating user
-        await model.users.deactivate(c, userIdx)
+        await model.users.deactivate(tr, userIdx)
 
         const validateStudentNumber = (snuid: string) => {
           const regexList = [
@@ -89,7 +89,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
 
         for (const studentNumber of studentNumbers) {
           validateStudentNumber(studentNumber)
-          await model.users.addStudentNumber(c, userIdx, studentNumber)
+          await model.users.addStudentNumber(tr, userIdx, studentNumber)
         }
 
         try {
@@ -142,10 +142,10 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
     let token = ''
     let resendCount = -1
     try {
-      await model.pgDo(async c => {
-        const userIdx = await model.users.getUserIdxByEmailAddress(c, emailLocal, emailDomain)
-        token = await model.users.generatePasswordChangeToken(c, userIdx)
-        resendCount = await model.users.getResendCount(c, token)
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.getUserIdxByEmailAddress(tr, emailLocal, emailDomain)
+        token = await model.users.generatePasswordChangeToken(tr, userIdx)
+        resendCount = await model.users.getResendCount(tr, token)
       })
     } catch (e) {
       // no such entry, but do nothing and just return 200
@@ -204,15 +204,15 @@ export function changePassword(model: Model): IMiddleware {
 
     try {
       // check token validity
-      await model.pgDo(async c => {
-        const userIdx = await model.users.getUserIdxByPasswordToken(c, token)
-        await model.users.ensureTokenNotExpired(c, token)
-        const user = await model.users.getByUserIdx(c, userIdx)
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.getUserIdxByPasswordToken(tr, token)
+        await model.users.ensureTokenNotExpired(tr, token)
+        const user = await model.users.getByUserIdx(tr, userIdx)
         if (user.username === null) {
           throw new Error()
         }
-        await model.users.changePassword(c, userIdx, newPassword)
-        await model.users.removeToken(c, token)
+        await model.users.changePassword(tr, userIdx, newPassword)
+        await model.users.removeToken(tr, token)
       })
     } catch (e) {
       ctx.status = 401
@@ -236,8 +236,8 @@ export function getUserShell(model: Model): IMiddleware {
 
     let shell: string = ''
     try {
-      await model.pgDo(async c => {
-        shell = await model.users.getShell(c, userIdx)
+      await model.pgDo(async tr => {
+        shell = await model.users.getShell(tr, userIdx)
       })
     } catch (e) {
       ctx.status = 400
@@ -276,8 +276,8 @@ export function changeUserShell(model: Model): IMiddleware {
     }
 
     try {
-      await model.pgDo(async c => {
-        await model.users.changeShell(c, userIdx, shell)
+      await model.pgDo(async tr => {
+        await model.users.changeShell(tr, userIdx, shell)
       })
     } catch (e) {
       ctx.status = 400
@@ -301,8 +301,8 @@ export function getUserEmails(model: Model): IMiddleware {
 
     let ownerIdx: any
     try {
-      await model.pgDo(async c => {
-        const owner = await model.users.getByUsername(c, username)
+      await model.pgDo(async tr => {
+        const owner = await model.users.getByUsername(tr, username)
         ownerIdx = owner.idx
       })
     } catch (e) {
@@ -316,8 +316,8 @@ export function getUserEmails(model: Model): IMiddleware {
     }
 
     let emails
-    await model.pgDo(async c => {
-      emails = await model.emailAddresses.getEmailsByOwnerIdx(c, ownerIdx)
+    await model.pgDo(async tr => {
+      emails = await model.emailAddresses.getEmailsByOwnerIdx(tr, ownerIdx)
     })
 
     ctx.status = 200

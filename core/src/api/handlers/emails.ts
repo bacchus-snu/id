@@ -35,14 +35,14 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 
     try {
       // create email address and generate token
-      await model.pgDo(async c => {
-        emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-        const isValidated = await model.emailAddresses.isValidatedEmail(c, emailIdx)
+      await model.pgDo(async tr => {
+        emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
+        const isValidated = await model.emailAddresses.isValidatedEmail(tr, emailIdx)
         if (isValidated) {
           throw new Error('already validated')
         }
-        token = await model.emailAddresses.generateVerificationToken(c, emailIdx)
-        resendCount = await model.emailAddresses.getResendCount(c, token)
+        token = await model.emailAddresses.generateVerificationToken(tr, emailIdx)
+        resendCount = await model.emailAddresses.getResendCount(tr, token)
       })
     } catch (e) {
       ctx.status = 400
@@ -87,9 +87,9 @@ export function checkVerificationEmailToken(model: Model): IMiddleware {
     let result
 
     try {
-      await model.pgDo(async c => {
-        emailAddress = await model.emailAddresses.getEmailAddressByToken(c, token)
-        await model.emailAddresses.ensureTokenNotExpired(c, token)
+      await model.pgDo(async tr => {
+        emailAddress = await model.emailAddresses.getEmailAddressByToken(tr, token)
+        await model.emailAddresses.ensureTokenNotExpired(tr, token)
         result = {
           emailLocal: emailAddress.local,
           emailDomain: emailAddress.domain,
