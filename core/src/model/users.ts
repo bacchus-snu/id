@@ -150,7 +150,6 @@ export default class Users {
 
   public async generateUid(client: PoolClient): Promise<number> {
     const minUid = this.model.config.posix.minUid
-    await client.query('LOCK TABLE users IN ACCESS EXCLUSIVE MODE')
     const getNewUidResult = await client.query('SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN ' +
       'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL AND b.uid + 1 >= $1 ORDER BY b.uid LIMIT 1', [minUid])
     return getNewUidResult.rows.length ? getNewUidResult.rows[0].uid : minUid
