@@ -1,24 +1,12 @@
 import test from 'ava'
 
-import * as fs from 'fs'
 import * as moment from 'moment'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError, AuthenticationError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
 import { createEmailAddress, createUser } from '../test_utils'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config, log)
+import { model } from '../setup'
 
 test('create extra email', async t => {
   await model.pgDo(async c => {
