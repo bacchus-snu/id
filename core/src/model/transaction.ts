@@ -26,7 +26,7 @@ export default class Transaction {
   public ensureHasAdvisoryLock(key: number) {
     this.ensureNotTerminated()
     if (!this.advisoryLockKeys.includes(key)) {
-      throw new Error(`Advisory lock on key '${key}' is required but missing`)
+      throw new Error(`Advisory lock on key ${key} is required but missing`)
     }
     this.ensuredAdvisoryLockKeys.add(key)
   }
@@ -36,7 +36,7 @@ export default class Transaction {
     this.terminated = true
     for (const table of this.accessExclusiveLockTables) {
       if (!this.ensuredAccessExclusiveLockTables.has(table)) {
-        throw new Error(`Unnecessary lock declaration for table ${table}`)
+        throw new Error(`Unnecessary lock declaration for table '${table}'`)
       }
     }
     for (const key of this.advisoryLockKeys) {

@@ -95,5 +95,5 @@ test('get reachable group object', async t => {
 
     result = await model.groups.getGroupReachableArray(tr, g[4])
     t.deepEqual(result, [g[4]])
-  }, ['group_reachable_cache', 'users'])
+  }, ['group_reachable_cache'])
 })
