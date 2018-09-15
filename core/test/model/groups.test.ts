@@ -17,19 +17,19 @@ const description: Translation = {
 }
 
 test('create and delete group', async t => {
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
 
-    const idx = await model.groups.create(c, name, description)
-    const row = await model.groups.getByIdx(c, idx)
+    const idx = await model.groups.create(tr, name, description)
+    const row = await model.groups.getByIdx(tr, idx)
 
     t.deepEqual(row.name, name)
     t.deepEqual(row.description, description)
 
-    const deleteIdx = await model.groups.delete(c, idx)
+    const deleteIdx = await model.groups.delete(tr, idx)
     t.is(idx, deleteIdx)
 
     try {
-      await model.groups.getByIdx(c, idx)
+      await model.groups.getByIdx(tr, idx)
     } catch (e) {
       if (e instanceof NoSuchEntryError) {
         return
@@ -37,63 +37,63 @@ test('create and delete group', async t => {
     }
 
     t.fail()
-  })
+  }, ['group_reachable_cache'])
 })
 
 test('set owner user', async t => {
-  await model.pgDo(async c => {
-    const groupIdx = await createGroup(c, model)
-    const userIdx = await createUser(c, model)
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
 
-    await model.groups.setOwnerUser(c, groupIdx, userIdx)
-    t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, userIdx)
+    await model.groups.setOwnerUser(tr, groupIdx, userIdx)
+    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, userIdx)
 
-    await model.groups.setOwnerUser(c, groupIdx, null)
-    t.is((await model.groups.getByIdx(c, groupIdx)).ownerUserIdx, null)
-  })
+    await model.groups.setOwnerUser(tr, groupIdx, null)
+    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('set owner group', async t => {
-  await model.pgDo(async c => {
-    const groupIdx = await createGroup(c, model)
-    const ownerGroupIdx = await createGroup(c, model)
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const ownerGroupIdx = await createGroup(tr, model)
 
-    await model.groups.setOwnerGroup(c, groupIdx, ownerGroupIdx)
-    t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, ownerGroupIdx)
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerGroupIdx, ownerGroupIdx)
 
-    await model.groups.setOwnerGroup(c, groupIdx, null)
-    t.is((await model.groups.getByIdx(c, groupIdx)).ownerGroupIdx, null)
-  })
+    await model.groups.setOwnerGroup(tr, groupIdx, null)
+    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerGroupIdx, null)
+  }, ['group_reachable_cache'])
 })
 
 test('get reachable group object', async t => {
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     const g: Array<number> = []
     const range: Array<number> = [...Array(5).keys()]
     for (const _ of range) {
-      g.push(await createGroup(c, model))
+      g.push(await createGroup(tr, model))
     }
 
-    await createGroupRelation(c, model, g[0], g[1])
-    await createGroupRelation(c, model, g[0], g[2])
-    await createGroupRelation(c, model, g[1], g[3])
-    await createGroupRelation(c, model, g[1], g[4])
+    await createGroupRelation(tr, model, g[0], g[1])
+    await createGroupRelation(tr, model, g[0], g[2])
+    await createGroupRelation(tr, model, g[1], g[3])
+    await createGroupRelation(tr, model, g[1], g[4])
 
     let result: Array<number> = []
 
-    result = await model.groups.getGroupReachableArray(c, g[0])
+    result = await model.groups.getGroupReachableArray(tr, g[0])
     t.deepEqual(result.sort(), [g[0], g[1], g[2], g[3], g[4]].sort())
 
-    result = await model.groups.getGroupReachableArray(c, g[1])
+    result = await model.groups.getGroupReachableArray(tr, g[1])
     t.deepEqual(result.sort(), [g[1], g[3], g[4]].sort())
 
-    result = await model.groups.getGroupReachableArray(c, g[2])
+    result = await model.groups.getGroupReachableArray(tr, g[2])
     t.deepEqual(result, [g[2]])
 
-    result = await model.groups.getGroupReachableArray(c, g[3])
+    result = await model.groups.getGroupReachableArray(tr, g[3])
     t.deepEqual(result, [g[3]])
 
-    result = await model.groups.getGroupReachableArray(c, g[4])
+    result = await model.groups.getGroupReachableArray(tr, g[4])
     t.deepEqual(result, [g[4]])
-  })
+  }, ['group_reachable_cache'])
 })

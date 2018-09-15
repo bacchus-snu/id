@@ -16,9 +16,9 @@ export function login(model: Model): IMiddleware {
     let userIdx: number
 
     try {
-      await model.pgDo(async c => {
+      await model.pgDo(async tr => {
         try {
-          userIdx = await model.users.authenticate(c, username, password)
+          userIdx = await model.users.authenticate(tr, username, password)
 
           if (ctx.session) {
             // store information in session store
@@ -70,9 +70,9 @@ export function loginLegacy(model: Model): IMiddleware {
     let userIdx: number
 
     try {
-      await model.pgDo(async c => {
+      await model.pgDo(async tr => {
         try {
-          userIdx = await model.users.authenticate(c, username, password)
+          userIdx = await model.users.authenticate(tr, username, password)
         } catch (e) {
           ctx.status = 200
           throw e

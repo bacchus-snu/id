@@ -6,9 +6,9 @@ import { app, model } from '../setup'
 test('test getShells', async t => {
   let result
   const newShell = uuid()
-  await model.pgDo(async c => {
-    await model.shells.addShell(c, newShell)
-    result = await model.shells.getShells(c)
+  await model.pgDo(async tr => {
+    await model.shells.addShell(tr, newShell)
+    result = await model.shells.getShells(tr)
   })
 
   const agent = request.agent(app)

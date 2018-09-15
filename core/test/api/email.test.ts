@@ -24,10 +24,10 @@ test('check token api', async t => {
   const local = uuid()
   const domain = uuid()
 
-  await model.pgDo(async c => {
-    const emailAddressIdx = await model.emailAddresses.create(c, local, domain)
-    await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
-    const result = await c.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [emailAddressIdx])
+  await model.pgDo(async tr => {
+    const emailAddressIdx = await model.emailAddresses.create(tr, local, domain)
+    await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx)
+    const result = await tr.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [emailAddressIdx])
 
     token = result.rows[0].token
   })

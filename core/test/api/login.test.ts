@@ -9,12 +9,12 @@ test('test login with credential', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
-      c, username, password, uuid(), '/bin/bash', 'en')
-  })
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -32,9 +32,9 @@ test('test login with credential', async t => {
   })
   t.is(response.status, 200)
 
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     const query = 'SELECT last_login_at FROM users WHERE idx = $1'
-    const result = await c.query(query, [userIdx])
+    const result = await tr.query(query, [userIdx])
     const lastLogin = moment(result.rows[0].last_login_at)
     t.true(lastLogin.isBetween(moment().subtract(10, 'seconds'), moment().add(10, 'seconds')))
   })
@@ -45,12 +45,12 @@ test('test checkLogin', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
-      c, username, password, uuid(), '/bin/bash', 'en')
-  })
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -81,12 +81,12 @@ test('test legacy login', async t => {
   let password: string = ''
   let userIdx: number = -1
 
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     username = uuid()
     password = uuid()
     userIdx = await model.users.create(
-      c, username, password, uuid(), '/bin/bash', 'en')
-  })
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
 
   const agent = request.agent(app)
 
