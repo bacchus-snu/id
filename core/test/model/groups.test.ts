@@ -1,20 +1,10 @@
 import test from 'ava'
 
-import * as fs from 'fs'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
 import { createGroup, createUser, createGroupRelation } from '../test_utils'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
+import { model } from '../setup'
 
 const name: Translation = {
   ko: '도지',
@@ -25,8 +15,6 @@ const description: Translation = {
   ko: '강아지',
   en: 'dog',
 }
-
-const model = new Model(config, log)
 
 test('create and delete group', async t => {
   await model.pgDo(async c => {

@@ -2,21 +2,7 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 import * as crypto from 'crypto'
-
-import * as fs from 'fs'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
-import app from '../setup'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config, log)
+import { app, model, config } from '../setup'
 
 test('create user step by step', async t => {
   const agent = request.agent(app)
