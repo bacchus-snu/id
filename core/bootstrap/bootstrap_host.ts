@@ -15,33 +15,33 @@ const log = bunyan.createLogger({
 const model = new Model(config, log)
 
 async function bootstrapHost() {
-  await model.pgDo(async c => {
+  await model.pgDo(async tr => {
     // hardware lab
-    const hardwareLabIdx = await model.hosts.addHostGroup(c, '하드웨어 실습실')
+    const hardwareLabIdx = await model.hosts.addHostGroup(tr, '하드웨어 실습실')
     for (const hostTemplate of HARDWARE_LAB) {
-      const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
-      await model.hosts.addHostToGroup(c, hostIdx, hardwareLabIdx)
+      const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      await model.hosts.addHostToGroup(tr, hostIdx, hardwareLabIdx)
     }
 
     // software lab
-    const softwareLabIdx = await model.hosts.addHostGroup(c, '소프트웨어 실습실')
+    const softwareLabIdx = await model.hosts.addHostGroup(tr, '소프트웨어 실습실')
     for (const hostTemplate of SOFTWARE_LAB) {
-      const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
-      await model.hosts.addHostToGroup(c, hostIdx, softwareLabIdx)
+      const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      await model.hosts.addHostToGroup(tr, hostIdx, softwareLabIdx)
     }
 
     // lounge
-    const loungeIdx = await model.hosts.addHostGroup(c, '과방')
+    const loungeIdx = await model.hosts.addHostGroup(tr, '과방')
     for (const hostTemplate of LOUNGE) {
-      const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
-      await model.hosts.addHostToGroup(c, hostIdx, loungeIdx)
+      const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      await model.hosts.addHostToGroup(tr, hostIdx, loungeIdx)
     }
 
     // practice server
-    const serverIdx = await model.hosts.addHostGroup(c, '실습 서버')
+    const serverIdx = await model.hosts.addHostGroup(tr, '실습 서버')
     for (const hostTemplate of PRACTICE_SERVER) {
-      const hostIdx = await model.hosts.addHost(c, hostTemplate.name, hostTemplate.host)
-      await model.hosts.addHostToGroup(c, hostIdx, serverIdx)
+      const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      await model.hosts.addHostToGroup(tr, hostIdx, serverIdx)
     }
   })
 }
