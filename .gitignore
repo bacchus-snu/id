@@ -24,6 +24,8 @@ Thumbs.db
 *.sln
 bin/
 obj/
+.idea/
+*.imp
 
 # Code coverage
 coverage/

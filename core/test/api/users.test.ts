@@ -1,4 +1,4 @@
-import test from 'ava'
+import test, { GenericTestContext } from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 import * as crypto from 'crypto'
@@ -273,3 +273,45 @@ test('password change email resend limit', async t => {
   })
   t.is(response.status, 400)
 })
+
+{
+  const NUMBER_OF_USERS_TO_CREATE = 100
+  test('multiple user creation', async t => {
+    const promises: Array<Promise<void>> = []
+    const indices: Array<number> = []
+    let count = 0
+
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      promises[i] = model.pgDo(async c => {
+        indices[i] = await model.users.create(c, i.toString(), 'password' + i, i.toString(), '/bin/bash', 'en')
+      }).then(async () => {
+        count++
+        if (count === NUMBER_OF_USERS_TO_CREATE) {
+          await verifyResult(t, indices)
+          await cleanUpUsers(t, indices)
+        }
+      }).catch(reason => {
+        throw reason
+      })
+    }
+
+    await Promise.all(promises)
+  })
+
+  async function verifyResult<T>(t: GenericTestContext<T>, indcies: Array<number>) {
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      await model.pgDo(async c => {
+        const user = await model.users.getByUserIdx(c, indcies[i])
+        t.is(user.name, i.toString())
+      })
+    }
+  }
+
+  async function cleanUpUsers<T>(t: GenericTestContext<T>, indices: Array<number>) {
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      await model.pgDo(async c => {
+        await model.users.delete(c, indices[i])
+      })
+    }
+  }
+}
