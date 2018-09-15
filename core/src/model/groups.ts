@@ -129,8 +129,8 @@ export default class Groups {
     const firstGroupReachable: GroupReachable = {}
     const cache: GroupReachable = {}
 
-    // this will acquire ACCESS EXCLUSIVE lock for cache table
     tr.ensureHasAccessExclusiveLock('group_reachable_cache')
+    // this will acquire ACCESS EXCLUSIVE lock for cache table
     await tr.query('TRUNCATE group_reachable_cache')
 
     // these queries should be executed AFTER acquiring lock

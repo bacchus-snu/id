@@ -51,6 +51,7 @@ export default class Model {
         await client.query(`LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE`)
       }
       const result = await query(transaction)
+      transaction.terminate()
       await client.query('COMMIT')
       return result
     } catch (e) {
