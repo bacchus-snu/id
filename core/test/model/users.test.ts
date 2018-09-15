@@ -21,7 +21,7 @@ const log = bunyan.createLogger({
 const model = new Model(config, log)
 
 test('create and delete user', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const userIdx = await createUser(c, model)
 
     const user1 = await model.users.getByUserIdx(c, userIdx)
@@ -49,7 +49,7 @@ test('create and delete user', async t => {
 })
 
 test('authenticate user', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const username = uuid()
     const password = uuid()
     const userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
@@ -90,7 +90,7 @@ test('reject not activated user', async t => {
 })
 
 test('add and delete user membership', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const userIdx = await createUser(c, model)
     const groupIdx = await createGroup(c, model)
     const userMembershipIdx = await model.users.addUserMembership(c, userIdx, groupIdx)
@@ -117,7 +117,7 @@ test('add and delete user membership', async t => {
 })
 
 test('get all user memberships', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const userIdx = await createUser(c, model)
     const groupIdx1 = await createGroup(c, model)
     const groupIdx2 = await createGroup(c, model)
@@ -132,7 +132,7 @@ test('get all user memberships', async t => {
 })
 
 test('change password', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const username = uuid()
     const password = uuid()
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
@@ -147,7 +147,7 @@ test('change password', async t => {
 })
 
 test('change password token request with identical email idx', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
@@ -164,7 +164,7 @@ test('change password token request with identical email idx', async t => {
 })
 
 test('token expiration', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
@@ -193,7 +193,7 @@ test('token expiration', async t => {
 })
 
 test('change user shell', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailLocal = uuid()
     const emailDomain = uuid()
     const emailAddressIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
@@ -208,7 +208,7 @@ test('change user shell', async t => {
 })
 
 test('reset resend count of expired password change token', async t => {
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
     const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     const token = await model.users.generatePasswordChangeToken(c, userIdx)
@@ -253,7 +253,7 @@ test('user ldap search result cache test', async t => {
   const name = uuid()
   const newName = uuid()
 
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const userIdx = await model.users.create(c, username, password, name, '/bin/bash', 'en')
     // cache it
     await model.users.getAllAsPosixAccounts(c)

@@ -118,7 +118,7 @@ test('get user email addresses', async t => {
   const password = uuid()
   let userIdx
 
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailIdx1 = await model.emailAddresses.create(c, uuid(), uuid())
     const emailIdx2 = await model.emailAddresses.create(c, uuid(), uuid())
 
@@ -152,7 +152,7 @@ test('change password', async t => {
   const emailDomain = uuid()
   let userIdx = -1
 
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
     userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
@@ -201,7 +201,7 @@ test('change shell', async t => {
   const newShell = uuid()
   let userIdx = -1
 
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
     userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
@@ -264,7 +264,7 @@ test('password change email resend limit', async t => {
   const resendLimit = config.email.resendLimit
   let emailIdx = -1
 
-  await model.pgDoWithLock(model.KEYS.USER_CREATION, async c => {
+  await model.pgDo(async c => {
     emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
     const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
     await model.emailAddresses.validate(c, userIdx, emailIdx)
