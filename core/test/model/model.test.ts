@@ -22,7 +22,7 @@ test('resolve deadlock', async t => {
   try {
     promises[0] = model.pgDo(async tr => {
       await tr.query('LOCK TABLE dead_lock_test_1 IN ACCESS EXCLUSIVE MODE')
-      transactionStages[0] = 1
+      transactionStages[0]++
       await ensureStageReach(1, 1)
       await tr.query('LOCK TABLE dead_lock_test_2 IN ACCESS EXCLUSIVE MODE')
       await tr.query('INSERT INTO dead_lock_test_1 (value) VALUES (50)')
@@ -31,7 +31,7 @@ test('resolve deadlock', async t => {
 
     promises[1] = model.pgDo(async tr => {
       await tr.query('LOCK TABLE dead_lock_test_2 IN ACCESS EXCLUSIVE MODE')
-      transactionStages[1] = 1
+      transactionStages[1]++
       await ensureStageReach(0, 1)
       await tr.query('LOCK TABLE dead_lock_test_1 IN ACCESS EXCLUSIVE MODE')
       await tr.query('INSERT INTO dead_lock_test_1 (value) VALUES (10)')
@@ -61,6 +61,63 @@ test('resolve deadlock', async t => {
     await model.pgDo(async tr => {
       await tr.query('DROP TABLE dead_lock_test_1')
       await tr.query('DROP TABLE dead_lock_test_2')
+    })
+  }
+})
+
+test('resolve serialization failure', async t => {
+  const transactionStages: Array<number> = [0, 0]
+  const promises: Array<Promise<void>> = []
+
+  const ensureStageReach = async (transactionIdx: number, stage: number) => {
+    while (transactionStages[transactionIdx] < stage) {
+      await delay(200)
+    }
+  }
+
+  await model.pgDo(async tr => {
+    await tr.query('CREATE TABLE IF NOT EXISTS serialization_error_test (idx serial primary key, value int)')
+    await tr.query('TRUNCATE TABLE serialization_error_test')
+    await tr.query('INSERT INTO serialization_error_test (value) VALUES (100)')
+  })
+
+  try {
+    promises[0] = model.pgDo(async tr => {
+      await tr.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE')
+      transactionStages[0]++
+      await ensureStageReach(1, 1)
+      const queryResult = await tr.query('SELECT value from serialization_error_test WHERE idx = 1')
+      t.is(queryResult.rowCount, 1)
+      const oldValue = queryResult.rows[0].value
+      transactionStages[0]++
+      await ensureStageReach(1, 2)
+      await tr.query('UPDATE serialization_error_test SET value = $1 WHERE idx = 1', [oldValue + 100])
+      await tr.query('SELECT value from serialization_error_test WHERE idx = 1')
+    })
+
+    promises[1] = model.pgDo(async tr => {
+      await tr.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE')
+      transactionStages[1]++
+      await ensureStageReach(0, 1)
+      const queryResult = await tr.query('SELECT value from serialization_error_test WHERE idx = 1')
+      t.is(queryResult.rowCount, 1)
+      const oldValue = queryResult.rows[0].value
+      transactionStages[1]++
+      await ensureStageReach(0, 2)
+      await tr.query('UPDATE serialization_error_test SET value = $1 WHERE idx = 1', [oldValue + 100])
+      await tr.query('SELECT value from serialization_error_test WHERE idx = 1')
+    })
+
+    await Promise.all(promises)
+    await model.pgDo(async tr => {
+      const queryResult = await tr.query('SELECT value from serialization_error_test WHERE idx = 1')
+      t.is(queryResult.rowCount, 1)
+      const value = queryResult.rows[0].value
+      t.is(value, 300)
+    })
+  } finally {
+    await model.pgDo(async tr => {
+      await tr.query('DROP TABLE serialization_error_test')
     })
   }
 })
