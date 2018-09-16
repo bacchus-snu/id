@@ -5,7 +5,7 @@ import Config from '../src/config'
 
 import { HARDWARE_LAB, SOFTWARE_LAB, LOUNGE, PRACTICE_SERVER } from './hosts_info'
 
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
+const config: Config = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf-8'}))
 
 const log = bunyan.createLogger({
   name: config.instanceName,
