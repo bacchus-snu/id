@@ -48,7 +48,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     }
 
     // validates inputs
-    if (!/^[a-z][a-z0-9_]+$/.test(username) || username.length > 20) {
+    if (!/^[a-z][a-z0-9]+$/.test(username) || username.length > 20) {
       ctx.status = 400
       return
     }
