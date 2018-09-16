@@ -79,7 +79,16 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
           return next(new ldap.ProtocolError())
         }
         // bind request from unknown host will create error log
-        const host = await model.hosts.getHostByInet(tr, remoteHost)
+        let host
+        try {
+          host = await model.hosts.getHostByInet(tr, remoteHost)
+        } catch (e) {
+          if (e instanceof NoSuchEntryError) {
+            throw new AuthorizationError()
+          } else {
+            throw e
+          }
+        }
         await model.hosts.authorizeUserByHost(tr, userIdx, host)
       })
       res.end()
