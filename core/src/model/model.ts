@@ -4,6 +4,7 @@ import EmailAddresses from './email_addresses'
 import Groups from './groups'
 import Permissions from './permissions'
 import Shells from './shells'
+import Hosts from './hosts'
 import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 import Config from '../config'
@@ -15,6 +16,7 @@ export default class Model {
   public readonly groups: Groups
   public readonly permissions: Permissions
   public readonly shells: Shells
+  public readonly hosts: Hosts
 
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
@@ -28,6 +30,7 @@ export default class Model {
     this.groups = new Groups(this)
     this.permissions = new Permissions(this)
     this.shells = new Shells(this)
+    this.hosts = new Hosts(this)
   }
 
   /**

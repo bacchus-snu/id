@@ -7,7 +7,7 @@ import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
-import { NoSuchEntryError, AuthenticationError } from '../model/errors'
+import { NoSuchEntryError, AuthenticationError, AuthorizationError } from '../model/errors'
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
@@ -70,12 +70,26 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      const userIdx = await model.pgDo(tr => model.users.authenticate(tr, cn, req.credentials))
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.authenticate(tr, cn, req.credentials)
+        const remoteHost = req.connection.remoteAddress
+        if (!remoteHost) {
+          // this means socket was already destroyed
+          res.end()
+          return next(new ldap.ProtocolError())
+        }
+        // bind request from unknown host will create error log
+        const host = await model.hosts.getHostByInet(tr, remoteHost)
+        await model.hosts.authorizeUserByHost(tr, userIdx, host)
+      })
       res.end()
       return next()
     } catch (e) {
       if (e instanceof AuthenticationError) {
         return next(new ldap.InvalidCredentialsError())
+      }
+      if (e instanceof AuthorizationError) {
+        return next(new ldap.InsufficientAccessRightsError())
       }
       server.log.error(e)
       return next(new ldap.OtherError())
@@ -109,7 +123,6 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.send(usersOU)
       } else {
         // Same results for 'one' and 'sub'
-        // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
         (await model.pgDo(tr => model.users.getAllAsPosixAccounts(tr))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)

@@ -12,6 +12,8 @@ drop table if exists user_memberships cascade;
 drop table if exists permissions cascade;
 drop table if exists permission_requirements cascade;
 drop table if exists pending_user_memberships cascade;
+drop table if exists hosts cascade;
+drop table if exists host_groups cascade;
 drop type if exists language cascade;
 
 -- Allowed shells to use
@@ -147,4 +149,17 @@ create table pending_user_memberships (
   group_idx integer not null references groups(idx) on delete cascade,
   created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
-)
+);
+
+create table host_groups (
+  idx serial primary key,
+  name text not null check (name <> ''),
+  required_permission integer references permissions(idx) on delete cascade
+);
+
+create table hosts (
+  idx serial primary key,
+  name text not null check (name <> ''),
+  host inet unique not null check (text(host) <> ''),
+  host_group integer references host_groups(idx) on delete set null
+);

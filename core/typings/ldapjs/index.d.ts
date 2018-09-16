@@ -325,6 +325,35 @@ declare module 'ldapjs' {
   export function createServer(options?: ServerOptions): Server
 
   /**
+   * LDAP client.
+   */
+  export interface Client {
+    /**
+     * Bind to the LDAP server.
+     * @param dn dn
+     * @param password password
+     * @param callback optional callback function
+     */
+    bind(dn: string, password: string, callback?: (err: Error) => void): void
+  }
+
+  export interface ClientOptions {
+    url: string
+    socketPath?: string
+    log?: Bunyan
+    timeout?: number
+    connectTimeout?: number
+    tlsOptions?: any
+    idleTimeout?: number
+    strictDN?: boolean
+  }
+
+  /**
+   * Create a new LDAP client.
+   */
+  export function createClient(options: ClientOptions): Client
+
+  /**
    * Represents an error occurred during the operation (RFC4511).
    */
   export interface Error {

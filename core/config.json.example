@@ -50,5 +50,8 @@
   },
   "misc": {
     "slackAPIEndpoint": "SLACK_API_URL_HERE"
+  },
+  "permissions": {
+    "snucse": 1
   }
 }

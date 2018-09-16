@@ -1,7 +1,7 @@
 import Model from '../../model/model'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
-import { ControllableError } from '../../model/errors'
+import { ControllableError, AuthorizationError } from '../../model/errors'
 
 export function login(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -49,7 +49,7 @@ export function login(model: Model): IMiddleware {
   }
 }
 
-export function loginLegacy(model: Model): IMiddleware {
+export function loginLegacy(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
 
@@ -73,6 +73,11 @@ export function loginLegacy(model: Model): IMiddleware {
       await model.pgDo(async tr => {
         try {
           userIdx = await model.users.authenticate(tr, username, password)
+          const requiredPermission = config.permissions.snucse
+          const havePermission =  await model.permissions.checkUserHavePermission(tr, userIdx, requiredPermission)
+          if (!havePermission) {
+            throw new AuthorizationError()
+          }
         } catch (e) {
           ctx.status = 200
           throw e

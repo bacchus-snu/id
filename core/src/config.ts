@@ -202,6 +202,16 @@ export interface MiscConfig {
   slackAPIEndpoint: string
 }
 
+/**
+ * Permission configurations.
+ */
+export interface PermissionConfig {
+  /**
+   * SNUCSE3 login permission idx.
+   */
+  snucse: number
+}
+
 export default interface Config {
   /**
    * Name of this id core instance.
@@ -247,4 +257,9 @@ export default interface Config {
    * Miscellaneous configuration.
    */
   misc: MiscConfig
+
+  /**
+   * Permission configuration.
+   */
+  permissions: PermissionConfig
 }
