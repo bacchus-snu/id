@@ -90,9 +90,9 @@ export default class SignUpForm extends Vue {
     en: 'The password should be at least 8 characters',
   }
   private readonly usernameValidateTrans: Translation = {
-    ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자, _ 만 포함된 20자 이하여야 합니다.',
+    ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자만 포함된 20자 이하여야 합니다.',
     en: 'Username should be under 20 letters which only contains ' +
-    'lowercase alphabet, numbers, or underscores and starts with lowercase alphabet.',
+    'lowercase alphabet or numbers, and starts with lowercase alphabet.',
   }
 
   @Provide()
@@ -131,7 +131,7 @@ export default class SignUpForm extends Vue {
   }
 
   private validateUsername(rule, value, callback) {
-    if (!/^[a-z][a-z0-9_]+$/.test(value) || value.length > 20) {
+    if (!/^[a-z][a-z0-9]+$/.test(value) || value.length > 20) {
       callback(new Error(this.usernameValidateTrans[this.lang]))
     } else {
       callback()
