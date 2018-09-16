@@ -41,3 +41,9 @@ export async function createPermission(tr: Transaction, model: Model): Promise<n
   }
   return await model.permissions.create(tr, name, description)
 }
+
+export function delay(timeInMilliseconds: number) {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeInMilliseconds)
+  })
+}
