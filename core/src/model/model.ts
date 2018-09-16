@@ -10,8 +10,11 @@ import { ControllableError } from './errors'
 import Config from '../config'
 import Transaction from './transaction'
 
+const PSQL_SERIALIZATION_FAILURE = '40001'
+const PSQL_DEADLOCK_DETECTED = '40P01'
+
 export default class Model {
-  private static readonly MAX_TRANSACTION_RETRY: number = 3
+  private static readonly MAX_TRANSACTION_RETRY: number = 10
 
   public readonly users: Users
   public readonly emailAddresses: EmailAddresses
@@ -65,7 +68,7 @@ export default class Model {
           return result
         } catch (e) {
           await client.query('ROLLBACK')
-          if (e.message === 'deadlock detected') {
+          if (e.code === PSQL_SERIALIZATION_FAILURE || e.code === PSQL_DEADLOCK_DETECTED) {
             retryCount++
             if (retryCount < Model.MAX_TRANSACTION_RETRY) {
               continue
