@@ -91,39 +91,7 @@ export default class Groups {
     return result.rows[0].idx
   }
 
-  private async getAllGroupRelation(tr: Transaction): Promise<Array<GroupRelationship>> {
-    const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations'
-    const result = await tr.query(query)
-    return result.rows.map(row => this.rowToGroupRelation(row))
-  }
-
-  private dfsGroup(groupIdx: number, cache: GroupReachable, firstGroupReachable: GroupReachable): Array<number> {
-    if (groupIdx in cache) {
-      return cache[groupIdx]
-    }
-
-    const firstReachable: Array<number> = firstGroupReachable[groupIdx]
-    let newReachable: Array<number> = []
-
-    firstReachable.forEach(gi => {
-      newReachable = newReachable.concat(this.dfsGroup(gi, cache, firstGroupReachable))
-    })
-
-    const indexSet = new Set(newReachable.concat(firstReachable))
-    indexSet.add(groupIdx)
-
-    cache[groupIdx] = Array.from(indexSet)
-    return cache[groupIdx]
-  }
-
-  private async getAllIdx(tr: Transaction): Promise<Array<number>> {
-    const query = 'SELECT idx FROM groups'
-    const result = await tr.query(query)
-
-    return result.rows.map(row => row.idx)
-  }
-
-  private async updateGroupReachableCache(tr: Transaction): Promise<void> {
+  public async updateGroupReachableCache(tr: Transaction): Promise<void> {
     let groupIdxArray: Array<number> = []
     let groupRelationArray: Array<GroupRelationship> = []
     const firstGroupReachable: GroupReachable = {}
@@ -160,6 +128,38 @@ export default class Groups {
         await tr.query(query, [Number(supergroupIdx), Number(subgroupIdx)])
       }
     }
+  }
+
+  private async getAllGroupRelation(tr: Transaction): Promise<Array<GroupRelationship>> {
+    const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations'
+    const result = await tr.query(query)
+    return result.rows.map(row => this.rowToGroupRelation(row))
+  }
+
+  private dfsGroup(groupIdx: number, cache: GroupReachable, firstGroupReachable: GroupReachable): Array<number> {
+    if (groupIdx in cache) {
+      return cache[groupIdx]
+    }
+
+    const firstReachable: Array<number> = firstGroupReachable[groupIdx]
+    let newReachable: Array<number> = []
+
+    firstReachable.forEach(gi => {
+      newReachable = newReachable.concat(this.dfsGroup(gi, cache, firstGroupReachable))
+    })
+
+    const indexSet = new Set(newReachable.concat(firstReachable))
+    indexSet.add(groupIdx)
+
+    cache[groupIdx] = Array.from(indexSet)
+    return cache[groupIdx]
+  }
+
+  private async getAllIdx(tr: Transaction): Promise<Array<number>> {
+    const query = 'SELECT idx FROM groups'
+    const result = await tr.query(query)
+
+    return result.rows.map(row => row.idx)
   }
 
   private rowToGroup(row: any): Group {
