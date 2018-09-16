@@ -16,6 +16,7 @@ const ldapOptions = {
 const ldapServer = createLDAPServer(ldapOptions, model, config)
 ldapServer.listen(config.ldap.listenPort, config.ldap.listenHost)
 
+// need for suppress tls error
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 function bindPromise(client: Client, dn: string, password: string) {
@@ -32,7 +33,11 @@ function bindPromise(client: Client, dn: string, password: string) {
 
 test.afterEach.always(async t => {
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+    try {
+      await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+    } catch (e) {
+      log.warn(e)
+    }
     await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
   })
 })

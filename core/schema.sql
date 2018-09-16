@@ -161,5 +161,5 @@ create table hosts (
   idx serial primary key,
   name text not null check (name <> ''),
   host inet unique not null check (text(host) <> ''),
-  host_group integer references host_groups(idx)
+  host_group integer references host_groups(idx) on delete cascade
 );

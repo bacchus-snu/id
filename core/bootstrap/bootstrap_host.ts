@@ -20,6 +20,7 @@ async function bootstrapHost() {
     const hardwareLabIdx = await model.hosts.addHostGroup(tr, '하드웨어 실습실')
     for (const hostTemplate of HARDWARE_LAB) {
       const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      console.log(`Added ${hostTemplate.name}: ${hostTemplate.host}`)
       await model.hosts.addHostToGroup(tr, hostIdx, hardwareLabIdx)
     }
 
@@ -27,6 +28,7 @@ async function bootstrapHost() {
     const softwareLabIdx = await model.hosts.addHostGroup(tr, '소프트웨어 실습실')
     for (const hostTemplate of SOFTWARE_LAB) {
       const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      console.log(`Added ${hostTemplate.name}: ${hostTemplate.host}`)
       await model.hosts.addHostToGroup(tr, hostIdx, softwareLabIdx)
     }
 
@@ -34,6 +36,7 @@ async function bootstrapHost() {
     const loungeIdx = await model.hosts.addHostGroup(tr, '과방')
     for (const hostTemplate of LOUNGE) {
       const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      console.log(`Added ${hostTemplate.name}: ${hostTemplate.host}`)
       await model.hosts.addHostToGroup(tr, hostIdx, loungeIdx)
     }
 
@@ -41,7 +44,14 @@ async function bootstrapHost() {
     const serverIdx = await model.hosts.addHostGroup(tr, '실습 서버')
     for (const hostTemplate of PRACTICE_SERVER) {
       const hostIdx = await model.hosts.addHost(tr, hostTemplate.name, hostTemplate.host)
+      console.log(`Added ${hostTemplate.name}: ${hostTemplate.host}`)
       await model.hosts.addHostToGroup(tr, hostIdx, serverIdx)
     }
   })
 }
+
+bootstrapHost().then(() => {
+  console.log('Done!')
+}).catch(() => {
+  console.error('Fail!')
+})

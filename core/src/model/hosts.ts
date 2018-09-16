@@ -27,8 +27,11 @@ export default class Hosts {
   }
 
   public async deleteHost(tr: Transaction, idx: number): Promise<void> {
-    const query = 'DELETE FROM hosts WHERE idx = $1'
+    const query = 'DELETE FROM hosts WHERE idx = $1 RETURNING idx'
     const result = await tr.query(query, [idx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
   }
 
   public async addHostGroup(tr: Transaction, name: string): Promise<number> {
@@ -38,13 +41,19 @@ export default class Hosts {
   }
 
   public async setHostGroupPermission(tr: Transaction, hostGroupIdx: number, permissionIdx: number): Promise<void> {
-    const query = 'UPDATE host_groups SET required_permission = $1 WHERE idx = $2'
+    const query = 'UPDATE host_groups SET required_permission = $1 WHERE idx = $2 RETURNING idx'
     const result = await tr.query(query, [permissionIdx, hostGroupIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
   }
 
   public async addHostToGroup(tr: Transaction, hostIdx: number, hostGroupIdx: number): Promise<void> {
-    const query = 'UPDATE hosts SET host_group = $1 WHERE idx = $2'
+    const query = 'UPDATE hosts SET host_group = $1 WHERE idx = $2 RETURNING idx'
     const result = await tr.query(query, [hostGroupIdx, hostIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
   }
 
   public async getHostByInet(tr: Transaction, inet: string): Promise<Host> {
