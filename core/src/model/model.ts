@@ -11,6 +11,8 @@ import Config from '../config'
 import Transaction from './transaction'
 
 export default class Model {
+  private static readonly MAX_TRANSACTION_RETRY: number = 3
+
   public readonly users: Users
   public readonly emailAddresses: EmailAddresses
   public readonly groups: Groups
@@ -45,25 +47,36 @@ export default class Model {
     const lockTables = accessExclusiveLockTables ? accessExclusiveLockTables.sort() : []
     const lockKeys = advisoryLockKeys ? advisoryLockKeys.sort() : []
     const transaction = new Transaction(client, lockTables, lockKeys)
+    let retryCount = 0
+
     try {
-      await client.query('BEGIN')
-      for (const key of lockKeys) {
-        await client.query('SELECT pg_advisory_xact_lock($1)', [key])
+      while (true) {
+        try {
+          await client.query('BEGIN')
+          for (const key of lockKeys) {
+            await client.query('SELECT pg_advisory_xact_lock($1)', [key])
+          }
+          for (const table of lockTables) {
+            await client.query(`LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE`)
+          }
+          const result = await query(transaction)
+          transaction.terminate()
+          await client.query('COMMIT')
+          return result
+        } catch (e) {
+          await client.query('ROLLBACK')
+          if (e.message === 'deadlock detected') {
+            retryCount++
+            if (retryCount < Model.MAX_TRANSACTION_RETRY) {
+              continue
+            }
+          } else if (!(e instanceof ControllableError)) {
+            // Controllable errors are properly handled by API implementations.
+            this.log.error(e)
+          }
+          throw e
+        }
       }
-      for (const table of lockTables) {
-        await client.query(`LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE`)
-      }
-      const result = await query(transaction)
-      transaction.terminate()
-      await client.query('COMMIT')
-      return result
-    } catch (e) {
-      await client.query('ROLLBACK')
-      if (!(e instanceof ControllableError)) {
-        // Controllable errors are properly handled by API implementations.
-        this.log.error(e)
-      }
-      throw e
     } finally {
       client.release()
     }
