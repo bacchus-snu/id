@@ -150,9 +150,11 @@ test.serial('authorization with host group', async t => {
 
   await model.pgDo(async tr => {
     // set to another permission
+    const newGroupIdx = await model.groups.create(tr, trans, trans)
     const newPermissionIdx = await model.permissions.create(tr, trans, trans)
+    await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
-  })
+  }, ['group_reachable_cache'])
 
   try {
     // should fail with AuthorizationError / InsufficientAccessRightsError

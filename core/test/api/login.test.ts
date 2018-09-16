@@ -80,6 +80,7 @@ test('test legacy login', async t => {
   let username: string = ''
   let password: string = ''
   let userIdx: number = -1
+  let userMembershipIdx: number = -1
   const trans = {
     ko: uuid(),
     en: uuid(),
@@ -91,7 +92,7 @@ test('test legacy login', async t => {
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
     const groupIdx = await model.groups.create(tr, trans, trans)
-    await model.users.addUserMembership(tr, userIdx, groupIdx)
+    userMembershipIdx = await model.users.addUserMembership(tr, userIdx, groupIdx)
     const permissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
     config.permissions.snucse = permissionIdx
@@ -114,7 +115,9 @@ test('test legacy login', async t => {
   t.is(response.status, 302)
 
   // test with insufficient permission
-  config.permissions.snucse = -1
+  await model.pgDo(async tr => {
+    await model.users.deleteUserMembership(tr, userMembershipIdx)
+  })
   response = await agent.post('/Authentication/Login.aspx').send({
     member_account: username,
     member_password: password,
