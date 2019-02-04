@@ -69,7 +69,7 @@ test('test PAM login with credential and host', async t => {
     permissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, permissionIdx)
-  }, ['users', 'group_reachable_cache', 'hosts'])
+  }, ['users', 'group_reachable_cache'])
 
   const agent = request.agent(app)
 
@@ -104,7 +104,7 @@ test('test PAM login with credential and host', async t => {
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
     await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
-  }, ['hosts'])
+  },)
 })
 
 test('test checkLogin', async t => {
