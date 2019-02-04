@@ -63,6 +63,7 @@ export function loginPAM(model: Model): IMiddleware {
       await model.pgDo(async tr => {
         try {
           const userIdx = await model.users.authenticate(tr, username, password)
+	  // Remember to configure app.proxy and X-Forwarded-For when deploying
           const host = await model.hosts.getHostByInet(tr, ctx.ip)
           await model.hosts.authorizeUserByHost(tr, userIdx, host)
         } catch (e) {

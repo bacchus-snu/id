@@ -18,7 +18,7 @@ export function createRouter(model: Model, config: Config): Router {
    */
   router.post('/api/login', login(model))
   /**
-   * APM Login API route.
+   * PAM Login API route.
    * @param username username.
    * @param password password.
    * 200 if success, 401 if not.
