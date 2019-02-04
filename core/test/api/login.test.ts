@@ -69,7 +69,8 @@ test('test PAM login with credential and host', async t => {
     permissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, permissionIdx)
-  }, ['users', 'group_reachable_cache'])
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['users', 'group_reachable_cache', 'hosts'])
 
   const agent = request.agent(app)
 
