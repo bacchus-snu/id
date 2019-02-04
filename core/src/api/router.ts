@@ -1,7 +1,7 @@
 import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
-import { login, logout, checkLogin, loginLegacy } from './handlers/login'
+import { login, loginPAM, logout, checkLogin, loginLegacy } from './handlers/login'
 import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
@@ -17,6 +17,13 @@ export function createRouter(model: Model, config: Config): Router {
    * 200 if success, 401 if not.
    */
   router.post('/api/login', login(model))
+  /**
+   * PAM Login API route.
+   * @param username username.
+   * @param password password.
+   * 200 if success, 401 if not.
+   */
+  router.post('/api/login-pam', loginPAM(model))
   /**
    * Legacy login API route.
    * CAUTION: response code 200 means failure in sign in.
