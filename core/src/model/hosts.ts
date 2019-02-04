@@ -57,6 +57,11 @@ export default class Hosts {
   }
 
   public async getHostByInet(tr: Transaction, inet: string): Promise<Host> {
+    // Remove occasional ipv6-mapped ipv4
+    if (inet.lastIndexOf(':') !== -1) {
+      inet = inet.substring(inet.lastIndexOf(':') + 1)
+    }
+
     const query = 'SELECT idx, name, host, host_group FROM hosts WHERE host(host) = $1'
     const result = await tr.query(query, [inet])
     if (result.rows.length === 0) {
