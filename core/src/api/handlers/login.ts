@@ -49,6 +49,41 @@ export function login(model: Model): IMiddleware {
   }
 }
 
+export function loginPAM(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const body: any = ctx.request.body
+
+    if (!body || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const { username, password } = body
+    try {
+      await model.pgDo(async tr => {
+        try {
+          const userIdx = await model.users.authenticate(tr, username, password)
+          const host = await model.hosts.getHostByInet(tr, ctx.ip)
+          await model.hosts.authorizeUserByHost(tr, userIdx, host)
+        } catch (e) {
+          if (e instanceof ControllableError) {
+            ctx.status = 401
+          } else {
+            ctx.status = 500
+          }
+
+          throw e
+        }
+      })
+    } catch (e) {
+      return
+    }
+
+    ctx.status = 200
+    return
+  }
+}
+
 export function loginLegacy(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
