@@ -68,6 +68,7 @@ test('test PAM login with credential and host', async t => {
 
     permissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
+    await model.hosts.setHostGroupPermission(tr, hostGroupIdx, permissionIdx)
   }, ['users', 'group_reachable_cache'])
 
   const agent = request.agent(app)
@@ -87,9 +88,11 @@ test('test PAM login with credential and host', async t => {
   t.is(response.status, 200)
 
   await model.pgDo(async tr => {
-    // set required permission
-    await model.hosts.setHostGroupPermission(tr, hostGroupIdx, permissionIdx)
-  })
+    const newGroupIdx = await model.groups.create(tr, trans, trans)
+    const newPermissionIdx = await model.permissions.create(tr, trans, trans)
+    await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
+    await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
+  }, ['group_reachable_cache'])
 
   response = await agent.post('/api/login-pam').send({
     username,
