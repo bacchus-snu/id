@@ -104,7 +104,7 @@ test('test PAM login with credential and host', async t => {
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
     await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
-  },)
+  })
 })
 
 test('test checkLogin', async t => {
