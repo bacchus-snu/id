@@ -114,7 +114,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-   router.get('/api/get-passwd', getPasswd(model, config))
+  router.get('/api/get-passwd', getPasswd(model, config))
 
   /**
    * Get the group map
@@ -122,7 +122,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-   router.get('/api/get-group', getGroup(model, config))
+  router.get('/api/get-group', getGroup(model, config))
 
   return router
 }

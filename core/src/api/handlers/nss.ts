@@ -3,15 +3,14 @@ import { User } from '../../model/users'
 import Config from '../../config'
 import { IMiddleware } from 'koa-router'
 import { NoSuchEntryError } from '../../model/errors'
+import util = require('util')
 
-const util = require('util')
-
-var encodedPasswd = ''
-var encodedGroup = ''
-var lastModified = new Date()
+let encodedPasswd = ''
+let encodedGroup = ''
+let lastModified = new Date()
 
 async function update(model: Model, config: Config) {
-  let users = await model.pgDo(async tr => {
+  const users = await model.pgDo(async tr => {
      return await model.users.getAll(tr)
   })
 
@@ -21,16 +20,16 @@ async function update(model: Model, config: Config) {
   })
 
   let passwd = ''
-  let usernames: Array<string> = []
+  const usernames = []
   users.forEach(user => {
     passwd += util.format('%s:x:%d:%d:%s:%s:%s\n',
       user.username, user.uid, config.posix.userGroupGid, user.name,
       `${model.config.posix.homeDirectoryPrefix}/${user.username}`,
       user.shell)
 
-      if (user.username) {
-        usernames.push(user.username)
-      }
+    if (user.username) {
+      usernames.push(user.username)
+    }
   })
 
   if (passwd !== encodedPasswd) {
@@ -46,7 +45,7 @@ export function getPasswd(model: Model, config: Config): IMiddleware {
   // TODO: invalidate on user change, move to models
   setInterval(() => {
     update(model, config)
-  }, 15*60)
+  }, 15 * 60)
 
   return async (ctx, next) => {
     try {
