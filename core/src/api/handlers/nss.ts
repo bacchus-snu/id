@@ -20,7 +20,7 @@ async function update(model: Model, config: Config) {
   })
 
   let passwd = ''
-  const usernames = []
+  const usernames: Array<string> = []
   users.forEach(user => {
     passwd += util.format('%s:x:%d:%d:%s:%s:%s\n',
       user.username, user.uid, config.posix.userGroupGid, user.name,
