@@ -6,41 +6,46 @@ import { NoSuchEntryError } from '../../model/errors'
 
 const util = require('util')
 
-// Would be better to invalidate on user change.
-// Possibly move into models? (like posixAccountCache)
-async function generate(model: Model, config: Config): Promise<string> {
-  let users: Array<User> = []
-  await model.pgDo(async tr => {
-     users = await model.users.getAll(tr)
+var encodedPasswd = ''
+var encodedGroup = ''
+var lastModified = new Date()
+
+async function update(model: Model, config: Config) {
+  let users = await model.pgDo(async tr => {
+     return await model.users.getAll(tr)
   })
 
-  // TODO: push this to the db layer
+  // TODO: push this to the db layer?
   users.sort((a, b) => {
     return a.uid - b.uid
   })
 
-  const encoded: Array<string> = [];
+  let passwd = ''
+  let usernames: Array<string> = []
   users.forEach(user => {
-  encoded.push(util.format('%s:x:%d:%d:%s:%s:%s',
-    user.username, user.uid, config.posix.userGroupGid, user.name,
-    `${model.config.posix.homeDirectoryPrefix}/${user.username}`,
-    user.shell));
+    passwd += util.format('%s:x:%d:%d:%s:%s:%s\n',
+      user.username, user.uid, config.posix.userGroupGid, user.name,
+      `${model.config.posix.homeDirectoryPrefix}/${user.username}`,
+      user.shell)
+
+      if (user.username) {
+        usernames.push(user.username)
+      }
   })
 
-  return encoded.join('\n')
+  if (passwd !== encodedPasswd) {
+    encodedPasswd = passwd
+    encodedGroup = util.format('%s:x:%d:%s',
+      config.posix.userGroupName, config.posix.userGroupGid,
+      usernames.join(','))
+    lastModified = new Date()
+  }
 }
 
 export function getPasswd(model: Model, config: Config): IMiddleware {
-  let encodedUsers = ''
-  let lastModified = new Date()
-
+  // TODO: invalidate on user change, move to models
   setInterval(() => {
-    generate(model, config).then(enc => {
-      if (enc !== encodedUsers) {
-        encodedUsers = enc
-        lastModified = new Date()
-      }
-    })
+    update(model, config)
   }, 15*60)
 
   return async (ctx, next) => {
@@ -61,9 +66,37 @@ export function getPasswd(model: Model, config: Config): IMiddleware {
     ctx.lastModified = lastModified
 
     if (ctx.fresh) {
-      ctx.status = 304;
+      ctx.status = 304
     } else {
-      ctx.body = encodedUsers
+      ctx.body = encodedPasswd
+    }
+
+    await next()
+  }
+}
+
+export function getGroup(model: Model, config: Config): IMiddleware {
+  return async (ctx, next) => {
+    try {
+      await model.pgDo(async tr => {
+        await model.hosts.getHostByInet(tr, ctx.ip)
+      })
+    } catch (e) {
+        if (e instanceof NoSuchEntryError) {
+          ctx.status = 401
+        } else {
+          ctx.status = 500
+        }
+        return
+    }
+
+    ctx.status = 200 // Required for freshness check
+    ctx.lastModified = lastModified
+
+    if (ctx.fresh) {
+      ctx.status = 304
+    } else {
+      ctx.body = encodedGroup
     }
 
     await next()

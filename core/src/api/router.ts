@@ -6,7 +6,7 @@ import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } fr
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
-import { getPasswd } from './handlers/nss'
+import { getPasswd, getGroup } from './handlers/nss'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -112,8 +112,17 @@ export function createRouter(model: Model, config: Config): Router {
    * Get the passwd map
    * 200 on success
    * 304 if not modified since
+   * 401 if not a valid host
    */
    router.get('/api/get-passwd', getPasswd(model, config))
+
+  /**
+   * Get the group map
+   * 200 on success
+   * 304 if not modified since
+   * 401 if not a valid host
+   */
+   router.get('/api/get-group', getGroup(model, config))
 
   return router
 }
