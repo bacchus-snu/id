@@ -6,6 +6,7 @@ import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } fr
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
+import { getPasswd } from './handlers/nss'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -106,6 +107,13 @@ export function createRouter(model: Model, config: Config): Router {
    * @param shell shell.
    */
   router.post('/api/user/shell', changeUserShell(model))
+
+  /**
+   * Get the passwd map
+   * 200 on success
+   * 304 if not modified since
+   */
+   router.get('/api/get-passwd', getPasswd(model, config))
 
   return router
 }
