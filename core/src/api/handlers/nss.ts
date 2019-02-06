@@ -46,7 +46,6 @@ export function getPasswd(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     try {
       await model.pgDo(async tr => {
-        model.log.info(ctx.ip)
         await model.hosts.getHostByInet(tr, ctx.ip)
       })
     } catch (e) {
