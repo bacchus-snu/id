@@ -393,7 +393,7 @@ export default class Users {
       passwd +=
         `${user.username}:x:${user.uid.toString()}:` +
         `${this.model.config.posix.userGroupGid}:${user.name}:` +
-        `${this.model.config.posix.homeDirectoryPrefix}/${user.username}` +
+        `${this.model.config.posix.homeDirectoryPrefix}/${user.username}:` +
         `${user.shell}\n`
       if (user.username) {
         usernames.push(user.username)
