@@ -101,7 +101,7 @@ test('test PAM login with credential and host', async t => {
   })
   t.is(response.status, 401)
 
-  // Prevent later tests from failing
+  // Cleanup
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
     await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
