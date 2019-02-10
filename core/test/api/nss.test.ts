@@ -30,7 +30,7 @@ test('fetch passwd entries', async t => {
   // With host
   response = await agent.get('/api/get-passwd').send()
   t.is(response.status, 200)
-  t.is(response.text, expect)
+  t.true(response.text.includes(expect))
 
   // Cleanup
   await model.pgDo(async tr => {
