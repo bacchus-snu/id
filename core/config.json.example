@@ -13,7 +13,8 @@
   },
   "api": {
     "listenHost": "127.0.0.1",
-    "listenPort": "50080"
+    "listenPort": "50080",
+    "proxy": true
   },
   "session": {
     "key": "id-session",

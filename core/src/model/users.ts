@@ -28,9 +28,15 @@ export interface UserMembership {
 export default class Users {
   private readonly usersDN: string
   private posixAccountsCache: Array<ldap.SearchEntry<PosixAccount>> | null
+  private posixPasswdCache: string
+  private posixGroupCache: string
+  private posixLastModified: Date
   constructor(private readonly model: Model) {
     this.usersDN = `ou=${this.model.config.ldap.usersOU},${this.model.config.ldap.baseDN}`
     this.posixAccountsCache = null
+    this.posixPasswdCache = ''
+    this.posixGroupCache = ''
+    this.posixLastModified = new Date()
   }
 
   public async create(tr: Transaction, username: string, password: string,
@@ -41,6 +47,8 @@ export default class Users {
     const uid = await this.generateUid(tr)
     const result = await tr.query(query, [username, passwordDigest, name, uid, shell, preferredLanguage])
     this.posixAccountsCache = null
+    this.posixPasswdCache = ''
+    this.posixGroupCache = ''
     return result.rows[0].idx
   }
 
@@ -51,6 +59,8 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     this.posixAccountsCache = null
+    this.posixPasswdCache = ''
+    this.posixGroupCache = ''
     return result.rows[0].idx
   }
 
@@ -62,11 +72,37 @@ export default class Users {
     return users
   }
 
+  public async getAllSorted(tr: Transaction): Promise<Array<User>> {
+    const query = 'SELECT idx, username, name, uid, shell FROM users ORDER BY uid'
+    const result = await tr.query(query)
+    const users: Array<User> = []
+    result.rows.forEach(row => users.push(this.rowToUser(row)))
+    return users
+  }
+
   public async getAllAsPosixAccounts(tr: Transaction): Promise<Array<ldap.SearchEntry<PosixAccount>>> {
     if (this.posixAccountsCache === null) {
       this.posixAccountsCache = this.usersToPosixAccounts(await this.getAll(tr))
     }
     return this.posixAccountsCache
+  }
+
+  public getPosixLastModified(): Date {
+    return this.posixLastModified
+  }
+
+  public async getPasswdEntries(tr: Transaction): Promise<string> {
+    if (this.posixPasswdCache === '') {
+      this.generatePosixCache(await this.getAllSorted(tr))
+    }
+    return this.posixPasswdCache
+  }
+
+  public async getGroupEntries(tr: Transaction): Promise<string> {
+    if (this.posixGroupCache === '') {
+      this.generatePosixCache(await this.getAllSorted(tr))
+    }
+    return this.posixGroupCache
   }
 
   public async getByUsername(tr: Transaction, username: string): Promise<User> {
@@ -344,6 +380,31 @@ export default class Users {
         uidNumber: user.uid,
         gidNumber: this.model.config.posix.userGroupGid,
       },
+    }
+  }
+
+  // Set posix{Passwd, Group}Cache based on the user array. Should be sorted.
+  private generatePosixCache(users: Array<User>): void {
+    let passwd = ''
+    let group = `${this.model.config.posix.userGroupName}:x:${this.model.config.posix.userGroupGid}:`
+
+    const usernames: Array<string> = []
+    users.forEach(user => {
+      if (user.username) {
+        passwd +=
+          `${user.username}:x:${user.uid.toString()}:` +
+          `${this.model.config.posix.userGroupGid}:${user.name}:` +
+          `${this.model.config.posix.homeDirectoryPrefix}/${user.username}:` +
+          `${user.shell}\n`
+        usernames.push(user.username)
+      }
+    })
+    group += usernames.join(',')
+
+    if (passwd !== this.posixPasswdCache) {
+      this.posixPasswdCache = passwd
+      this.posixGroupCache = group
+      this.posixLastModified = new Date()
     }
   }
 }

@@ -73,6 +73,11 @@ export interface APIConfig {
    * Port to listen on.
    */
   listenPort: number
+
+  /**
+   * Trust X-Forwarded-For headers
+   */
+   proxy: boolean
 }
 
 /**

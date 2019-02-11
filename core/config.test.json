@@ -13,7 +13,8 @@
   },
   "api": {
     "listenHost": "127.0.0.1",
-    "listenPort": "50080"
+    "listenPort": "50080",
+    "proxy": false
   },
   "session": {
     "key": "id-session",
@@ -38,7 +39,8 @@
     "sudoerGroupName": "csesudoers",
     "sudoerGroupGid": 100600,
     "defaultShell": "/bin/bash",
-    "minUid": 100000
+    "minUid": 100000,
+    "homeDirectoryPrefix": "/csehome"
   },
   "postgresql": {
     "host": "127.0.0.1",
