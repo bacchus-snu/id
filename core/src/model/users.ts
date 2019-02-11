@@ -390,12 +390,12 @@ export default class Users {
 
     const usernames: Array<string> = []
     users.forEach(user => {
-      passwd +=
-        `${user.username}:x:${user.uid.toString()}:` +
-        `${this.model.config.posix.userGroupGid}:${user.name}:` +
-        `${this.model.config.posix.homeDirectoryPrefix}/${user.username}:` +
-        `${user.shell}\n`
       if (user.username) {
+        passwd +=
+          `${user.username}:x:${user.uid.toString()}:` +
+          `${this.model.config.posix.userGroupGid}:${user.name}:` +
+          `${this.model.config.posix.homeDirectoryPrefix}/${user.username}:` +
+          `${user.shell}\n`
         usernames.push(user.username)
       }
     })
