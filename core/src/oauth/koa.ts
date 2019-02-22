@@ -29,6 +29,12 @@ export interface MiddlewareParams {
   getTokenSecret(token: string): Promise<string | undefined>
 }
 
+export interface OAuthData {
+  consumerKey: string
+  oauthToken?: string
+  collectedParams: any
+}
+
 export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
   return async (ctx, next) => {
     if (ctx.request.body == null) {
@@ -105,7 +111,7 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
       consumerKey,
       oauthToken,
       collectedParams,
-    }
+    } as OAuthData
     return await next()
   }
 }

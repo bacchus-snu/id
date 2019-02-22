@@ -1,12 +1,30 @@
 import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
+import oauth10a from '../oauth/koa'
 import { login, loginPAM, logout, checkLogin, loginLegacy } from './handlers/login'
 import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
+import { getRequestToken } from './handlers/oauth'
+
+function createOAuth10aRouter(model: Model, config: Config): Router {
+  const router = new Router()
+  router.use(oauth10a({
+    async getConsumerSecret(key: string) {
+      return key.repeat(2)
+    },
+    async getTokenSecret(token: string) {
+      return undefined
+    },
+  }))
+
+  router.get('/request', getRequestToken(model))
+
+  return router
+}
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -123,6 +141,12 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not a valid host
    */
   router.get('/api/get-group', getGroup(model))
+
+  /**
+   * Nest OAuth-related endpoints.
+   */
+  const oauth10aRouter = createOAuth10aRouter(model, config)
+  router.use('/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
 
   return router
 }
