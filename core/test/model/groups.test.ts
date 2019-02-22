@@ -4,6 +4,7 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
 import { createGroup, createUser, createGroupRelation } from '../test_utils'
+import * as uuid from 'uuid/v4'
 import { model } from '../setup'
 
 const name: Translation = {
@@ -96,4 +97,18 @@ test('get reachable group object', async t => {
     result = await model.groups.getGroupReachableArray(tr, g[4])
     t.deepEqual(result, [g[4]])
   }, ['group_reachable_cache'])
+})
+
+test('get pending user membership', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
+    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
+    const membership = await model.groups.addPendingUserMembership(tr, userIdx, groupIdx)
+
+    const allPendingMembership = await model.groups.getAllPendingMembershipUsers(tr, groupIdx)
+
+    t.is(allPendingMembership.length, 1)
+    t.is(allPendingMembership[0].idx, userIdx)
+  }, ['users', 'group_reachable_cache'])
 })

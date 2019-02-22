@@ -147,7 +147,6 @@ create table pending_user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
   group_idx integer not null references groups(idx) on delete cascade,
-  created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
 );
 

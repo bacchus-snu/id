@@ -1,4 +1,5 @@
 import Model from './model'
+import { User } from './users'
 import { Translation } from './translation'
 import Transaction from './transaction'
 import { NoSuchEntryError } from './errors'
@@ -18,6 +19,13 @@ interface GroupReachable {
 export interface GroupRelationship {
   supergroupIdx: number
   subgroupIdx: number
+}
+
+interface UserMembership {
+  idx: number
+  userIdx: number
+  groupIdx: number
+  pending: boolean
 }
 
 export default class Groups {
@@ -130,6 +138,31 @@ export default class Groups {
     }
   }
 
+  public async addPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<UserMembership> {
+    const query = 'INSERT INTO pending_user_memberships (user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    const ret: UserMembership = {
+      idx: result.rows[0].idx,
+      userIdx,
+      groupIdx,
+      pending: true,
+    }
+    return ret
+  }
+
+  public async removePendingUserMembership(tr: Transaction, idx: number): Promise<void> {
+    const query = 'DELETE FROM pending_user_memberships WHERE idx = $1'
+    await tr.query(query, [idx])
+  }
+
+  public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
+    const query = 'SELECT u.*, sn.student_number FROM pending_user_memberships AS pum INNER JOIN users AS u ' +
+      'ON pum.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+      'WHERE pum.group_idx = $1'
+    const result = await tr.query(query, [groupIdx])
+    return result.rows.map(row => this.rowToUser(row))
+  }
+
   private async getAllGroupRelation(tr: Transaction): Promise<Array<GroupRelationship>> {
     const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations'
     const result = await tr.query(query)
@@ -162,6 +195,23 @@ export default class Groups {
     return result.rows.map(row => row.idx)
   }
 
+  private rowToUser(row: any): User {
+    const user: User = {
+      idx: row.idx,
+      username: row.username,
+      name: row.name,
+      uid: row.uid,
+      shell: row.shell,
+      preferredLanguage: row.preferred_language,
+    }
+
+    if (row.student_number) {
+      user.studentNumber = row.student_number
+    }
+
+    return user
+  }
+
   private rowToGroup(row: any): Group {
     return {
       idx: row.idx,
@@ -175,6 +225,24 @@ export default class Groups {
         ko: row.description_ko,
         en: row.description_en,
       },
+    }
+  }
+
+  private rowToUserMembership(row: any): UserMembership {
+    return {
+      idx: row.idx,
+      userIdx: row.user_idx,
+      groupIdx: row.group_idx,
+      pending: false,
+    }
+  }
+
+  private rowToPendingUserMembership(row: any): UserMembership {
+    return {
+      idx: row.idx,
+      userIdx: row.user_idx,
+      groupIdx: row.group_idx,
+      pending: true,
     }
   }
 
