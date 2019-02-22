@@ -9,6 +9,9 @@ export interface Group {
   ownerGroupIdx: number | null
   name: Translation
   description: Translation
+  isMember?: boolean
+  isPending?: boolean
+  isOwner?: boolean
 }
 
 interface GroupReachable {
@@ -71,6 +74,21 @@ export default class Groups {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+  }
+
+  public async getUserGroupList(tr: Transaction, userIdx: number): Promise<Array<Group>> {
+    const query = 'SELECT g.*,' +
+      '$1 IN (SELECT user_idx FROM pending_user_memberships WHERE group_idx = g.idx) AS is_pending ' +
+      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx IN (SELECT supergroup_idx FROM group_reachable_cache WHERE subgroup_idx = g.idx)) AS is_member ' +
+      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx = g.owner_group_idx) AS is_owner ' +
+      'FROM groups AS g WHERE owner_group_idx IS NOT NULL ORDER BY idx'
+    const result = await tr.query(query)
+
+    const groups: Array<Group> = []
+    result.rows.forEach(row => {
+      groups.push(this.rowToGroup(row))
+    })
+    return groups
   }
 
   public async addGroupRelation(tr: Transaction, supergroupIdx: number, subgroupIdx: number): Promise<number> {
@@ -163,7 +181,7 @@ export default class Groups {
   }
 
   private rowToGroup(row: any): Group {
-    return {
+    const group: Group = {
       idx: row.idx,
       ownerUserIdx: row.owner_user_idx,
       ownerGroupIdx: row.owner_group_idx,
@@ -176,6 +194,18 @@ export default class Groups {
         en: row.description_en,
       },
     }
+
+    if (row.is_pending) {
+      group.isPending = true
+    }
+    if (row.is_member) {
+      group.isMember = true
+    }
+    if (row.is_owner) {
+      group.isOwner = true
+    }
+
+    return group
   }
 
   private rowToGroupRelation(row: any): GroupRelationship {
