@@ -9,7 +9,7 @@ interface Params {
 /**
  * Verify the given request as per Section 9.
  * @param params Collected parameters as per Section 9.1.1. Should contain Authorization header parameters, request body
- * parameters, and URL query parameters. Values should NOT be percent-encoded. `oauth_signature_method` should be
+ * parameters, and URL query parameters. Keys and values should be percent-encoded. `oauth_signature_method` should be
  * `'HMAC-SHA1'`. It should contain `oauth_signature`.
  * @param method HTTP method used for request.
  * @param requestUrl URL used for request.
@@ -38,7 +38,7 @@ export default function verify(
   delete processedParams.realm
   delete processedParams.oauth_signature
 
-  const entries = Object.entries(processedParams).map(([k, v]) => [percentEncode(k), percentEncode(v)])
+  const entries = Object.entries(processedParams)
   entries.sort((a, b) => {
     // Sort by key
     const x = a[0].localeCompare(b[0])
