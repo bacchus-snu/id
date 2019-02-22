@@ -24,6 +24,7 @@ export interface User {
 export interface UserMembership {
   userIdx: number
   groupIdx: number
+  pending: boolean
 }
 
 export default class Users {
@@ -294,6 +295,31 @@ export default class Users {
     return result.rows.map(row => this.rowToUserMembership(row))
   }
 
+  public async addPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<UserMembership> {
+    const query = 'INSERT INTO pending_user_memberships (user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    const ret: UserMembership = {
+      idx: result.rows[0].idx,
+      userIdx,
+      groupIdx,
+      pending: true,
+    }
+    return ret
+  }
+
+  public async removePendingUserMembership(tr: Transaction, idx: number): Promise<void> {
+    const query = 'DELETE FROM pending_user_memberships WHERE idx = $1'
+    await tr.query(query, [idx])
+  }
+
+  public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
+    const query = 'SELECT u.*, sn.student_number FROM pending_user_memberships AS pum INNER JOIN users AS u ' +
+      'ON pum.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+      'WHERE pum.group_idx = $1'
+    const result = await tr.query(query, [groupIdx])
+    return result.rows.map(row => this.rowToUser(row))
+  }
+
   public async getUserReachableGroups(tr: Transaction, userIdx: number): Promise<Set<number>> {
     const userMemberships = await this.getAllUserMemberships(tr, userIdx)
     const groupSet = new Set<number>()
@@ -344,6 +370,15 @@ export default class Users {
     return {
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
+      pending: false,
+    }
+  }
+
+  private rowToPendingUserMembership(row: any): UserMembership {
+    return {
+      userIdx: row.user_idx,
+      groupIdx: row.group_idx,
+      pending: true,
     }
   }
 

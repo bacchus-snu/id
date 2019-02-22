@@ -119,6 +119,20 @@ test('get all user memberships', async t => {
   }, ['users', 'group_reachable_cache'])
 })
 
+test('get all pending user memberships', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
+    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
+    const membership = await model.groups.addPendingUserMembership(tr, userIdx, groupIdx)
+
+    const allPendingMembership = await model.groups.getAllPendingMembershipUsers(tr, groupIdx)
+
+    t.is(allPendingMembership.length, 1)
+    t.is(allPendingMembership[0].idx, userIdx)
+  }, ['users', 'group_reachable_cache'])
+})
+
 test('change password', async t => {
   await model.pgDo(async tr => {
     const username = uuid()
