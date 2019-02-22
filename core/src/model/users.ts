@@ -22,6 +22,7 @@ export interface User {
 }
 
 export interface UserMembership {
+  idx: number
   userIdx: number
   groupIdx: number
   pending: boolean
@@ -287,7 +288,7 @@ export default class Users {
   }
 
   public async getAllUserMemberships(tr: Transaction, userIdx: number): Promise<Array<UserMembership>> {
-    const query = 'SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
+    const query = 'SELECT idx, user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
     const result = await tr.query(query, [userIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
@@ -295,21 +296,19 @@ export default class Users {
     return result.rows.map(row => this.rowToUserMembership(row))
   }
 
-  public async addPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<UserMembership> {
+  public async addPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<number> {
     const query = 'INSERT INTO pending_user_memberships (user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
     const result = await tr.query(query, [userIdx, groupIdx])
-    const ret: UserMembership = {
-      idx: result.rows[0].idx,
-      userIdx,
-      groupIdx,
-      pending: true,
-    }
-    return ret
+    return result.rows[0].idx
   }
 
-  public async removePendingUserMembership(tr: Transaction, idx: number): Promise<void> {
-    const query = 'DELETE FROM pending_user_memberships WHERE idx = $1'
-    await tr.query(query, [idx])
+  public async deletePendingUserMembership(tr: Transaction, userMembershipIdx: number): Promise<number> {
+    const query = 'DELETE FROM pending_user_memberships WHERE idx = $1 RETURNING idx'
+    const result = await tr.query(query, [userMembershipIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
   }
 
   public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
@@ -368,6 +367,7 @@ export default class Users {
 
   private rowToUserMembership(row: any): UserMembership {
     return {
+      idx: row.idx,
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
       pending: false,
@@ -376,6 +376,7 @@ export default class Users {
 
   private rowToPendingUserMembership(row: any): UserMembership {
     return {
+      idx: row.idx,
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
       pending: true,

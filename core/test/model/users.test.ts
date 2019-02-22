@@ -124,9 +124,9 @@ test('get all pending user memberships', async t => {
     const groupIdx = await createGroup(tr, model)
     const userIdx = await createUser(tr, model)
     const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
-    const membership = await model.groups.addPendingUserMembership(tr, userIdx, groupIdx)
+    const membership = await model.users.addPendingUserMembership(tr, userIdx, groupIdx)
 
-    const allPendingMembership = await model.groups.getAllPendingMembershipUsers(tr, groupIdx)
+    const allPendingMembership = await model.users.getAllPendingMembershipUsers(tr, groupIdx)
 
     t.is(allPendingMembership.length, 1)
     t.is(allPendingMembership[0].idx, userIdx)
