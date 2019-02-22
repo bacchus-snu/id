@@ -18,6 +18,7 @@ export interface User {
   uid: number
   shell: string
   preferredLanguage: Language
+  studentNumber?: string
 }
 
 export interface UserMembership {
@@ -323,7 +324,7 @@ export default class Users {
   }
 
   private rowToUser(row: any): User {
-    return {
+    const user: User = {
       idx: row.idx,
       username: row.username,
       name: row.name,
@@ -331,6 +332,12 @@ export default class Users {
       shell: row.shell,
       preferredLanguage: row.preferred_language,
     }
+
+    if (row.student_number) {
+      user.studentNumber = row.student_number
+    }
+
+    return user
   }
 
   private rowToUserMembership(row: any): UserMembership {
