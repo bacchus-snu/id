@@ -103,7 +103,7 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
     if (consumerSecret == null || tokenSecret == null) {
       return ctx.throw(401)
     }
-    if (!verify(collectedParams, ctx.request.method, ctx.request.url, consumerSecret, tokenSecret)) {
+    if (!verify(collectedParams, ctx.request.method, ctx.request.URL.toString(), consumerSecret, tokenSecret)) {
       return ctx.throw(401)
     }
 

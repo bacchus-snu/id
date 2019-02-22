@@ -67,5 +67,5 @@ export default function verify(
   hmac.update(base)
   const digest = hmac.digest()
   const calculatedSignature = digest.toString('base64')
-  return oauthSignature === calculatedSignature
+  return oauthSignature === percentEncode(calculatedSignature)
 }
