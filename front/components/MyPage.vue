@@ -2,6 +2,19 @@
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
     <el-row>
+      <el-col :md="{span: 8, offset: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+        <el-card class="account">
+          <div slot="header" class="card-head">
+            <span>{{ groupAdminTrans[lang] }}</span>
+          </div>
+          <template>
+            <h2>{{ groupAdminInfoTrans[lang] }}</h2>
+            <el-button class="button" type="warning" @click="groupAdminButton">
+              {{ groupAdminButtonTrans[lang] }}
+            </el-button>
+          </template>
+        </el-card>
+      </el-col>
       <el-col :md="{span: 8, offset: 4}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card class="account">
           <div slot="header" class="card-head">
@@ -69,6 +82,19 @@ export default class MyPage extends Vue {
     } else {
       return `Welcome, ${this.username}.`
     }
+  }
+
+  private readonly groupAdminTrans: Translation = {
+    ko: '그룹관리',
+    en: 'Group Admnistration',
+  }
+  private readonly groupAdminInfoTrans: Translation = {
+    ko: '그룹 관리를 하려면 버튼을 클릭하세요.',
+    en: 'Please click button to administrate groups.',
+  }
+  private readonly groupAdminButtonTrans: Translation = {
+    ko: '그룹관리로 이동',
+    en: 'Go to group admin page',
   }
   private readonly passwordTrans: Translation = {
     ko: '비밀번호 변경',
@@ -196,6 +222,11 @@ export default class MyPage extends Vue {
 
   private concatEmail(email: EmailAddress): string {
     return `${email.local}@${email.domain}`
+  }
+
+  private groupAdminButton() {
+    this.$router.push("/group");
+    return
   }
 }
 </script>
