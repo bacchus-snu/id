@@ -7,6 +7,7 @@ import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
+import { listGroups } from './handlers/groups'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -123,6 +124,13 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not a valid host
    */
   router.get('/api/get-group', getGroup(model))
+
+  /**
+   * Get get the group list, along with is_member, is_pending, is_owner
+   * 200 on success
+   * 401 if not logged in
+   */
+  router.get('/api/group', listGroups(model))
 
   return router
 }
