@@ -101,44 +101,7 @@ export default class Group extends Vue {
 
   data() {
     return {
-      groupList: [
-        {
-          groupName: "2016-05-03",
-          explanation: "Tom",
-          isPending: false,
-          isOwner: false,
-          isMember: false,
-          groupID: 123,
-          userID: 1231
-        },
-        {
-          groupName: "2016-05-03",
-          explanation: "Tom",
-          isPending: true,
-          isOwner: false,
-          isMember: false,
-          groupID: 123,
-          userID: 1231
-        },
-        {
-          groupName: "2016-05-03",
-          explanation: "Tom",
-          isPending: false,
-          isOwner: true,
-          isMember: false,
-          groupID: 123,
-          userID: 1231
-        },
-        {
-          groupName: "2016-05-03",
-          explanation: "Tom",
-          isPending: false,
-          isOwner: false,
-          isMember: true,
-          groupID: 123,
-          userID: 1231
-        }
-      ]
+      groupList: this.groupList
     };
   }
 }
