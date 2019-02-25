@@ -5,14 +5,28 @@
       <el-table-column prop="groupName" label="Group Name" width="180"></el-table-column>
       <el-table-column label="Status" width="180">
         <template slot-scope="slotProps">
-          <el-button v-if="slotProps.row.isPending" disabled size="mini" @click="applyGroup(groupId)">Pending</el-button>
-          <el-button v-else-if="slotProps.row.isMember" size="mini" type="danger" @click="leaveGroup(groupId)">Leave</el-button>
+          <el-button
+            v-if="slotProps.row.isPending"
+            disabled
+            size="mini"
+            @click="applyGroup(groupId)"
+          >Pending</el-button>
+          <el-button
+            v-else-if="slotProps.row.isMember"
+            size="mini"
+            type="danger"
+            @click="leaveGroup(groupId)"
+          >Leave</el-button>
           <el-button v-else size="mini" @click="applyGroup(groupId)">Apply</el-button>
         </template>
       </el-table-column>
       <el-table-column label="Ownership" width="180">
         <template slot-scope="slotProps">
-          <el-button v-if="slotProps.row.isOwner" size="mini" @click="GroupOwnership(groupId)">GroupAdministration</el-button>
+          <el-button
+            v-if="slotProps.row.isOwner"
+            size="mini"
+            @click="GroupOwnership(groupId)"
+          >GroupAdministration</el-button>
         </template>
       </el-table-column>
       <el-table-column prop="explanation" label="Explanation"></el-table-column>
@@ -71,7 +85,7 @@ export default class Group extends Vue {
     if (response.status === 200) {
       return;
     } else {
-      this.$router.push('/')
+      this.$router.push("/");
     }
 
     this.groupList = await axios.get("/api/get-group", {
@@ -80,7 +94,7 @@ export default class Group extends Vue {
   }
 
   private async applyGroup(groupId: number) {
-    const response = await axios.post("/api/applyGroup");
+    const response = await axios.post("/api/apply-group", groupId);
     if (response.status === 200) {
       this.$router.push("/group");
     } else {
@@ -90,13 +104,17 @@ export default class Group extends Vue {
   }
 
   private async leaveGroup(groupId: number) {
-    const response = await axios.post("/api/leaveGroup");
+    const response = await axios.post("/api/leave-group", groupId);
     if (response.status === 200) {
       this.$router.push("/group");
     } else {
       this.$notify.error(this.leaveFailedTrans[this.lang]);
       return;
     }
+  }
+
+  private async GroupOwnerShip(groupId: number) {
+    this.$router.push("/api/group/" + groupId);
   }
 
   data() {
