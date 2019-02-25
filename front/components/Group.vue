@@ -1,36 +1,40 @@
 <template>
   <div>
     <h1 class="groupAdministration">{{ groupAdministrationTrans[lang] }}</h1>
-    <el-table :data="groupList" height="250" style="width: 100%">
-      <el-table-column prop="groupName" label="Group Name" width="180"></el-table-column>
-      <el-table-column label="Status" width="180">
-        <template slot-scope="slotProps">
-          <el-button
-            v-if="slotProps.row.isPending"
-            disabled
-            size="mini"
-            @click="applyGroup(groupId)"
-          >Pending</el-button>
-          <el-button
-            v-else-if="slotProps.row.isMember"
-            size="mini"
-            type="danger"
-            @click="leaveGroup(groupId)"
-          >Leave</el-button>
-          <el-button v-else size="mini" @click="applyGroup(groupId)">Apply</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column label="Ownership" width="180">
-        <template slot-scope="slotProps">
-          <el-button
-            v-if="slotProps.row.isOwner"
-            size="mini"
-            @click="GroupOwnership(groupId)"
-          >GroupAdministration</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column prop="explanation" label="Explanation"></el-table-column>
-    </el-table>
+    <el-row>
+      <el-col :md="{span: 8, offset: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+        <el-table :data="groupList" height="250" style="width: 100%">
+          <el-table-column prop="groupName" label="Group Name" width="180"></el-table-column>
+          <el-table-column label="Status" width="180">
+            <template slot-scope="slotProps">
+              <el-button
+                v-if="slotProps.row.isPending"
+                disabled
+                size="mini"
+                @click="applyGroup(groupId)"
+              >Pending</el-button>
+              <el-button
+                v-else-if="slotProps.row.isMember"
+                size="mini"
+                type="danger"
+                @click="leaveGroup(groupId)"
+              >Leave</el-button>
+              <el-button v-else size="mini" @click="applyGroup(groupId)">Apply</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="Ownership" width="180">
+            <template slot-scope="slotProps">
+              <el-button
+                v-if="slotProps.row.isOwner"
+                size="mini"
+                @click="GroupOwnership(groupId)"
+              >GroupAdministration</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column prop="explanation" label="Explanation"></el-table-column>
+        </el-table>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
