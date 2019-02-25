@@ -11,6 +11,11 @@ export interface EmailAddress {
   domain: string
 }
 
+export interface UserGroup {
+  user_idx: number
+  group_idx: number
+}
+
 export const userFields = [
   'user_idx',
   'username',
