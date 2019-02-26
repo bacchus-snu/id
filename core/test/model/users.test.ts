@@ -119,7 +119,49 @@ test('get all user memberships', async t => {
   }, ['users', 'group_reachable_cache'])
 })
 
-test('get all pending user memberships', async t => {
+test('get user membership by uid and gid', async t => {
+  await model.pgDo(async tr => {
+    const userIdx = await createUser(tr, model)
+    const groupIdx = await createGroup(tr, model)
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+
+    let result
+    result = await model.users.hasUserMembership(tr, userIdx, groupIdx + 1)
+    t.false(result)
+    result = await model.users.hasUserMembership(tr, userIdx, groupIdx)
+    t.true(result)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get all user membership users', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
+    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
+    const membership = await model.users.addUserMembership(tr, userIdx, groupIdx)
+
+    const allMembership = await model.users.getAllMembershipUsers(tr, groupIdx)
+
+    t.is(allMembership.length, 1)
+    t.is(allMembership[0].idx, userIdx)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get pending user membership by uid and gid', async t => {
+  await model.pgDo(async tr => {
+    const userIdx = await createUser(tr, model)
+    const groupIdx = await createGroup(tr, model)
+    await model.users.addPendingUserMembership(tr, userIdx, groupIdx)
+
+    let result
+    result = await model.users.hasPendingUserMembership(tr, userIdx, groupIdx + 1)
+    t.false(result)
+    result = await model.users.hasPendingUserMembership(tr, userIdx, groupIdx)
+    t.true(result)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get all pending user membership users', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model)
     const userIdx = await createUser(tr, model)
