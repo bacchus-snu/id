@@ -76,13 +76,13 @@ test('test PAM login with credential and host', async t => {
 
   let response
 
-  response = await agent.post('/api/login-pam').send({
+  response = await agent.post('/api/login/pam').send({
     username,
     password: 'doge!',
   })
   t.is(response.status, 401)
 
-  response = await agent.post('/api/login-pam').send({
+  response = await agent.post('/api/login/pam').send({
     username,
     password,
   })
@@ -95,7 +95,7 @@ test('test PAM login with credential and host', async t => {
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
   }, ['group_reachable_cache'])
 
-  response = await agent.post('/api/login-pam').send({
+  response = await agent.post('/api/login/pam').send({
     username,
     password,
   })
