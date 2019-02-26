@@ -19,7 +19,7 @@ test.serial('fetch passwd entries', async t => {
   let response
 
   // No host
-  response = await agent.get('/api/get-passwd')
+  response = await agent.get('/api/nss/passwd')
   t.is(response.status, 401)
 
   // With host
@@ -27,7 +27,7 @@ test.serial('fetch passwd entries', async t => {
     return await model.hosts.addHost(tr, 'test', '127.0.0.1')
   })
 
-  response = await agent.get('/api/get-passwd')
+  response = await agent.get('/api/nss/passwd')
   t.is(response.status, 200)
   t.true(response.text.includes(expect))
 
@@ -53,7 +53,7 @@ test.serial('fetch group entries', async t => {
   let response
 
   // No host
-  response = await agent.get('/api/get-group')
+  response = await agent.get('/api/nss/group')
   t.is(response.status, 401)
 
   // With host
@@ -61,7 +61,7 @@ test.serial('fetch group entries', async t => {
     return await model.hosts.addHost(tr, 'test', '127.0.0.1')
   })
 
-  response = await agent.get('/api/get-group')
+  response = await agent.get('/api/nss/group')
   t.is(response.status, 200)
   t.true(response.text.startsWith(expect))
   t.true(response.text.split(':')[3].includes(username))
@@ -81,18 +81,18 @@ test.serial('test not-modified posix entries', async t => {
   let response
   let lastMod
 
-  response = await agent.get('/api/get-passwd').send()
+  response = await agent.get('/api/nss/passwd').send()
   t.is(response.status, 200)
 
   lastMod = response.header['last-modified']
-  response = await agent.get('/api/get-passwd').set('if-modified-since', lastMod)
+  response = await agent.get('/api/nss/passwd').set('if-modified-since', lastMod)
   t.is(response.status, 304)
 
-  response = await agent.get('/api/get-group').send()
+  response = await agent.get('/api/nss/group').send()
   t.is(response.status, 200)
 
   lastMod = response.header['last-modified']
-  response = await agent.get('/api/get-group').set('if-modified-since', lastMod)
+  response = await agent.get('/api/nss/group').set('if-modified-since', lastMod)
   t.is(response.status, 304)
 
   await model.pgDo(async tr => {
