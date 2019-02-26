@@ -311,9 +311,6 @@ export default class Users {
   public async getAllUserMemberships(tr: Transaction, userIdx: number): Promise<Array<UserMembership>> {
     const query = 'SELECT idx, user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
     const result = await tr.query(query, [userIdx])
-    if (result.rows.length === 0) {
-      throw new NoSuchEntryError()
-    }
     return result.rows.map(row => this.rowToUserMembership(row))
   }
 
@@ -359,6 +356,23 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     return result.rows[0].idx
+  }
+
+  public async acceptUserMemberships(tr: Transaction, groupIdx: number, userIdx: Array<number>): Promise<number> {
+    const query = 'WITH accepted_users AS (DELETE FROM pending_user_memberships ' +
+      'WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx) ' +
+      'INSERT INTO user_memberships (user_idx, group_idx) SELECT user_idx, $1 FROM accepted_users ' +
+      'RETURNING user_idx'
+    const result = await tr.query(query, [groupIdx, userIdx])
+    return result.rows.length
+  }
+
+  public async rejectUserMemberships(tr: Transaction, groupIdx: number, userIdx: Array<number>): Promise<number> {
+    const query1 = 'DELETE FROM pending_user_memberships WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx'
+    const query2 = 'DELETE FROM user_memberships WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx'
+    const result1 = await tr.query(query1, [groupIdx, userIdx])
+    const result2 = await tr.query(query2, [groupIdx, userIdx])
+    return result1.rows.length + result2.rows.length
   }
 
   public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
