@@ -27,6 +27,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 200 if success, 401 if not.
    */
   router.post('/api/login-pam', loginPAM(model))
+  router.post('/api/login/pam', loginPAM(model))
   /**
    * Legacy login API route.
    * CAUTION: response code 200 means failure in sign in.
@@ -117,6 +118,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not a valid host
    */
   router.get('/api/get-passwd', getPasswd(model))
+  router.get('/api/nss/passwd', getPasswd(model))
 
   /**
    * Get the group map
@@ -125,6 +127,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not a valid host
    */
   router.get('/api/get-group', getGroup(model))
+  router.get('/api/nss/group', getGroup(model))
 
   /**
    * Get get the group list, along with is_member, is_pending, is_owner
