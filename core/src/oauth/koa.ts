@@ -76,15 +76,15 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
     if (authorization != null) {
       while (true) {
         const eqIndex = authorization.indexOf('="')
-        const keyEscaped = authorization.substr(0, eqIndex)
-        authorization = authorization.substr(eqIndex + 2)
+        const keyEscaped = authorization.substring(0, eqIndex)
+        authorization = authorization.substring(eqIndex + 2)
         const quoteIndex = authorization.indexOf('"')
-        const valueEscaped = authorization.substr(0, quoteIndex)
+        const valueEscaped = authorization.substring(0, quoteIndex)
+        collectedParams[keyEscaped] = valueEscaped
         if (authorization[quoteIndex + 1] !== ',') {
           break
         }
-        authorization = authorization.substr(quoteIndex + 1).trim()
-        collectedParams[keyEscaped] = valueEscaped
+        authorization = authorization.substring(quoteIndex + 2).trim()
       }
     }
 
