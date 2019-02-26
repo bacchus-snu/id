@@ -66,6 +66,55 @@ test('group listing', async t => {
   }))
 })
 
+test('member listing', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let ownerGroupIdx = 0
+  let groupIdx = 0
+  await model.pgDo(async tr => {
+    ownerGroupIdx = await createGroup(tr, model)
+    groupIdx = await createGroup(tr, model)
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.get(`/api/group/${groupIdx}/members`)
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.get(`/api/group/${groupIdx}/members`)
+  t.is(response.status, 401)
+
+  await model.pgDo(async tr => {
+    await model.users.addUserMembership(tr, userIdx, ownerGroupIdx)
+  })
+
+  response = await agent.get(`/api/group/${groupIdx}/members`)
+  t.is(response.status, 200)
+  t.deepEqual(response.body, [])
+
+  let memberUserIdx = 0
+  await model.pgDo(async tr => {
+    memberUserIdx = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, memberUserIdx, uuid())
+    await model.users.addUserMembership(tr, memberUserIdx, groupIdx)
+  }, ['users'])
+
+  response = await agent.get(`/api/group/${groupIdx}/members`)
+  t.is(response.status, 200)
+  t.is(response.body.length, 1)
+  t.is(response.body[0].uid, memberUserIdx)
+})
+
 test('pending listing', async t => {
   const username = uuid()
   const password = uuid()

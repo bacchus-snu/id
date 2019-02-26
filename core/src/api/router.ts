@@ -7,7 +7,7 @@ import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups, listPending, applyGroup } from './handlers/groups'
+import { listGroups, listMembers, listPending, applyGroup } from './handlers/groups'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -133,6 +133,13 @@ export function createRouter(model: Model, config: Config): Router {
   router.get('/api/group', listGroups(model))
 
   /**
+   * Get get the group's member list, if requested by an owner.
+   * 200 on success
+   * 401 if not owner
+   */
+  router.get('/api/group/:gid/members', listMembers(model))
+
+  /**
    * Get get the group's pending member list, if requested by an owner.
    * 200 on success
    * 401 if not owner
@@ -142,8 +149,8 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    * Apply to join the group.
    * 200 on success
-   * 401 if not logged in
    * 400 if already applied or already a member, or invalid group
+   * 401 if not logged in
    */
   router.post('/api/group/:gid/apply', applyGroup(model))
 
