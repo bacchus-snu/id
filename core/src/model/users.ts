@@ -314,7 +314,7 @@ export default class Users {
   public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
     const query = 'SELECT u.*, sn.student_number FROM pending_user_memberships AS pum INNER JOIN users AS u ' +
       'ON pum.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
-      'WHERE pum.group_idx = $1'
+      'WHERE pum.group_idx = $1 ORDER BY pum.idx'
     const result = await tr.query(query, [groupIdx])
     return result.rows.map(row => this.rowToUser(row))
   }

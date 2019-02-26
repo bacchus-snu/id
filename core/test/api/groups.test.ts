@@ -9,11 +9,11 @@ test('group listing', async t => {
   const username = uuid()
   const password = uuid()
 
-  let noneGroupIdx: number = 0
+  let noneGroupIdx: number
   let memberGroupIdx: number
   let indirectGroupIdx: number
   let pendingGroupIdx: number
-  let ownerGroupIdx: number = 0
+  let ownerGroupIdx: number
 
   await model.pgDo(async tr => {
     noneGroupIdx = await createGroup(tr, model)
@@ -64,4 +64,51 @@ test('group listing', async t => {
   t.true(body.some(g => {
     return g.idx === ownerGroupIdx && !g.isMember && !g.isPending && g.isOwner
   }))
+})
+
+test('pending listing', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let groupIdx = 0
+  await model.pgDo(async tr => {
+    groupIdx = await createGroup(tr, model)
+    await model.groups.setOwnerGroup(tr, groupIdx, groupIdx)
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.get(`/api/group/${groupIdx}/pending`)
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.get(`/api/group/${groupIdx}/pending`)
+  t.is(response.status, 401)
+
+  await model.pgDo(async tr => {
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+  })
+
+  response = await agent.get(`/api/group/${groupIdx}/pending`)
+  t.is(response.status, 200)
+  t.deepEqual(response.body, [])
+
+  let pendingUserIdx = 0
+  await model.pgDo(async tr => {
+    pendingUserIdx = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, pendingUserIdx, uuid())
+    await model.users.addPendingUserMembership(tr, pendingUserIdx, groupIdx)
+  }, ['users'])
+
+  response = await agent.get(`/api/group/${groupIdx}/pending`)
+  t.is(response.status, 200)
+  t.is(response.body.length, 1)
+  t.is(response.body[0].uid, pendingUserIdx)
 })

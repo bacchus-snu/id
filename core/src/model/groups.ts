@@ -94,6 +94,13 @@ export default class Groups {
     return result.rows.map(row => this.rowToGroupUserInfo(row))
   }
 
+  public async checkOwner(tr: Transaction, groupIdx: number, userIdx: number): Promise<boolean> {
+    const query = 'SELECT EXISTS (SELECT 1 FROM user_memberships mem INNER JOIN groups g ' +
+      'ON g.owner_group_idx = mem.group_idx WHERE mem.user_idx = $1 AND g.idx = $2)'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    return result.rows[0].exists
+  }
+
   public async addGroupRelation(tr: Transaction, supergroupIdx: number, subgroupIdx: number): Promise<number> {
     const query = 'INSERT INTO group_relations(supergroup_idx, subgroup_idx) ' +
       'VALUES ($1, $2) RETURNING idx'

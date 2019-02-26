@@ -7,7 +7,7 @@ import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups } from './handlers/groups'
+import { listGroups, listPending } from './handlers/groups'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -131,6 +131,13 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not logged in
    */
   router.get('/api/group', listGroups(model))
+
+  /**
+   * Get get the group's pending member list, if requested by an owner.
+   * 200 on success
+   * 401 if not owner
+   */
+  router.get('/api/group/:gid/pending', listPending(model))
 
   return router
 }
