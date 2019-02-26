@@ -7,7 +7,7 @@ import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups, listMembers, listPending, applyGroup } from './handlers/groups'
+import { listGroups, listMembers, listPending, applyGroup, acceptGroup, rejectGroup } from './handlers/groups'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -153,6 +153,22 @@ export function createRouter(model: Model, config: Config): Router {
    * 401 if not logged in
    */
   router.post('/api/group/:gid/apply', applyGroup(model))
+
+  /**
+   * Accent a join request.
+   * 200 on success
+   * 400 if any approval fails
+   * 401 if not owner
+   */
+  router.post('/api/group/:gid/accept', acceptGroup(model))
+
+  /**
+   * Reject a join request, or remove a user.
+   * 200 on success
+   * 400 if any rejection fails
+   * 401 if not owner
+   */
+  router.post('/api/group/:gid/reject', rejectGroup(model))
 
   return router
 }

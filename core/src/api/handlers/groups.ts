@@ -158,3 +158,91 @@ export function applyGroup(model: Model): IMiddleware {
     await next()
   }
 }
+
+export function acceptGroup(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      const username = ctx.session.username
+      const gid = Number(ctx.params.gid)
+
+      const body: any = ctx.request.body
+      if (body === null || !(body instanceof Array) || !body.every(v => typeof v === 'number')) {
+        ctx.status = 400
+        return
+      }
+      const users: Array<number> = body
+
+      try {
+        await model.pgDo(async tr => {
+          const user = await model.users.getByUsername(tr, username)
+          const group = await model.groups.getByIdx(tr, gid)
+
+          const owner = await model.groups.checkOwner(tr, group.idx, user.idx)
+          if (!owner) {
+            ctx.status = 401
+            return
+          }
+
+          const result = await model.users.acceptUserMemberships(tr, group.idx, users)
+          if (result !== users.length) {
+            ctx.status = 400
+            return
+          }
+
+          ctx.status = 200
+        })
+      } catch (e) {
+        ctx.status = 500
+        throw e
+      }
+    } else {
+      ctx.status = 401
+      return
+    }
+    await next()
+  }
+}
+
+export function rejectGroup(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      const username = ctx.session.username
+      const gid = Number(ctx.params.gid)
+
+      const body: any = ctx.request.body
+      if (body === null || !(body instanceof Array) || !body.every(v => typeof v === 'number')) {
+        ctx.status = 400
+        return
+      }
+      const users: Array<number> = body
+
+      try {
+        await model.pgDo(async tr => {
+          const user = await model.users.getByUsername(tr, username)
+          const group = await model.groups.getByIdx(tr, gid)
+
+          const owner = await model.groups.checkOwner(tr, group.idx, user.idx)
+          if (!owner) {
+            ctx.status = 401
+            return
+          }
+
+          const result = await model.users.rejectUserMemberships(tr, group.idx, users)
+          if (result !== users.length) {
+            ctx.status = 400
+            return
+          }
+
+          ctx.status = 200
+        })
+      } catch (e) {
+        ctx.status = 500
+        throw e
+      }
+    } else {
+      ctx.status = 401
+      return
+    }
+    await next()
+  }
+}

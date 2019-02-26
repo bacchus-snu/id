@@ -206,3 +206,105 @@ test('apply to group', async t => {
   response = await agent.post(`/api/group/${groupIdx}/apply`)
   t.is(response.status, 400)
 })
+
+test('accept group requests', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let memberIdx = 0
+  let groupIdx = 0
+  let ownerGroupIdx = 0
+  await model.pgDo(async tr => {
+    groupIdx = await createGroup(tr, model)
+    ownerGroupIdx = await createGroup(tr, model)
+
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.users.addUserMembership(tr, userIdx, ownerGroupIdx)
+
+    memberIdx = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, memberIdx, uuid())
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([])
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([])
+  t.is(response.status, 401)
+
+  await model.pgDo(async tr => {
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([])
+  t.is(response.status, 200)
+
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx])
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx])
+  t.is(response.status, 400)
+})
+
+test('reject group requests', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let memberIdx = 0
+  let groupIdx = 0
+  let ownerGroupIdx = 0
+  await model.pgDo(async tr => {
+    groupIdx = await createGroup(tr, model)
+    ownerGroupIdx = await createGroup(tr, model)
+
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.users.addUserMembership(tr, userIdx, ownerGroupIdx)
+
+    memberIdx = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, memberIdx, uuid())
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([])
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([])
+  t.is(response.status, 401)
+
+  await model.pgDo(async tr => {
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([])
+  t.is(response.status, 200)
+
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx])
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx])
+  t.is(response.status, 400)
+})
