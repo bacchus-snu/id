@@ -22,7 +22,7 @@ export function listGroups(model: Model): IMiddleware {
         })
       } catch (e) {
         ctx.status = 500
-        return
+        throw e
       }
 
       ctx.body = groups
@@ -72,6 +72,40 @@ export function listPending(model: Model): IMiddleware {
         delete u.shell
         delete u.preferredLanguage
       })
+    } else {
+      ctx.status = 401
+      return
+    }
+    await next()
+  }
+}
+
+export function applyGroup(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      const username = ctx.session.username
+      const gid = Number(ctx.params.gid)
+
+      try {
+        await model.pgDo(async tr => {
+          const user = await model.users.getByUsername(tr, username)
+          const group = await model.groups.getByIdx(tr, gid)
+
+          const check = !group.ownerGroupIdx ||
+            await model.users.hasPendingUserMembership(tr, user.idx, group.idx) ||
+            await model.users.hasUserMembership(tr, user.idx, group.idx)
+          if (check) {
+            ctx.status = 400
+            return
+          }
+
+          await model.users.addPendingUserMembership(tr, user.idx, group.idx)
+          ctx.status = 200
+        })
+      } catch (e) {
+        ctx.status = 500
+        throw e
+      }
     } else {
       ctx.status = 401
       return

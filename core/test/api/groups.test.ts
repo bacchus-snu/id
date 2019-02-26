@@ -112,3 +112,48 @@ test('pending listing', async t => {
   t.is(response.body.length, 1)
   t.is(response.body[0].uid, pendingUserIdx)
 })
+
+test('apply to group', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let groupIdx = 0
+  await model.pgDo(async tr => {
+    groupIdx = await createGroup(tr, model)
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.post(`/api/group/${groupIdx}/apply`)
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/apply`)
+  t.is(response.status, 400)
+
+  await model.pgDo(async tr => {
+    await model.groups.setOwnerGroup(tr, groupIdx, groupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/apply`)
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/apply`)
+  t.is(response.status, 400)
+
+  await model.pgDo(async tr => {
+    const pendingIdx = await model.users.getPendingUserMembership(tr, userIdx, groupIdx)
+    await model.users.deletePendingUserMembership(tr, pendingIdx)
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+  })
+
+  response = await agent.post(`/api/group/${groupIdx}/apply`)
+  t.is(response.status, 400)
+})
