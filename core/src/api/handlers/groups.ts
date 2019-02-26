@@ -246,3 +246,34 @@ export function rejectGroup(model: Model): IMiddleware {
     await next()
   }
 }
+
+export function leaveGroup(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      const username = ctx.session.username
+      const gid = Number(ctx.params.gid)
+
+      try {
+        await model.pgDo(async tr => {
+          const user = await model.users.getByUsername(tr, username)
+          const group = await model.groups.getByIdx(tr, gid)
+
+          const result = await model.users.rejectUserMemberships(tr, group.idx, [user.idx])
+          if (result !== 1) {
+            ctx.status = 400
+            return
+          }
+
+          ctx.status = 200
+        })
+      } catch (e) {
+        ctx.status = 500
+        throw e
+      }
+    } else {
+      ctx.status = 401
+      return
+    }
+    await next()
+  }
+}

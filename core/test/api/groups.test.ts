@@ -308,3 +308,35 @@ test('reject group requests', async t => {
   response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx])
   t.is(response.status, 400)
 })
+
+test('leave group', async t => {
+  const username = uuid()
+  const password = uuid()
+
+  let userIdx = 0
+  let groupIdx = 0
+  await model.pgDo(async tr => {
+    groupIdx = await createGroup(tr, model)
+
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+  }, ['users', 'group_reachable_cache'])
+
+  const agent = request.agent(app)
+  let response
+
+  response = await agent.post(`/api/group/${groupIdx}/leave`)
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username, password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.post(`/api/group/${groupIdx}/leave`)
+  t.is(response.status, 200)
+  t.false(await model.pgDo(async tr => await model.users.hasUserMembership(tr, userIdx, groupIdx)))
+
+  response = await agent.post(`/api/group/${groupIdx}/leave`)
+  t.is(response.status, 400)
+})
