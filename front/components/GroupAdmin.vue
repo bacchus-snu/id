@@ -1,25 +1,51 @@
 <template>
   <div>
-    <h1 class="title">{{ groupAdministrationTrans[lang] }}</h1>
-    <h2></h2>
-    <el-row justify="center">
-      <el-table :data="userList" border height="250" class="table" style="width: 410px">
-        <el-table-column type="selection" width="50"></el-table-column>
-        <el-table-column prop="studentNumber" width="180" label="Student Number"></el-table-column>
-        <el-table-column prop="name" width="180" label="Name"></el-table-column>
-      </el-table>
-      <div style="margin-top: 20px">
-        <el-button @click="permit">{{ additionTrans[lang] }}</el-button>
-      </div>
-      <el-table :data="userList2" border height="250" class="table" style="width: 410px">
-        <el-table-column type="selection" width="50"></el-table-column>
-        <el-table-column prop="studentNumber" width="180" label="Student Number"></el-table-column>
-        <el-table-column prop="name" width="180" label="Name"></el-table-column>
-      </el-table>
-      <div style="margin-top: 20px">
-        <el-button @click="exclude">{{ excludeTrans[lang] }}</el-button>
-      </div>
-    </el-row>
+    <el-container direction="vertical">
+      <el-card class="title">{{ groupAdministrationTrans[lang] }}</el-card>
+      <el-card style="margin-top: 4%" :md="{span: 8, offset: 8}" :sm="{span: 8, offset: 8}" :xs="{span: 8, offset: 8}">
+        <el-container>
+          <el-header class="smalltitle" align="center">{{ additionTitleTrans[lang] }}</el-header>
+          <el-main>
+            <el-table
+              style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+              :data="userList"
+              border
+              striped
+              align="center"
+            >
+              <el-table-column type="selection" width="50"></el-table-column>
+              <el-table-column type="index"></el-table-column>
+              <el-table-column prop="studentNumber" width="180" label="Student Number"></el-table-column>
+              <el-table-column prop="name" label="Name"></el-table-column>
+            </el-table>
+          </el-main>
+          <el-footer style="margin-top: 20px" align="center">
+            <el-button @click="permit">{{ additionTrans[lang] }}</el-button>
+          </el-footer>
+        </el-container>
+      </el-card>
+      <el-card style="margin-top: 4%" :md="{span: 8, offset: 8}" :sm="{span: 8, offset: 8}" :xs="{span: 8, offset: 8}">
+        <el-container>
+          <el-header class="smalltitle" align="center">{{ excludeTitleTrans[lang] }}</el-header>
+          <el-main>
+            <el-table
+              style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+              :data="userList2"
+              border
+              align="center"
+            >
+              <el-table-column type="selection" width="50"></el-table-column>
+              <el-table-column type="index"></el-table-column>
+              <el-table-column prop="studentNumber" width="180" label="Student Number"></el-table-column>
+              <el-table-column prop="name" label="Name"></el-table-column>
+            </el-table>
+          </el-main>
+          <el-footer style="margin-top: 20px" align="center">
+            <el-button @click="exclude">{{ excludeTrans[lang] }}</el-button>
+          </el-footer>
+        </el-container>
+      </el-card>
+    </el-container>
   </div>
 </template>
 
@@ -44,14 +70,24 @@ export default class GroupAdmin extends Vue {
     en: "Group Name"
   };
 
+  private readonly additionTitleTrans: Translation = {
+    ko: "그룹 멤버 추가",
+    en: "Add Members"
+  };
+
+  private readonly excludeTitleTrans: Translation = {
+    ko: "그룹 멤버 제외",
+    en: "Exclude Members"
+  };
+
   private readonly additionTrans: Translation = {
     ko: "승인",
-    en: "Add Members"
+    en: "Add"
   };
 
   private readonly excludeTrans: Translation = {
     ko: "제외",
-    en: "Exclude Members"
+    en: "Exclude"
   };
 
   private readonly attributeStatusTrans: Translation = {
@@ -177,28 +213,30 @@ export default class GroupAdmin extends Vue {
 }
 
 .title {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 32px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 60px;
   text-align: center;
   margin-top: 4%;
+  background-color: orange;
+  border-radius: 4px;
+}
+
+.main {
+  text-align: center;
+  margin-top: 4%;
+  background-color: rgb(203, 255, 172);
 }
 
 .smalltitle {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 24px;
-  font-weight: 500;
-  line-height: 50px;
-  text-align: center;
-  margin-top: 4%;
-}
-
-.table {
-  font-size: 16px;
   font-weight: 400;
-  line-height: 40px;
+  line-height: 65px;
   text-align: center;
-  margin-top: 4%;
-  border-color: #f2a43e;
+  background-color: rgba(255, 255, 0, 0.5);
+  border-radius: 4px;
 }
 
 .account {
