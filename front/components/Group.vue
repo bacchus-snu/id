@@ -94,6 +94,8 @@ export default class Group extends Vue {
       validateStatus: () => true
     });
 
+    console.log(groupResponse.data);
+
     this.groupList = groupResponse.data
   }
 

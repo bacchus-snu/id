@@ -12,8 +12,9 @@ export interface EmailAddress {
 }
 
 export interface UserGroup {
-  user_idx: number
-  group_idx: number
+  name: string
+  uid: number
+  studentNumber: string
 }
 
 export const userFields = [

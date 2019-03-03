@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
-    <el-row type="flex" justify="center">
+    <el-row>
       <el-col :md="{span: 8, offset: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card class="account">
           <div slot="header" class="card-head">
