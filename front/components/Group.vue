@@ -86,15 +86,15 @@ export default class Group extends Vue {
       validateStatus: () => true
     });
 
-    if (response.status === 200) {
-      return;
-    } else {
+    if (response.status !== 200) {
       this.$router.push("/");
     }
 
-    this.groupList = await axios.get("/api/get-group", {
+    const groupResponse = await axios.get("/api/group", {
       validateStatus: () => true
     });
+
+    this.groupList = groupResponse.data
   }
 
   private async applyGroup(groupId: number) {
@@ -118,7 +118,7 @@ export default class Group extends Vue {
   }
 
   private async GroupOwnerShip(groupId: number) {
-    this.$router.push("/api/group/" + groupId);
+    this.$router.push("/group/" + groupId);
   }
 
   data() {
