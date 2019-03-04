@@ -29,12 +29,21 @@
               <el-button
                 v-if="slotProps.row.isOwner"
                 size="mini"
-                @click="GroupOwnership(slotProps.row.idx)"
+                @click="groupOwnership(slotProps.row.idx)"
               >{{ manageTrans[lang] }}</el-button>
-              <el-button v-else size="mini" disabled @click="GroupOwnership(slotProps.row.idx)">{{ manageTrans[lang] }}</el-button>
+              <el-button
+                v-else
+                size="mini"
+                disabled
+                @click="groupOwnership(slotProps.row.idx)"
+              >{{ manageTrans[lang] }}</el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="description" :label="attributeDescriptionTrans[lang]" min-width="180">
+          <el-table-column
+            prop="description"
+            :label="attributeDescriptionTrans[lang]"
+            min-width="180"
+          >
             <template slot-scope="slotProps">{{ slotProps.row.description[lang] }}</template>
           </el-table-column>
         </el-table>
@@ -70,7 +79,7 @@ export default class Group extends Vue {
   private readonly attributeOwnershipTrans: Translation = {
     ko: "관리자 페이지",
     en: "Admin Page"
-  }
+  };
 
   private readonly attributeDescriptionTrans: Translation = {
     ko: "설명",
@@ -119,9 +128,7 @@ export default class Group extends Vue {
       validateStatus: () => true
     });
 
-    console.log(groupResponse.data);
-
-    this.groupList = groupResponse.data
+    this.groupList = groupResponse.data;
   }
 
   private async applyGroup(idx: number) {
@@ -144,7 +151,7 @@ export default class Group extends Vue {
     }
   }
 
-  private async GroupOwnerShip(idx: number) {
+  private async groupOwnership(idx: number) {
     this.$router.push("/group/" + idx);
   }
 
