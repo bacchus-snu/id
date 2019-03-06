@@ -2,7 +2,7 @@
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
     <el-row>
-      <el-col :md="{span: 8, offset: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+      <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card class="account">
           <div slot="header" class="card-head">
             <span>{{ groupAdminTrans[lang] }}</span>
@@ -15,7 +15,7 @@
           </template>
         </el-card>
       </el-col>
-      <el-col :md="{span: 8, offset: 4}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+      <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card class="account">
           <div slot="header" class="card-head">
             <span>{{ passwordTrans[lang] }}</span>

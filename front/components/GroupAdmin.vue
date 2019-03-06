@@ -13,7 +13,7 @@
           :md="{span: 16}"
           :sm="{span: 16}"
           :xs="{span: 16}"
-        >{{ attributeGroupTrans[lang] }}</el-col>
+        >{{ groupNameTrans[lang] }}</el-col>
       </el-row>
       <el-card
         style="margin-top: 4%"
@@ -26,23 +26,28 @@
           <el-main>
             <el-table
               style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-              :data="ListView"
+              :data="listViewPending"
               border
               striped
               align="center"
-              @selection-change="handleSelectionChange"
+              @selection-change="handleSelectionPending"
             >
-              <el-table-column type="selection" width="50" align="center" ></el-table-column>
+              <el-table-column type="selection" align="center"></el-table-column>
               <el-table-column type="index" width="80" :index="indexMethod" align="center"></el-table-column>
-              <el-table-column prop="studentNumber" width="180" label="Student Number" align="center"></el-table-column>
-              <el-table-column prop="name" label="Name" align="center"></el-table-column>
+              <el-table-column
+                prop="studentNumber"
+                label="Student Number"
+                align="center"
+              ></el-table-column>
+              <el-table-column prop="name" label="Name" align="center">
+              </el-table-column>
             </el-table>
             <el-pagination
-              @current-change="handlePage"
-              :current-page.sync="currentPage1"
+              @current-change="handlePagePending"
+              :current-page.sync="currentPagePending"
               :page-size="20"
               layout="prev, pager, next, jumper"
-              @total="sizeList(userList)"
+              :total="sizeList()"
             ></el-pagination>
           </el-main>
           <el-footer style="margin-top: 20px" align="center">
@@ -62,22 +67,27 @@
           <el-main>
             <el-table
               style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-              :data="ListView2"
+              :data="listViewMember"
               border
               align="center"
-              @selection-change="handleSelectionChange2"
+              @selection-change="handleSelectionMember"
             >
-              <el-table-column type="selection" width="50" align="center" ></el-table-column>
+              <el-table-column type="selection" align="center"></el-table-column>
               <el-table-column type="index" width="80" :index="indexMethod2" align="center"></el-table-column>
-              <el-table-column prop="studentNumber" width="180" label="Student Number" align="center"></el-table-column>
+              <el-table-column
+                prop="studentNumber"
+                width="180"
+                label="Student Number"
+                align="center"
+              ></el-table-column>
               <el-table-column prop="name" label="Name" align="center"></el-table-column>
             </el-table>
             <el-pagination
-              @current-change="handlePage2"
-              :current-page.sync="currentPage2"
+              @current-change="handlePageMember"
+              :current-page.sync="currentPageMember"
               :page-size="20"
               layout="prev, pager, next, jumper"
-              @total="sizeList(userList2)"
+              :total="sizeList2()"
             ></el-pagination>
           </el-main>
           <el-footer style="margin-top: 20px" align="center">
@@ -99,24 +109,24 @@ import { ElTable } from "element-ui/types/table";
 
 @Component({})
 export default class GroupAdmin extends Vue {
-  private UserList: UserGroup[];
-  private UserList2: UserGroup[];
-  private ListView: UserGroup[];
-  private ListView2: UserGroup[];
-  private gid;
-  private currentPage1: number;
-  private currentPage2: number;
-  private multipleSelection1: UserGroup[];
-  private multipleSelection2: UserGroup[];
+  private userListPending: UserGroup[];
+  private userListMember: UserGroup[];
+  private listViewPending: UserGroup[];
+  private listViewMember: UserGroup[];
+  private gid: number;
+  private currentPagePending: number;
+  private currentPageMember: number;
+  private mutipleSelectionPending: UserGroup[];
+  private mutipleSelectionMember: UserGroup[];
 
   private readonly groupAdministrationTrans: Translation = {
     ko: "그룹관리",
     en: "Group Management"
   };
 
-  private readonly attributeGroupTrans: Translation = {
-    ko: "코인",
-    en: "Coins"
+  private groupNameTrans: Translation = {
+    ko: "",
+    en: ""
   };
 
   private readonly additionTitleTrans: Translation = {
@@ -144,27 +154,42 @@ export default class GroupAdmin extends Vue {
     en: "Exclude"
   };
 
-  private readonly attributeStatusTrans: Translation = {
-    ko: "상태",
-    en: "status"
+  private readonly permissionFailedTrans: Translation = {
+    ko: "그룹 멤버 추가에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.",
+    en: "Failed to add a group member. Please check if this user applied to this group."
   };
 
-  private readonly permissionFailedTrans: Translation = {
-    ko: "그룹 멤버 추가에 실패했습니다.",
-    en: "Failed to add a group member."
-  };
+  private readonly rejectionFailedTrans: Translation = {
+    ko: "그룹 멤버 승인 거부에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.",
+    en: "Failed to reject. Please check if this user applied to this group."
+  }
 
   private readonly expelFailedTrans: Translation = {
-    ko: "그룹 멤버 제외에 실패했습니다.",
-    en: "Failed to exclude a group member."
+    ko: "그룹 멤버 제외에 실패했습니다. 그룹의 멤버인지 확인해 주세요.",
+    en: "Failed to exclude a group member. Please check if this user is a member of this group."
   };
+
+  private readonly expelSucceedTrans: Translation = {
+    ko: " 명의 멤버를 제외했습니다.",
+    en: " members excluded."
+  }
+
+  private readonly acceptSucceedTrans: Translation = {
+    ko: " 명의 멤버를 승인했습니다.",
+    en: " members accepted."
+  }
+
+  private readonly rejectSucceedTrans: Translation = {
+    ko: " 명의 멤버를 거절했습니다.",
+    en: " members rejected."
+  }
 
   get lang(): Language {
     return this.$store.state.language;
   }
 
   private async mounted() {
-    this.gid = this.$route.params.gid;
+    this.gid = Number(this.$route.params.gid);
 
     var response = await axios.get("/api/check-login", {
       validateStatus: () => true
@@ -176,6 +201,14 @@ export default class GroupAdmin extends Vue {
       return;
     }
 
+    response = await axios.get("/api/group/", { validateStatus: () => true });
+
+    console.log(response.data);
+
+    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name;
+
+    console.log(this.groupNameTrans);
+
     response = await axios.get("/api/group/" + this.gid + "/pending", {
       validateStatus: () => true
     });
@@ -185,12 +218,12 @@ export default class GroupAdmin extends Vue {
       return;
     }
 
-    this.currentPage1 = 1;
+    this.currentPagePending = 1;
 
-    if (response.data == []) {
+    if (!response.data) {
     } else {
-      this.UserList = response.data;
-      this.handlePage();
+      this.userListPending = response.data;
+      this.handlePagePending();
     }
 
     response = await axios.get("/api/group/" + this.gid + "/members", {
@@ -202,24 +235,26 @@ export default class GroupAdmin extends Vue {
       return;
     }
 
-    this.currentPage2 = 1;
+    this.currentPageMember = 1;
 
     if (response.data == []) {
     } else {
-      this.UserList2 = response.data;
-      this.handlePage2();
+      this.userListMember = response.data;
+      this.userListMember = this.userListMember.sort((a,b) => a.studentNumber > b.studentNumber ? 1 : -1);
+      this.handlePageMember();
     }
+
+    console.log(this.listViewMember);
   }
 
   private async permit() {
-    console.log(this.multipleSelection1);
+    console.log(this.mutipleSelectionPending);
 
-    var list: number[] = [];
+    var list: number[] = new Array(this.mutipleSelectionPending.length);
     var i = 0;
 
-    for(i = 0; i < list.length; i++)
-    {
-      list[i] = this.multipleSelection1[i].uid;
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionPending[i].uid;
     }
 
     const response = await axios.post(
@@ -231,106 +266,123 @@ export default class GroupAdmin extends Vue {
     );
 
     if (response.status === 200) {
-      this.$router.push("/group/" + this.gid);
+      this.$router.go(0);
+      this.$notify.info(list.length + this.acceptSucceedTrans[this.lang]);
     } else {
-      this.$notify.error("Fail");
+      this.$notify.error(this.permissionFailedTrans[this.lang]);
     }
   }
 
   private async reject() {
-    console.log(this.multipleSelection1);
+    console.log(this.mutipleSelectionPending);
 
     var list: number[] = [];
     var i = 0;
 
-    for(i = 0; i < list.length; i++)
-    {
-      list[i] = this.multipleSelection1[i].uid;
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionPending[i].uid;
     }
 
     const response = await axios.post(
       "/api/group/" + this.gid + "/reject",
-      this.multipleSelection1,
+      this.mutipleSelectionPending,
       {
         validateStatus: () => true
       }
     );
 
+    console.log('here');
     if (response.status === 200) {
-      this.$router.push("/group/" + this.gid);
+      this.$router.go(0);
+      this.$notify.info(list.length + this.rejectSucceedTrans[this.lang]);
     } else {
-      this.$notify.error("Fail");
+      this.$notify.error(this.rejectionFailedTrans[this.lang]);
     }
   }
 
   private async exclude() {
-    console.log(this.multipleSelection2);
+    console.log(this.mutipleSelectionMember);
 
-    var list: number[] = [];
+    var list: number[] = new Array(this.mutipleSelectionMember.length);
     var i = 0;
 
-    for(i = 0; i < list.length; i++)
-    {
-      list[i] = this.multipleSelection2[i].uid;
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionMember[i].uid;
     }
+
+    console.log(list);
 
     const response = await axios.post(
       "/api/group/" + this.gid + "/reject",
-      this.multipleSelection2,
+      list,
       {
         validateStatus: () => true
       }
     );
 
     if (response.status === 200) {
-      this.$router.push("/group/" + this.gid);
+      this.$router.go(0);
+      this.$notify.info(list.length + this.expelSucceedTrans[this.lang]);
+      return;
     } else {
-      this.$notify.error("Fail");
+      this.$notify.error(this.expelFailedTrans[this.lang]);
     }
   }
 
-  private async sizeList(list: UserGroup[]) {
-    if (list === []) return 0;
-    else return list.length;
-  }
-
-  private async handlePage() {
-    if (this.currentPage1 * 20 >= this.UserList.length)
-      this.ListView = this.UserList.slice((this.currentPage1 - 1) * 20);
+  private async handlePagePending() {
+    if (this.currentPagePending * 20 >= this.userListPending.length)
+      this.listViewPending = this.userListPending.slice((this.currentPagePending - 1) * 20);
     else {
-      this.ListView = this.UserList.slice(
-        (this.currentPage1 - 1) * 20,
-        this.currentPage1 * 20
+      this.listViewPending = this.userListPending.slice(
+        (this.currentPagePending - 1) * 20,
+        this.currentPagePending * 20
       );
     }
   }
 
-  private async handlePage2() {
-    if (this.currentPage2 * 20 >= this.UserList2.length)
-      this.ListView2 = this.UserList2.slice((this.currentPage2 - 1) * 20);
+  private async handlePageMember() {
+    if (this.currentPageMember * 20 >= this.userListMember.length)
+      this.listViewMember = this.userListMember.slice((this.currentPageMember - 1) * 20);
     else {
-      this.ListView2 = this.UserList2.slice(
-        (this.currentPage2 - 1) * 20,
-        this.currentPage2 * 20
+      this.listViewMember = this.userListMember.slice(
+        (this.currentPageMember - 1) * 20,
+        this.currentPageMember * 20
       );
     }
   }
 
   data() {
     return {
-      userList: this.UserList,
-      userList2: this.UserList2,
-      ListView: this.ListView,
-      ListView2: this.ListView2,
-      currentPage1: this.currentPage1,
-      currentPage2: this.currentPage2,
-      multipleSelection1: this.multipleSelection1,
-      multipleSelection2: this.multipleSelection2,
-      indexMethod: (index: number) => { return (this.currentPage1-1) * 20 + index + 1},
-      indexMethod2: (index: number) => { return (this.currentPage2-1) * 20 + index + 1},
-      handleSelectionChange: (val: UserGroup[]) => {this.multipleSelection1 = val; console.log(val)},
-      handleSelectionChange2: (val: UserGroup[]) => {this.multipleSelection2 = val; console.log(val)},
-    }
+      userListPending: this.userListPending,
+      userListMember: this.userListMember,
+      listViewPending: this.listViewPending,
+      listViewMember: this.listViewMember,
+      currentPagePending: this.currentPagePending,
+      currentPageMember: this.currentPageMember,
+      mutipleSelectionPending: this.mutipleSelectionPending,
+      mutipleSelectionMember: this.mutipleSelectionMember,
+      attributeGroupTrans: this.groupNameTrans,
+      sizeList: () => {
+        if (!this.userListPending) return 0;
+        else return this.userListPending.length;
+      },
+      sizeList2: () => {
+        if (!this.userListMember) return 0;
+        else return this.userListMember.length;
+      },
+      indexMethod: (index: number) => {
+        return (this.currentPagePending - 1) * 20 + index + 1;
+      },
+      indexMethod2: (index: number) => {
+        return (this.currentPageMember - 1) * 20 + index + 1;
+      },
+      handleSelectionPending: (val: UserGroup[]) => {
+        this.mutipleSelectionPending = val;
+      },
+      handleSelectionMember: (val: UserGroup[]) => {
+        this.mutipleSelectionMember = val;
+      }
+    };
   }
 }
 </script>
