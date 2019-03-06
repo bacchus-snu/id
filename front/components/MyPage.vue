@@ -8,6 +8,9 @@
             <span>{{ groupAdminTrans[lang] }}</span>
           </div>
           <template>
+            <h2 class="group-apply-notify">
+              {{ groupApplyNotifyTrans[lang] }}
+            </h2>
             <h2>{{ groupAdminInfoTrans[lang] }}</h2>
             <el-button class="button" type="warning" @click="groupAdminButton">
               {{ groupAdminButtonTrans[lang] }}
@@ -144,6 +147,14 @@ export default class MyPage extends Vue {
     ko: '성공적으로 셸이 변경되었습니다.',
     en: 'Your shell was successfully changed.',
   }
+  private readonly groupApplyNotifyTrans: Translation = {
+    ko: '복부전생, 연합전공, 연계전공을 포함한 모든 컴퓨터공학부 구성원은 \'컴퓨터 공학 전공\'그룹에 신청해야 합니다.',
+    en: 'Every CSE student(includes double, minor, combined, extended major student) should apply to \'CSE major\' group.'
+  }
+  private readonly notificationTrans: Translation = {
+    ko: '알림',
+    en: 'Notification'
+  }
 
   get lang(): Language {
     return this.$store.state.language
@@ -275,5 +286,9 @@ export default class MyPage extends Vue {
 
 .card-head {
   font-size: 24px;
+}
+
+.group-apply-notify {
+  color: #660033;
 }
 </style>
