@@ -184,6 +184,11 @@ export default class GroupAdmin extends Vue {
     en: " members rejected."
   }
 
+  private readonly noChosenRowTrans: Translation = {
+    ko: "관리할 유저를 선택해 주세요.",
+    en: "Please select users to admin."
+  }
+
   get lang(): Language {
     return this.$store.state.language;
   }
@@ -203,11 +208,7 @@ export default class GroupAdmin extends Vue {
 
     response = await axios.get("/api/group/", { validateStatus: () => true });
 
-    console.log(response.data);
-
     this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name;
-
-    console.log(this.groupNameTrans);
 
     response = await axios.get("/api/group/" + this.gid + "/pending", {
       validateStatus: () => true
@@ -243,12 +244,13 @@ export default class GroupAdmin extends Vue {
       this.userListMember = this.userListMember.sort((a,b) => a.studentNumber > b.studentNumber ? 1 : -1);
       this.handlePageMember();
     }
-
-    console.log(this.listViewMember);
   }
 
   private async permit() {
-    console.log(this.mutipleSelectionPending);
+    if(!this.mutipleSelectionPending) {
+      this.$notify.error(this.noChosenRowTrans[this.lang]);
+      return;
+    }
 
     var list: number[] = new Array(this.mutipleSelectionPending.length);
     var i = 0;
@@ -274,9 +276,12 @@ export default class GroupAdmin extends Vue {
   }
 
   private async reject() {
-    console.log(this.mutipleSelectionPending);
+    if(!this.mutipleSelectionPending) {
+      this.$notify.error(this.noChosenRowTrans[this.lang]);
+      return;
+    }
 
-    var list: number[] = [];
+    var list: number[] = new Array(this.mutipleSelectionPending.length);;
     var i = 0;
 
     for (i = 0; i < list.length; i++) {
@@ -291,7 +296,6 @@ export default class GroupAdmin extends Vue {
       }
     );
 
-    console.log('here');
     if (response.status === 200) {
       this.$router.go(0);
       this.$notify.info(list.length + this.rejectSucceedTrans[this.lang]);
@@ -301,16 +305,22 @@ export default class GroupAdmin extends Vue {
   }
 
   private async exclude() {
-    console.log(this.mutipleSelectionMember);
+    if(!this.mutipleSelectionMember) {
+      this.$notify.error(this.noChosenRowTrans[this.lang]);
+      return;
+    }
 
     var list: number[] = new Array(this.mutipleSelectionMember.length);
     var i = 0;
 
+    if(!list) {
+      this.$notify.error(this.noChosenRowTrans[this.lang]);
+      return;
+    }
+
     for (i = 0; i < list.length; i++) {
       list[i] = this.mutipleSelectionMember[i].uid;
     }
-
-    console.log(list);
 
     const response = await axios.post(
       "/api/group/" + this.gid + "/reject",
