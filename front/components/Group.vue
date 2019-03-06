@@ -19,9 +19,9 @@
                 v-else-if="slotProps.row.isMember"
                 size="mini"
                 type="danger"
-                @click="leaveGroup(slotProps.row.idx)"
+                @click="checkLeaveGroup(slotProps.row.idx)"
               >{{ leaveTrans[lang] }}</el-button>
-              <el-button v-else size="mini" @click="applyGroup(slotProps.row.idx)">Apply</el-button>
+              <el-button v-else size="mini" @click="applyGroup(slotProps.row.idx)">{{ applyTrans[lang] }}</el-button>
             </template>
           </el-table-column>
           <el-table-column :label="attributeOwnershipTrans[lang]" width="180">
@@ -86,6 +86,16 @@ export default class Group extends Vue {
     en: "Description"
   };
 
+  private readonly warningTrans: Translation = {
+    ko: "주의",
+    en: "Warning"
+  };
+
+  private readonly leaveCheckTrans: Translation = {
+    ko: "탈퇴하시겠습니까?",
+    en: "This will leave the group. Continue?"
+  };
+
   private readonly applyFailedTrans: Translation = {
     ko: "신청에 실패했습니다.",
     en: "Apply failed."
@@ -96,13 +106,18 @@ export default class Group extends Vue {
     en: "Leave failed"
   };
 
+  private readonly applyTrans: Translation = {
+    ko: "신청",
+    en: "Apply"
+  };
+
   private readonly leaveTrans: Translation = {
     ko: "탈퇴",
     en: "Leave"
   };
 
   private readonly pendingTrans: Translation = {
-    ko: "신청중",
+    ko: "승인 대기",
     en: "Pending"
   };
 
@@ -137,17 +152,29 @@ export default class Group extends Vue {
       this.$router.push("/group");
     } else {
       this.$notify.error(this.applyFailedTrans[this.lang]);
-      return;
     }
   }
 
-  private async leaveGroup(idx: number) {
+  private async checkLeaveGroup(idx: number) {
+    this.$confirm(
+      this.leaveCheckTrans[this.lang],
+      this.warningTrans[this.lang],
+      {
+        confirmButtonText: "OK",
+        cancelButtonText: "Cancel",
+        type: "warning"
+      }
+    ).then(() => {
+      this.leavegroup;
+    });
+  }
+
+  private async leavegroup(idx: number) {
     const response = await axios.post("/api/group/" + idx + "/leave");
     if (response.status === 200) {
       this.$router.push("/group");
     } else {
       this.$notify.error(this.leaveFailedTrans[this.lang]);
-      return;
     }
   }
 
