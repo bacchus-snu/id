@@ -4,10 +4,14 @@
     <el-row>
       <el-col :md="{span: 16, offset: 4}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-table :data="groupList" height="540" style="width: 100%">
-          <el-table-column prop="name" :label="attributeGroupTrans[lang]" width="180">
+          <el-table-column
+            type="index"
+            width="50">
+          </el-table-column>
+          <el-table-column prop="name" :label="attributeGroupTrans[lang]" width="180" align=center>
             <template slot-scope="slotProps">{{ slotProps.row.name[lang] }}</template>
           </el-table-column>
-          <el-table-column :label="attributeStatusTrans[lang]" width="180">
+          <el-table-column :label="attributeStatusTrans[lang]" width="180" align=center>
             <template slot-scope="slotProps">
               <el-button
                 v-if="slotProps.row.isPending"
@@ -24,7 +28,7 @@
               <el-button v-else size="mini" @click="applyGroup(slotProps.row.idx)">{{ applyTrans[lang] }}</el-button>
             </template>
           </el-table-column>
-          <el-table-column :label="attributeOwnershipTrans[lang]" width="180">
+          <el-table-column :label="attributeOwnershipTrans[lang]" width="180" align=center>
             <template slot-scope="slotProps">
               <el-button
                 v-if="slotProps.row.isOwner"
@@ -43,7 +47,7 @@
             prop="description"
             :label="attributeDescriptionTrans[lang]"
             min-width="180"
-          >
+            align=center>
             <template slot-scope="slotProps">{{ slotProps.row.description[lang] }}</template>
           </el-table-column>
         </el-table>
@@ -149,7 +153,7 @@ export default class Group extends Vue {
   private async applyGroup(idx: number) {
     const response = await axios.post("/api/group/" + idx + "/apply");
     if (response.status === 200) {
-      this.$router.push("/group");
+      this.$router.go(0);
     } else {
       this.$notify.error(this.applyFailedTrans[this.lang]);
     }
@@ -165,14 +169,14 @@ export default class Group extends Vue {
         type: "warning"
       }
     ).then(() => {
-      this.leavegroup;
+      this.leavegroup(idx);
     });
   }
 
   private async leavegroup(idx: number) {
     const response = await axios.post("/api/group/" + idx + "/leave");
     if (response.status === 200) {
-      this.$router.push("/group");
+      this.$router.go(0);
     } else {
       this.$notify.error(this.leaveFailedTrans[this.lang]);
     }
