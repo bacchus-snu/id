@@ -50,19 +50,19 @@ test('group listing', async t => {
   const body = response.body as Array<GroupUserInfo>
 
   t.true(body.some(g => {
-    return g.idx === noneGroupIdx && !g.isMember && !g.isPending && !g.isOwner
+    return g.idx === noneGroupIdx && !g.isMember && !g.isDirectMember && !g.isPending && !g.isOwner
   }))
   t.true(body.some(g => {
-    return g.idx === memberGroupIdx && g.isMember && !g.isPending && !g.isOwner
+    return g.idx === memberGroupIdx && g.isMember && g.isDirectMember && !g.isPending && !g.isOwner
   }))
   t.true(body.some(g => {
-    return g.idx === indirectGroupIdx && g.isMember && !g.isPending && !g.isOwner
+    return g.idx === indirectGroupIdx && g.isMember && !g.isDirectMember && !g.isPending && !g.isOwner
   }))
   t.true(body.some(g => {
-    return g.idx === pendingGroupIdx && !g.isMember && g.isPending && !g.isOwner
+    return g.idx === pendingGroupIdx && !g.isMember && !g.isDirectMember && g.isPending && !g.isOwner
   }))
   t.true(body.some(g => {
-    return g.idx === ownerGroupIdx && !g.isMember && !g.isPending && g.isOwner
+    return g.idx === ownerGroupIdx && !g.isMember && !g.isDirectMember && !g.isPending && g.isOwner
   }))
 })
 

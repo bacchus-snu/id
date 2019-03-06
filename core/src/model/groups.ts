@@ -17,6 +17,7 @@ export interface GroupUserInfo {
   name: Translation
   description: Translation
   isMember: boolean
+  isDirectMember: boolean
   isPending: boolean
   isOwner: boolean
 }
@@ -88,6 +89,7 @@ export default class Groups {
       '$1 IN (SELECT user_idx FROM pending_user_memberships WHERE group_idx = g.idx) AS is_pending,' +
       '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx IN ' +
       '(SELECT supergroup_idx FROM group_reachable_cache WHERE subgroup_idx = g.idx)) AS is_member,' +
+      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx = g.idx) AS is_direct_member,' +
       '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx = g.owner_group_idx) AS is_owner ' +
       'FROM groups AS g WHERE owner_group_idx IS NOT NULL ORDER BY idx'
     const result = await tr.query(query, [userIdx])
@@ -236,6 +238,7 @@ export default class Groups {
       },
       isPending: row.is_pending,
       isMember: row.is_member,
+      isDirectMember: row.is_direct_member,
       isOwner: row.is_owner,
     }
   }

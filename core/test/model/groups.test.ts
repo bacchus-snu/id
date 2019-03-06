@@ -72,6 +72,7 @@ test('get group list about user', async t => {
     const groupIdx = await createGroup(tr, model)
     const ownerGroupIdx = await createGroup(tr, model)
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+    await model.groups.setOwnerGroup(tr, ownerGroupIdx, ownerGroupIdx)
     await createGroupRelation(tr, model, ownerGroupIdx, groupIdx)
 
     const userIdx = await createUser(tr, model)
@@ -81,13 +82,16 @@ test('get group list about user', async t => {
     await model.users.addUserMembership(tr, ownerUserIdx, ownerGroupIdx)
 
     t.true((await model.groups.getUserGroupList(tr, userIdx)).some(g => {
-      return g.idx === groupIdx && !g.isMember && !g.isPending && !g.isOwner
+      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && !g.isPending && !g.isOwner
     }))
     t.true((await model.groups.getUserGroupList(tr, pendingUserIdx)).some(g => {
-      return g.idx === groupIdx && !g.isMember && g.isPending && !g.isOwner
+      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && g.isPending && !g.isOwner
     }))
     t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
-      return g.idx === groupIdx && g.isMember && !g.isPending && g.isOwner
+      return g.idx === groupIdx && g.isMember && !g.isDirectMember && !g.isPending && g.isOwner
+    }))
+    t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
+      return g.idx === ownerGroupIdx && g.isMember && g.isDirectMember && !g.isPending && g.isOwner
     }))
   }, ['users', 'group_reachable_cache'])
 })
