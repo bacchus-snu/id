@@ -4,14 +4,16 @@
     <el-row>
       <el-col :md="{span: 16, offset: 4}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-table :data="groupList" height="540" style="width: 100%">
+          <el-table-column type="index" width="50"></el-table-column>
           <el-table-column
-            type="index"
-            width="50">
-          </el-table-column>
-          <el-table-column prop="name" :label="attributeGroupTrans[lang]" width="180" align=center>
+            prop="name"
+            :label="attributeGroupTrans[lang]"
+            width="180"
+            align="center"
+          >
             <template slot-scope="slotProps">{{ slotProps.row.name[lang] }}</template>
           </el-table-column>
-          <el-table-column :label="attributeStatusTrans[lang]" width="180" align=center>
+          <el-table-column :label="attributeStatusTrans[lang]" width="180" align="center">
             <template slot-scope="slotProps">
               <el-button
                 v-if="slotProps.row.isPending"
@@ -20,15 +22,27 @@
                 @click="applyGroup(slotProps.row.idx)"
               >{{ pendingTrans[lang] }}</el-button>
               <el-button
-                v-else-if="slotProps.row.isMember"
+                v-else-if="slotProps.row.isDirectMember"
                 size="mini"
                 type="danger"
                 @click="checkLeaveGroup(slotProps.row.idx)"
               >{{ leaveTrans[lang] }}</el-button>
-              <el-button v-else size="mini" @click="applyGroup(slotProps.row.idx)">{{ applyTrans[lang] }}</el-button>
+              <el-tooltip
+                v-else-if="slotProps.row.isMember"
+                effect="dark"
+                :content="groupLeaveTooltipTrans[lang]"
+                placement="top"
+              >
+                <el-button disabled size="mini" type="danger">{{ leaveTrans[lang] }}</el-button>
+              </el-tooltip>
+              <el-button
+                v-else
+                size="mini"
+                @click="applyGroup(slotProps.row.idx)"
+              >{{ applyTrans[lang] }}</el-button>
             </template>
           </el-table-column>
-          <el-table-column :label="attributeOwnershipTrans[lang]" width="180" align=center>
+          <el-table-column :label="attributeOwnershipTrans[lang]" width="180" align="center">
             <template slot-scope="slotProps">
               <el-button
                 v-if="slotProps.row.isOwner"
@@ -47,7 +61,8 @@
             prop="description"
             :label="attributeDescriptionTrans[lang]"
             min-width="180"
-            align=center>
+            align="center"
+          >
             <template slot-scope="slotProps">{{ slotProps.row.description[lang] }}</template>
           </el-table-column>
         </el-table>
@@ -128,6 +143,11 @@ export default class Group extends Vue {
   private readonly manageTrans: Translation = {
     ko: "관리",
     en: "Manage"
+  };
+
+  private readonly groupLeaveTooltipTrans: Translation = {
+    ko: "이 그룹의 하위 그룹에 소속된 상태이므로 탈퇴할 수 없습니다.",
+    en: "You cannot leave a group as you belong to one of its descendents."
   };
 
   get lang(): Language {
