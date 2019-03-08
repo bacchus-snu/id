@@ -41,19 +41,6 @@ test('create and delete group', async t => {
   }, ['group_reachable_cache'])
 })
 
-test('set owner user', async t => {
-  await model.pgDo(async tr => {
-    const groupIdx = await createGroup(tr, model)
-    const userIdx = await createUser(tr, model)
-
-    await model.groups.setOwnerUser(tr, groupIdx, userIdx)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, userIdx)
-
-    await model.groups.setOwnerUser(tr, groupIdx, null)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
-  }, ['users', 'group_reachable_cache'])
-})
-
 test('set owner group', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model)
