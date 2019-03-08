@@ -224,6 +224,7 @@ export default class GroupAdmin extends Vue {
     if (!response.data) {
     } else {
       this.userListPending = response.data;
+      this.userListPending = this.userListPending.sort((a,b) => a.studentNumber > b.studentNumber ? 1 : -1);
       this.handlePagePending();
     }
 
