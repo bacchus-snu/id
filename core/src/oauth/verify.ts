@@ -4,6 +4,16 @@ interface Params {
   [key: string]: string
 }
 
+export class InvalidParameterError extends Error {
+  constructor(private innerParam: string, msg?: string) {
+    super(msg)
+  }
+
+  get parameter() {
+    return this.innerParam
+  }
+}
+
 /**
  * Verify the given request as per Section 9.
  * @param params Collected parameters as per Section 9.1.1. Should contain Authorization header parameters, request body
@@ -14,8 +24,8 @@ interface Params {
  * @param consumerSecret OAuth 1.0a Consumer Secret.
  * @param @optional tokenSecret OAuth 1.0a Token Secret, if present.
  * @returns `true` if verification is successful, `false` otherwise.
- * @throws Error if `oauth_signature_method` is not `'HMAC-SHA1'`.
- * @throws Error if `oauth_signature` is not present.
+ * @throws InvalidParameterError if `oauth_signature_method` is not `'HMAC-SHA1'`.
+ * @throws InvalidParameterError if `oauth_signature` is not present.
  */
 export default function verify(
   params: Params,
@@ -25,11 +35,11 @@ export default function verify(
   tokenSecret: string = '',
 ): boolean {
   if (params.oauth_signature_method !== 'HMAC-SHA1') {
-    throw new Error('oauth_signature_method should be HMAC-SHA1')
+    throw new InvalidParameterError('oauth_signature_method', 'oauth_signature_method should be HMAC-SHA1')
   }
   const oauthSignature = params.oauth_signature
   if (oauthSignature == null) {
-    throw new Error('oauth_signature must be present')
+    throw new InvalidParameterError('oauth_signature', 'oauth_signature must be present')
   }
 
   const processedParams = { ...params }
