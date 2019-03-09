@@ -116,8 +116,8 @@ export default class GroupAdmin extends Vue {
   private gid: number
   private currentPagePending: number
   private currentPageMember: number
-  private mutipleSelectionPending: Array<UserGroup>
-  private mutipleSelectionMember: Array<UserGroup>
+  private multipleSelectionPending: Array<UserGroup>
+  private multipleSelectionMember: Array<UserGroup>
 
   private readonly groupAdministrationTrans: Translation = {
     ko: '그룹관리',
@@ -197,16 +197,18 @@ export default class GroupAdmin extends Vue {
       listViewMember: this.listViewMember,
       currentPagePending: this.currentPagePending,
       currentPageMember: this.currentPageMember,
-      mutipleSelectionPending: this.mutipleSelectionPending,
-      mutipleSelectionMember: this.mutipleSelectionMember,
+      multipleSelectionPending: this.multipleSelectionPending,
+      multipleSelectionMember: this.multipleSelectionMember,
       attributeGroupTrans: this.groupNameTrans,
       sizeList: () => {
-        if (!this.userListPending) {
+        if (this.userListPending == null || this.userListPending.length == 0) {
           return 0
-        } else {return this.userListPending.length}
+        } else {
+          return this.userListPending.length
+        }
       },
       sizeList2: () => {
-        if (!this.userListMember) {
+        if (this.userListMember == null || this.userListMember.length == 0) {
           return 0
         } else {
           return this.userListMember.length
@@ -219,10 +221,10 @@ export default class GroupAdmin extends Vue {
         return (this.currentPageMember - 1) * 20 + index + 1
       },
       handleSelectionPending: (val: Array<UserGroup>) => {
-        this.mutipleSelectionPending = val
+        this.multipleSelectionPending = val
       },
       handleSelectionMember: (val: Array<UserGroup>) => {
-        this.mutipleSelectionMember = val
+        this.multipleSelectionMember = val
       },
     }
   }
@@ -245,7 +247,12 @@ export default class GroupAdmin extends Vue {
 
     response = await axios.get('/api/group/', { validateStatus: () => true })
 
-    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name
+    if(response.data.filter(data => data.idx === this.gid).length == 0) {
+      this.$router.push("/my-page")
+      return
+    }
+
+    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name;
 
     response = await axios.get('/api/group/' + this.gid + '/pending', {
       validateStatus: () => true,
@@ -258,7 +265,7 @@ export default class GroupAdmin extends Vue {
 
     this.currentPagePending = 1
 
-    if (!!response.data) {
+    if (response.data != null && response.data.length > 0) {
       this.userListPending = response.data
       this.userListPending = this.userListPending.sort((a, b) => a.studentNumber > b.studentNumber ? 1 : -1)
       this.handlePagePending()
@@ -275,7 +282,7 @@ export default class GroupAdmin extends Vue {
 
     this.currentPageMember = 1
 
-    if (!!response.data) {
+    if (response.data != null && response.data.length > 0) {
       this.userListMember = response.data
       this.userListMember = this.userListMember.sort((a, b) => a.studentNumber > b.studentNumber ? 1 : -1)
       this.handlePageMember()
@@ -283,16 +290,16 @@ export default class GroupAdmin extends Vue {
   }
 
   private async permit() {
-    if (!this.mutipleSelectionPending) {
+    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length == 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
 
-    const list: Array<number> = new Array(this.mutipleSelectionPending.length)
+    const list: Array<number> = new Array(this.multipleSelectionPending.length)
     let i = 0
 
     for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionPending[i].uid
+      list[i] = this.multipleSelectionPending[i].uid
     }
 
     const response = await axios.post(
@@ -312,21 +319,21 @@ export default class GroupAdmin extends Vue {
   }
 
   private async reject() {
-    if (!this.mutipleSelectionPending) {
+    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length == 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
 
-    const list: Array<number> = new Array(this.mutipleSelectionPending.length)
+    const list: Array<number> = new Array(this.multipleSelectionPending.length)
     let i = 0
 
     for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionPending[i].uid
+      list[i] = this.multipleSelectionPending[i].uid
     }
 
     const response = await axios.post(
       '/api/group/' + this.gid + '/reject',
-      this.mutipleSelectionPending,
+      this.multipleSelectionPending,
       {
         validateStatus: () => true,
       },
@@ -341,21 +348,16 @@ export default class GroupAdmin extends Vue {
   }
 
   private async exclude() {
-    if (!this.mutipleSelectionMember) {
+    if (this.multipleSelectionMember == null || this.multipleSelectionMember.length == 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
 
-    const list: Array<number> = new Array(this.mutipleSelectionMember.length)
+    const list: Array<number> = new Array(this.multipleSelectionMember.length)
     let i = 0
 
-    if (!list) {
-      this.$notify.error(this.noChosenRowTrans[this.lang])
-      return
-    }
-
     for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionMember[i].uid
+      list[i] = this.multipleSelectionMember[i].uid
     }
 
     const response = await axios.post(

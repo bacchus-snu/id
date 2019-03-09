@@ -3,7 +3,7 @@
     <h1 class="welcome">{{ welcomeTrans }}</h1>
     <el-row>
       <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
-        <el-card class="account">
+        <el-card shadow="hover" class="account">
           <div slot="header" class="card-head">
             <span>{{ groupAdminTrans[lang] }}</span>
           </div>
@@ -19,7 +19,7 @@
         </el-card>
       </el-col>
       <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
-        <el-card class="account">
+        <el-card shadow="hover" class="account">
           <div slot="header" class="card-head">
             <span>{{ passwordTrans[lang] }}</span>
           </div>
@@ -41,7 +41,7 @@
         </el-card>
       </el-col>
       <el-col :md="8" :sm="24" :xs="24">
-        <el-card class="account">
+        <el-card shadow="hover" class="account">
           <div slot="header" class="card-head">
             <span>{{ shellTrans[lang] }}</span>
           </div>
@@ -290,6 +290,7 @@ export default class MyPage extends Vue {
 }
 
 .group-apply-notify {
-  color: #660033;
+  font-weight: bold;
+  color: #ff0000;
 }
 </style>
