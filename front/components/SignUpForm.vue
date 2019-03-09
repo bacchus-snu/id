@@ -201,8 +201,8 @@ export default class SignUpForm extends Vue {
       return
     }
 
-    this.$alert(this.successTransTemp[this.lang], this.tipsTrans[this.lang],{
-      confirmButtonText: 'OK'
+    this.$alert(this.successTransTemp[this.lang], this.tipsTrans[this.lang], {
+      confirmButtonText: 'OK',
     })
     this.$router.push('/')
   }

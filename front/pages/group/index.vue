@@ -11,7 +11,7 @@ import axios from 'axios'
 
 @Component({
   components: {
-    'group': Group,
+    group: Group,
   },
 })
 export default class GroupPage extends Vue {

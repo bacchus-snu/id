@@ -11,7 +11,7 @@ import axios from 'axios'
 
 @Component({
   components: {
-    'groupadmin': GroupAdmin,
+    groupadmin: GroupAdmin,
   },
 })
 export default class GroupAdminPage extends Vue {

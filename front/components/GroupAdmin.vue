@@ -100,269 +100,96 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Provide } from "nuxt-property-decorator";
-import axios from "axios";
-import { Translation, Language } from "../types/translation";
-import { UserGroup } from "../types/user";
-import { ElTableColumn } from "element-ui/types/table-column";
-import { ElTable } from "element-ui/types/table";
+import { Component, Vue, Provide } from 'nuxt-property-decorator'
+import axios from 'axios'
+import { Translation, Language } from '../types/translation'
+import { UserGroup } from '../types/user'
+import { ElTableColumn } from 'element-ui/types/table-column'
+import { ElTable } from 'element-ui/types/table'
 
 @Component({})
 export default class GroupAdmin extends Vue {
-  private userListPending: UserGroup[];
-  private userListMember: UserGroup[];
-  private listViewPending: UserGroup[];
-  private listViewMember: UserGroup[];
-  private gid: number;
-  private currentPagePending: number;
-  private currentPageMember: number;
-  private mutipleSelectionPending: UserGroup[];
-  private mutipleSelectionMember: UserGroup[];
+  private userListPending: Array<UserGroup>
+  private userListMember: Array<UserGroup>
+  private listViewPending: Array<UserGroup>
+  private listViewMember: Array<UserGroup>
+  private gid: number
+  private currentPagePending: number
+  private currentPageMember: number
+  private mutipleSelectionPending: Array<UserGroup>
+  private mutipleSelectionMember: Array<UserGroup>
 
   private readonly groupAdministrationTrans: Translation = {
-    ko: "그룹관리",
-    en: "Group Management"
-  };
+    ko: '그룹관리',
+    en: 'Group Management',
+  }
 
   private groupNameTrans: Translation = {
-    ko: "",
-    en: ""
-  };
+    ko: '',
+    en: '',
+  }
 
   private readonly additionTitleTrans: Translation = {
-    ko: "그룹 멤버 추가",
-    en: "Add Members"
-  };
+    ko: '그룹 멤버 추가',
+    en: 'Add Members',
+  }
 
   private readonly excludeTitleTrans: Translation = {
-    ko: "그룹 멤버 제외",
-    en: "Exclude Members"
-  };
+    ko: '그룹 멤버 제외',
+    en: 'Exclude Members',
+  }
 
   private readonly additionTrans: Translation = {
-    ko: "승인",
-    en: "Add"
-  };
+    ko: '승인',
+    en: 'Add',
+  }
 
   private readonly rejectTrans: Translation = {
-    ko: "거절",
-    en: "Reject"
-  };
+    ko: '거절',
+    en: 'Reject',
+  }
 
   private readonly excludeTrans: Translation = {
-    ko: "제외",
-    en: "Exclude"
-  };
+    ko: '제외',
+    en: 'Exclude',
+  }
 
   private readonly permissionFailedTrans: Translation = {
-    ko: "그룹 멤버 추가에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.",
-    en: "Failed to add a group member. Please check if this user applied to this group."
-  };
+    ko: '그룹 멤버 추가에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.',
+    en: 'Failed to add a group member. Please check if this user applied to this group.',
+  }
 
   private readonly rejectionFailedTrans: Translation = {
-    ko: "그룹 멤버 승인 거부에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.",
-    en: "Failed to reject. Please check if this user applied to this group."
+    ko: '그룹 멤버 승인 거부에 실패했습니다. 이 그룹에 멤버 신청을 했는지 확인해 주세요.',
+    en: 'Failed to reject. Please check if this user applied to this group.',
   }
 
   private readonly expelFailedTrans: Translation = {
-    ko: "그룹 멤버 제외에 실패했습니다. 그룹의 멤버인지 확인해 주세요.",
-    en: "Failed to exclude a group member. Please check if this user is a member of this group."
-  };
+    ko: '그룹 멤버 제외에 실패했습니다. 그룹의 멤버인지 확인해 주세요.',
+    en: 'Failed to exclude a group member. Please check if this user is a member of this group.',
+  }
 
   private readonly expelSucceedTrans: Translation = {
-    ko: " 명의 멤버를 제외했습니다.",
-    en: " members excluded."
+    ko: ' 명의 멤버를 제외했습니다.',
+    en: ' members excluded.',
   }
 
   private readonly acceptSucceedTrans: Translation = {
-    ko: " 명의 멤버를 승인했습니다.",
-    en: " members accepted."
+    ko: ' 명의 멤버를 승인했습니다.',
+    en: ' members accepted.',
   }
 
   private readonly rejectSucceedTrans: Translation = {
-    ko: " 명의 멤버를 거절했습니다.",
-    en: " members rejected."
+    ko: ' 명의 멤버를 거절했습니다.',
+    en: ' members rejected.',
   }
 
   private readonly noChosenRowTrans: Translation = {
-    ko: "관리할 유저를 선택해 주세요.",
-    en: "Please select users to admin."
+    ko: '관리할 유저를 선택해 주세요.',
+    en: 'Please select users to admin.',
   }
 
-  get lang(): Language {
-    return this.$store.state.language;
-  }
-
-  private async mounted() {
-    this.gid = Number(this.$route.params.gid);
-
-    var response = await axios.get("/api/check-login", {
-      validateStatus: () => true
-    });
-
-    if (response.status === 200) {
-    } else {
-      this.$router.push("/");
-      return;
-    }
-
-    response = await axios.get("/api/group/", { validateStatus: () => true });
-
-    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name;
-
-    response = await axios.get("/api/group/" + this.gid + "/pending", {
-      validateStatus: () => true
-    });
-
-    if (response.status === 401) {
-      this.$router.push("/my-page");
-      return;
-    }
-
-    this.currentPagePending = 1;
-
-    if (!response.data) {
-    } else {
-      this.userListPending = response.data;
-      this.userListPending = this.userListPending.sort((a,b) => a.studentNumber > b.studentNumber ? 1 : -1);
-      this.handlePagePending();
-    }
-
-    response = await axios.get("/api/group/" + this.gid + "/members", {
-      validateStatus: () => true
-    });
-
-    if (response.status === 401) {
-      this.$router.push("/my-page");
-      return;
-    }
-
-    this.currentPageMember = 1;
-
-    if (response.data == []) {
-    } else {
-      this.userListMember = response.data;
-      this.userListMember = this.userListMember.sort((a,b) => a.studentNumber > b.studentNumber ? 1 : -1);
-      this.handlePageMember();
-    }
-  }
-
-  private async permit() {
-    if(!this.mutipleSelectionPending) {
-      this.$notify.error(this.noChosenRowTrans[this.lang]);
-      return;
-    }
-
-    var list: number[] = new Array(this.mutipleSelectionPending.length);
-    var i = 0;
-
-    for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionPending[i].uid;
-    }
-
-    const response = await axios.post(
-      "/api/group/" + this.gid + "/accept",
-      list,
-      {
-        validateStatus: () => true
-      }
-    );
-
-    if (response.status === 200) {
-      this.$router.go(0);
-      this.$notify.info(list.length + this.acceptSucceedTrans[this.lang]);
-    } else {
-      this.$notify.error(this.permissionFailedTrans[this.lang]);
-    }
-  }
-
-  private async reject() {
-    if(!this.mutipleSelectionPending) {
-      this.$notify.error(this.noChosenRowTrans[this.lang]);
-      return;
-    }
-
-    var list: number[] = new Array(this.mutipleSelectionPending.length);;
-    var i = 0;
-
-    for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionPending[i].uid;
-    }
-
-    const response = await axios.post(
-      "/api/group/" + this.gid + "/reject",
-      this.mutipleSelectionPending,
-      {
-        validateStatus: () => true
-      }
-    );
-
-    if (response.status === 200) {
-      this.$router.go(0);
-      this.$notify.info(list.length + this.rejectSucceedTrans[this.lang]);
-    } else {
-      this.$notify.error(this.rejectionFailedTrans[this.lang]);
-    }
-  }
-
-  private async exclude() {
-    if(!this.mutipleSelectionMember) {
-      this.$notify.error(this.noChosenRowTrans[this.lang]);
-      return;
-    }
-
-    var list: number[] = new Array(this.mutipleSelectionMember.length);
-    var i = 0;
-
-    if(!list) {
-      this.$notify.error(this.noChosenRowTrans[this.lang]);
-      return;
-    }
-
-    for (i = 0; i < list.length; i++) {
-      list[i] = this.mutipleSelectionMember[i].uid;
-    }
-
-    const response = await axios.post(
-      "/api/group/" + this.gid + "/reject",
-      list,
-      {
-        validateStatus: () => true
-      }
-    );
-
-    if (response.status === 200) {
-      this.$router.go(0);
-      this.$notify.info(list.length + this.expelSucceedTrans[this.lang]);
-      return;
-    } else {
-      this.$notify.error(this.expelFailedTrans[this.lang]);
-    }
-  }
-
-  private async handlePagePending() {
-    if (this.currentPagePending * 20 >= this.userListPending.length)
-      this.listViewPending = this.userListPending.slice((this.currentPagePending - 1) * 20);
-    else {
-      this.listViewPending = this.userListPending.slice(
-        (this.currentPagePending - 1) * 20,
-        this.currentPagePending * 20
-      );
-    }
-  }
-
-  private async handlePageMember() {
-    if (this.currentPageMember * 20 >= this.userListMember.length)
-      this.listViewMember = this.userListMember.slice((this.currentPageMember - 1) * 20);
-    else {
-      this.listViewMember = this.userListMember.slice(
-        (this.currentPageMember - 1) * 20,
-        this.currentPageMember * 20
-      );
-    }
-  }
-
-  data() {
+  public data() {
     return {
       userListPending: this.userListPending,
       userListMember: this.userListMember,
@@ -374,26 +201,200 @@ export default class GroupAdmin extends Vue {
       mutipleSelectionMember: this.mutipleSelectionMember,
       attributeGroupTrans: this.groupNameTrans,
       sizeList: () => {
-        if (!this.userListPending) return 0;
-        else return this.userListPending.length;
+        if (!this.userListPending) {
+          return 0
+        } else {return this.userListPending.length}
       },
       sizeList2: () => {
-        if (!this.userListMember) return 0;
-        else return this.userListMember.length;
+        if (!this.userListMember) {
+          return 0
+        } else {
+          return this.userListMember.length
+        }
       },
       indexMethod: (index: number) => {
-        return (this.currentPagePending - 1) * 20 + index + 1;
+        return (this.currentPagePending - 1) * 20 + index + 1
       },
       indexMethod2: (index: number) => {
-        return (this.currentPageMember - 1) * 20 + index + 1;
+        return (this.currentPageMember - 1) * 20 + index + 1
       },
-      handleSelectionPending: (val: UserGroup[]) => {
-        this.mutipleSelectionPending = val;
+      handleSelectionPending: (val: Array<UserGroup>) => {
+        this.mutipleSelectionPending = val
       },
-      handleSelectionMember: (val: UserGroup[]) => {
-        this.mutipleSelectionMember = val;
-      }
-    };
+      handleSelectionMember: (val: Array<UserGroup>) => {
+        this.mutipleSelectionMember = val
+      },
+    }
+  }
+
+  get lang(): Language {
+    return this.$store.state.language
+  }
+
+  private async mounted() {
+    this.gid = Number(this.$route.params.gid)
+
+    let response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
+
+    if (response.status !== 200) {
+      this.$router.push('/')
+      return
+    }
+
+    response = await axios.get('/api/group/', { validateStatus: () => true })
+
+    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name
+
+    response = await axios.get('/api/group/' + this.gid + '/pending', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 401) {
+      this.$router.push('/my-page')
+      return
+    }
+
+    this.currentPagePending = 1
+
+    if (!!response.data) {
+      this.userListPending = response.data
+      this.userListPending = this.userListPending.sort((a, b) => a.studentNumber > b.studentNumber ? 1 : -1)
+      this.handlePagePending()
+    }
+
+    response = await axios.get('/api/group/' + this.gid + '/members', {
+      validateStatus: () => true,
+    })
+
+    if (response.status === 401) {
+      this.$router.push('/my-page')
+      return
+    }
+
+    this.currentPageMember = 1
+
+    if (!!response.data) {
+      this.userListMember = response.data
+      this.userListMember = this.userListMember.sort((a, b) => a.studentNumber > b.studentNumber ? 1 : -1)
+      this.handlePageMember()
+    }
+  }
+
+  private async permit() {
+    if (!this.mutipleSelectionPending) {
+      this.$notify.error(this.noChosenRowTrans[this.lang])
+      return
+    }
+
+    const list: Array<number> = new Array(this.mutipleSelectionPending.length)
+    let i = 0
+
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionPending[i].uid
+    }
+
+    const response = await axios.post(
+      '/api/group/' + this.gid + '/accept',
+      list,
+      {
+        validateStatus: () => true,
+      },
+    )
+
+    if (response.status === 200) {
+      this.$router.go(0)
+      this.$notify.info(list.length + this.acceptSucceedTrans[this.lang])
+    } else {
+      this.$notify.error(this.permissionFailedTrans[this.lang])
+    }
+  }
+
+  private async reject() {
+    if (!this.mutipleSelectionPending) {
+      this.$notify.error(this.noChosenRowTrans[this.lang])
+      return
+    }
+
+    const list: Array<number> = new Array(this.mutipleSelectionPending.length)
+    let i = 0
+
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionPending[i].uid
+    }
+
+    const response = await axios.post(
+      '/api/group/' + this.gid + '/reject',
+      this.mutipleSelectionPending,
+      {
+        validateStatus: () => true,
+      },
+    )
+
+    if (response.status === 200) {
+      this.$router.go(0)
+      this.$notify.info(list.length + this.rejectSucceedTrans[this.lang])
+    } else {
+      this.$notify.error(this.rejectionFailedTrans[this.lang])
+    }
+  }
+
+  private async exclude() {
+    if (!this.mutipleSelectionMember) {
+      this.$notify.error(this.noChosenRowTrans[this.lang])
+      return
+    }
+
+    const list: Array<number> = new Array(this.mutipleSelectionMember.length)
+    let i = 0
+
+    if (!list) {
+      this.$notify.error(this.noChosenRowTrans[this.lang])
+      return
+    }
+
+    for (i = 0; i < list.length; i++) {
+      list[i] = this.mutipleSelectionMember[i].uid
+    }
+
+    const response = await axios.post(
+      '/api/group/' + this.gid + '/reject',
+      list,
+      {
+        validateStatus: () => true,
+      },
+    )
+
+    if (response.status === 200) {
+      this.$router.go(0)
+      this.$notify.info(list.length + this.expelSucceedTrans[this.lang])
+      return
+    } else {
+      this.$notify.error(this.expelFailedTrans[this.lang])
+    }
+  }
+
+  private async handlePagePending() {
+    if (this.currentPagePending * 20 >= this.userListPending.length) {
+      this.listViewPending = this.userListPending.slice((this.currentPagePending - 1) * 20)
+    } else {
+      this.listViewPending = this.userListPending.slice(
+        (this.currentPagePending - 1) * 20,
+        this.currentPagePending * 20,
+      )
+    }
+  }
+
+  private async handlePageMember() {
+    if (this.currentPageMember * 20 >= this.userListMember.length) {
+      this.listViewMember = this.userListMember.slice((this.currentPageMember - 1) * 20)
+    } else {
+      this.listViewMember = this.userListMember.slice(
+        (this.currentPageMember - 1) * 20,
+        this.currentPageMember * 20,
+      )
+    }
   }
 }
 </script>

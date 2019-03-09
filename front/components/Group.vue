@@ -72,110 +72,116 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Provide } from "nuxt-property-decorator";
-import axios from "axios";
-import { Translation, Language } from "../types/translation";
+import { Component, Vue, Provide } from 'nuxt-property-decorator'
+import axios from 'axios'
+import { Translation, Language } from '../types/translation'
 
 @Component({})
 export default class Group extends Vue {
-  private groupList;
+  private groupList
 
   private readonly groupAdministrationTrans: Translation = {
-    ko: "그룹관리",
-    en: "Group Administration"
-  };
+    ko: '그룹관리',
+    en: 'Group Administration',
+  }
 
   private readonly attributeGroupTrans: Translation = {
-    ko: "그룹명",
-    en: "Group Name"
-  };
+    ko: '그룹명',
+    en: 'Group Name',
+  }
 
   private readonly attributeStatusTrans: Translation = {
-    ko: "상태",
-    en: "status"
-  };
+    ko: '상태',
+    en: 'status',
+  }
 
   private readonly attributeOwnershipTrans: Translation = {
-    ko: "관리자 페이지",
-    en: "Admin Page"
-  };
+    ko: '관리자 페이지',
+    en: 'Admin Page',
+  }
 
   private readonly attributeDescriptionTrans: Translation = {
-    ko: "설명",
-    en: "Description"
-  };
+    ko: '설명',
+    en: 'Description',
+  }
 
   private readonly warningTrans: Translation = {
-    ko: "주의",
-    en: "Warning"
-  };
+    ko: '주의',
+    en: 'Warning',
+  }
 
   private readonly leaveCheckTrans: Translation = {
-    ko: "탈퇴하시겠습니까?",
-    en: "This will leave the group. Continue?"
-  };
+    ko: '탈퇴하시겠습니까?',
+    en: 'This will leave the group. Continue?',
+  }
 
   private readonly applyFailedTrans: Translation = {
-    ko: "신청에 실패했습니다.",
-    en: "Apply failed."
-  };
+    ko: '신청에 실패했습니다.',
+    en: 'Apply failed.',
+  }
 
   private readonly leaveFailedTrans: Translation = {
-    ko: "탈퇴에 실패했습니다.",
-    en: "Leave failed"
-  };
+    ko: '탈퇴에 실패했습니다.',
+    en: 'Leave failed',
+  }
 
   private readonly applyTrans: Translation = {
-    ko: "신청",
-    en: "Apply"
-  };
+    ko: '신청',
+    en: 'Apply',
+  }
 
   private readonly leaveTrans: Translation = {
-    ko: "탈퇴",
-    en: "Leave"
-  };
+    ko: '탈퇴',
+    en: 'Leave',
+  }
 
   private readonly pendingTrans: Translation = {
-    ko: "승인 대기",
-    en: "Pending"
-  };
+    ko: '승인 대기',
+    en: 'Pending',
+  }
 
   private readonly manageTrans: Translation = {
-    ko: "관리",
-    en: "Manage"
-  };
+    ko: '관리',
+    en: 'Manage',
+  }
 
   private readonly groupLeaveTooltipTrans: Translation = {
-    ko: "이 그룹의 하위 그룹에 소속된 상태이므로 탈퇴할 수 없습니다.",
-    en: "You cannot leave a group as you belong to one of its descendents."
-  };
+    ko: '이 그룹의 하위 그룹에 소속된 상태이므로 탈퇴할 수 없습니다.',
+    en: 'You cannot leave a group as you belong to one of its descendents.',
+  }
+
+  public data() {
+    return {
+      groupList: this.groupList,
+    }
+  }
 
   get lang(): Language {
-    return this.$store.state.language;
+    return this.$store.state.language
   }
 
   private async mounted() {
-    const response = await axios.get("/api/check-login", {
-      validateStatus: () => true
-    });
+    const response = await axios.get('/api/check-login', {
+      validateStatus: () => true,
+    })
 
     if (response.status !== 200) {
-      this.$router.push("/");
+      this.$router.push('/')
     }
 
-    const groupResponse = await axios.get("/api/group", {
-      validateStatus: () => true
-    });
+    const groupResponse = await axios.get('/api/group', {
+      validateStatus: () => true,
+    })
 
-    this.groupList = groupResponse.data;
+    this.groupList = groupResponse.data
   }
 
   private async applyGroup(idx: number) {
-    const response = await axios.post("/api/group/" + idx + "/apply");
+    const response = await axios.post('/api/group/' + idx + '/apply')
     if (response.status === 200) {
-      this.$router.go(0);
+      this.$router.go(0)
     } else {
-      this.$notify.error(this.applyFailedTrans[this.lang]);
+      this.$notify.error(this.applyFailedTrans[this.lang])
     }
   }
 
@@ -184,32 +190,26 @@ export default class Group extends Vue {
       this.leaveCheckTrans[this.lang],
       this.warningTrans[this.lang],
       {
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
-        type: "warning"
-      }
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+      },
     ).then(() => {
-      this.leavegroup(idx);
-    });
+      this.leavegroup(idx)
+    })
   }
 
   private async leavegroup(idx: number) {
-    const response = await axios.post("/api/group/" + idx + "/leave");
+    const response = await axios.post('/api/group/' + idx + '/leave')
     if (response.status === 200) {
-      this.$router.go(0);
+      this.$router.go(0)
     } else {
-      this.$notify.error(this.leaveFailedTrans[this.lang]);
+      this.$notify.error(this.leaveFailedTrans[this.lang])
     }
   }
 
   private async groupOwnership(idx: number) {
-    this.$router.push("/group/" + idx);
-  }
-
-  data() {
-    return {
-      groupList: this.groupList
-    };
+    this.$router.push('/group/' + idx)
   }
 }
 </script>
