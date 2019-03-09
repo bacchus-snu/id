@@ -1,28 +1,6 @@
 import * as Koa from 'koa'
 
-import percentEncode from './percent_encode'
 import verify from './verify'
-
-function percentDecode(str: string): string {
-  let len = str.length
-  len -= (str.split('%').length - 1) * 2
-  const buf = Buffer.alloc(len)
-  let lastIndex = 0
-  let bufOffset = 0
-  while (true) {
-    const prevIndex = lastIndex
-    lastIndex = str.indexOf('%', prevIndex)
-    if (lastIndex === -1) {
-      break
-    }
-    bufOffset += buf.write(str.substring(prevIndex, lastIndex), bufOffset)
-    buf[bufOffset] = parseInt(str.substring(lastIndex + 1, lastIndex + 3), 16)
-    bufOffset++
-    lastIndex += 3
-  }
-  bufOffset += buf.write(str.substring(lastIndex), bufOffset)
-  return buf.toString('utf8')
-}
 
 interface Params {
   [key: string]: string
@@ -90,14 +68,14 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
     // Percent-encode body
     const convertedRequestParams: Params = {}
     for (const [k, v] of Object.entries(requestParams)) {
-      convertedRequestParams[percentEncode(k)] = percentEncode(v)
+      convertedRequestParams[encodeURIComponent(k)] = encodeURIComponent(v)
     }
 
     const collectedParams = { ...convertedRequestParams, ...authorizationParams }
 
     ctx.assert('oauth_consumer_key' in collectedParams, 400, 'Consumer Key should be given')
-    const consumerKey = percentDecode(collectedParams.oauth_consumer_key)
-    const oauthToken = collectedParams.oauth_token && percentDecode(collectedParams.oauth_token)
+    const consumerKey = decodeURIComponent(collectedParams.oauth_consumer_key)
+    const oauthToken = collectedParams.oauth_token && decodeURIComponent(collectedParams.oauth_token)
     const [consumerSecret, tokenSecret] = await Promise.all([
       args.getConsumerSecret(consumerKey),
       (async () => {

@@ -1,7 +1,5 @@
 import * as crypto from 'crypto'
 
-import percentEncode from './percent_encode'
-
 interface Params {
   [key: string]: string
 }
@@ -61,11 +59,13 @@ export default function verify(
   const requestUrlString = url.toString()
   const paramsString = entries.map(([k, v]) => `${k}=${v}`).join('&')
 
-  const base = `${percentEncode(methodString)}&${percentEncode(requestUrlString)}&${percentEncode(paramsString)}`
-  const key = `${percentEncode(consumerSecret)}&${percentEncode(tokenSecret)}`
+  const base =
+    `${encodeURIComponent(methodString)}&${encodeURIComponent(requestUrlString)}&${encodeURIComponent(paramsString)}`
+  const key =
+    `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`
   const hmac = crypto.createHmac('sha1', key)
   hmac.update(base)
   const digest = hmac.digest()
   const calculatedSignature = digest.toString('base64')
-  return oauthSignature === percentEncode(calculatedSignature)
+  return oauthSignature === encodeURIComponent(calculatedSignature)
 }
