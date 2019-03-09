@@ -76,13 +76,25 @@ export default class Groups {
   }
 
   public async getUserGroupList(tr: Transaction, userIdx: number): Promise<Array<GroupUserInfo>> {
-    const query = 'SELECT g.*,' +
-      '$1 IN (SELECT user_idx FROM pending_user_memberships WHERE group_idx = g.idx) AS is_pending,' +
-      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx IN ' +
-      '(SELECT supergroup_idx FROM group_reachable_cache WHERE subgroup_idx = g.idx)) AS is_member,' +
-      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx = g.idx) AS is_direct_member,' +
-      '$1 IN (SELECT user_idx FROM user_memberships WHERE group_idx = g.owner_group_idx) AS is_owner ' +
-      'FROM groups AS g WHERE owner_group_idx IS NOT NULL ORDER BY idx'
+    const query = `
+    WITH
+      umem AS (SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1),
+      pend_umem AS (SELECT user_idx, group_idx FROM pending_user_memberships WHERE user_idx = $1)
+    SELECT DISTINCT ON (g.idx)
+      g.idx,
+      g.name_ko,
+      (umem.user_idx IS NOT NULL) AS is_member,
+      (dir.user_idx IS NOT NULL) AS is_direct_member,
+      (pend_umem.user_idx IS NOT NULL) AS is_pending,
+      (EXISTS (SELECT 1 FROM umem WHERE umem.group_idx = g.owner_group_idx)) AS is_owner
+    FROM umem
+    RIGHT JOIN group_reachable_cache gr ON umem.group_idx = gr.supergroup_idx
+    RIGHT JOIN groups g ON g.idx = gr.subgroup_idx
+    LEFT JOIN umem dir ON dir.group_idx = g.idx
+    LEFT JOIN pend_umem ON pend_umem.group_idx = g.idx
+    WHERE g.owner_group_idx IS NOT NULL
+    ORDER BY g.idx, umem.user_idx
+    `
     const result = await tr.query(query, [userIdx])
     return result.rows.map(row => this.rowToGroupUserInfo(row))
   }
