@@ -26,7 +26,6 @@ export function createRouter(model: Model, config: Config): Router {
    * @param password password.
    * 200 if success, 401 if not.
    */
-  router.post('/api/login-pam', loginPAM(model))
   router.post('/api/login/pam', loginPAM(model))
   /**
    * Legacy login API route.
@@ -117,7 +116,6 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/get-passwd', getPasswd(model))
   router.get('/api/nss/passwd', getPasswd(model))
 
   /**
@@ -126,7 +124,6 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/get-group', getGroup(model))
   router.get('/api/nss/group', getGroup(model))
 
   /**
