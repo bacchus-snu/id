@@ -204,7 +204,7 @@ export function createRouter(model: Model, config: Config): Router {
    * Nest OAuth-related endpoints.
    */
   const oauth10aRouter = createOAuth10aRouter(model, config)
-  router.use('/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
+  router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
 
   return router
 }
