@@ -58,6 +58,7 @@ test('get group list about user', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model)
     const ownerGroupIdx = await createGroup(tr, model)
+    const noOwnerGroupIdx = await createGroup(tr, model)
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
     await model.groups.setOwnerGroup(tr, ownerGroupIdx, ownerGroupIdx)
     await createGroupRelation(tr, model, ownerGroupIdx, groupIdx)
@@ -68,18 +69,66 @@ test('get group list about user', async t => {
     await model.users.addPendingUserMembership(tr, pendingUserIdx, groupIdx)
     await model.users.addUserMembership(tr, ownerUserIdx, ownerGroupIdx)
 
-    t.true((await model.groups.getUserGroupList(tr, userIdx)).some(g => {
-      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && !g.isPending && !g.isOwner
-    }))
-    t.true((await model.groups.getUserGroupList(tr, pendingUserIdx)).some(g => {
-      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && g.isPending && !g.isOwner
-    }))
-    t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
-      return g.idx === groupIdx && g.isMember && !g.isDirectMember && !g.isPending && g.isOwner
-    }))
-    t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
-      return g.idx === ownerGroupIdx && g.isMember && g.isDirectMember && !g.isPending && g.isOwner
-    }))
+    let group
+
+    group = (await model.groups.getUserGroupList(tr, userIdx)).find(g => g.idx === noOwnerGroupIdx)
+    t.is(group, undefined)
+
+    group = (await model.groups.getUserGroupList(tr, userIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.false(group.isMember)
+      t.false(group.isDirectMember)
+      t.false(group.isPending)
+      t.false(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, pendingUserIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.false(group.isMember)
+      t.false(group.isDirectMember)
+      t.true(group.isPending)
+      t.false(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, ownerUserIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.true(group.isMember)
+      t.false(group.isDirectMember)
+      t.false(group.isPending)
+      t.true(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, ownerUserIdx)).find(g => g.idx === ownerGroupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.true(group.isMember)
+      t.true(group.isDirectMember)
+      t.false(group.isPending)
+      t.true(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
   }, ['users', 'group_reachable_cache'])
 })
 
