@@ -4,6 +4,7 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
 import { createGroup, createUser, createGroupRelation } from '../test_utils'
+import * as uuid from 'uuid/v4'
 import { model } from '../setup'
 
 const name: Translation = {
@@ -40,19 +41,6 @@ test('create and delete group', async t => {
   }, ['group_reachable_cache'])
 })
 
-test('set owner user', async t => {
-  await model.pgDo(async tr => {
-    const groupIdx = await createGroup(tr, model)
-    const userIdx = await createUser(tr, model)
-
-    await model.groups.setOwnerUser(tr, groupIdx, userIdx)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, userIdx)
-
-    await model.groups.setOwnerUser(tr, groupIdx, null)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
-  }, ['users', 'group_reachable_cache'])
-})
-
 test('set owner group', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model)
@@ -64,6 +52,35 @@ test('set owner group', async t => {
     await model.groups.setOwnerGroup(tr, groupIdx, null)
     t.is((await model.groups.getByIdx(tr, groupIdx)).ownerGroupIdx, null)
   }, ['group_reachable_cache'])
+})
+
+test('get group list about user', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const ownerGroupIdx = await createGroup(tr, model)
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+    await model.groups.setOwnerGroup(tr, ownerGroupIdx, ownerGroupIdx)
+    await createGroupRelation(tr, model, ownerGroupIdx, groupIdx)
+
+    const userIdx = await createUser(tr, model)
+    const pendingUserIdx = await createUser(tr, model)
+    const ownerUserIdx = await createUser(tr, model)
+    await model.users.addPendingUserMembership(tr, pendingUserIdx, groupIdx)
+    await model.users.addUserMembership(tr, ownerUserIdx, ownerGroupIdx)
+
+    t.true((await model.groups.getUserGroupList(tr, userIdx)).some(g => {
+      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && !g.isPending && !g.isOwner
+    }))
+    t.true((await model.groups.getUserGroupList(tr, pendingUserIdx)).some(g => {
+      return g.idx === groupIdx && !g.isMember && !g.isDirectMember && g.isPending && !g.isOwner
+    }))
+    t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
+      return g.idx === groupIdx && g.isMember && !g.isDirectMember && !g.isPending && g.isOwner
+    }))
+    t.true((await model.groups.getUserGroupList(tr, ownerUserIdx)).some(g => {
+      return g.idx === ownerGroupIdx && g.isMember && g.isDirectMember && !g.isPending && g.isOwner
+    }))
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('get reachable group object', async t => {
