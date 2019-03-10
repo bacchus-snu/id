@@ -201,14 +201,14 @@ export default class GroupAdmin extends Vue {
       multipleSelectionMember: this.multipleSelectionMember,
       attributeGroupTrans: this.groupNameTrans,
       sizeList: () => {
-        if (this.userListPending == null || this.userListPending.length == 0) {
+        if (this.userListPending == null || this.userListPending.length === 0) {
           return 0
         } else {
           return this.userListPending.length
         }
       },
       sizeList2: () => {
-        if (this.userListMember == null || this.userListMember.length == 0) {
+        if (this.userListMember == null || this.userListMember.length === 0) {
           return 0
         } else {
           return this.userListMember.length
@@ -247,12 +247,12 @@ export default class GroupAdmin extends Vue {
 
     response = await axios.get('/api/group/', { validateStatus: () => true })
 
-    if(response.data.filter(data => data.idx === this.gid).length == 0) {
-      this.$router.push("/my-page")
+    if (response.data.filter(data => data.idx === this.gid).length === 0) {
+      this.$router.push('/my-page')
       return
     }
 
-    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name;
+    this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name
 
     response = await axios.get('/api/group/' + this.gid + '/pending', {
       validateStatus: () => true,
@@ -290,7 +290,7 @@ export default class GroupAdmin extends Vue {
   }
 
   private async permit() {
-    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length == 0) {
+    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length === 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
@@ -319,7 +319,7 @@ export default class GroupAdmin extends Vue {
   }
 
   private async reject() {
-    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length == 0) {
+    if (this.multipleSelectionPending == null || this.multipleSelectionPending.length === 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
@@ -348,7 +348,7 @@ export default class GroupAdmin extends Vue {
   }
 
   private async exclude() {
-    if (this.multipleSelectionMember == null || this.multipleSelectionMember.length == 0) {
+    if (this.multipleSelectionMember == null || this.multipleSelectionMember.length === 0) {
       this.$notify.error(this.noChosenRowTrans[this.lang])
       return
     }
