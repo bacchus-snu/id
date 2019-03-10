@@ -98,7 +98,6 @@ create table reserved_usernames (
 
 create table groups (
   idx serial primary key,
-  owner_user_idx integer references users(idx) on delete set null,
   owner_group_idx integer references groups(idx) on delete set null,
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
@@ -147,7 +146,6 @@ create table pending_user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
   group_idx integer not null references groups(idx) on delete cascade,
-  created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
 );
 
