@@ -33,7 +33,7 @@ export interface MiddlewareParams {
 export interface OAuthData {
   consumerKey: string
   oauthToken?: string
-  collectedParams: any
+  collectedParams: Params
 }
 
 export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
