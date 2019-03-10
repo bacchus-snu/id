@@ -1,33 +1,28 @@
 import * as Koa from 'koa'
 
+import Params, { ParamObj } from './params'
 import verify from './verify'
 
-interface Params {
-  [key: string]: string
-}
-
-export function parseAuthorizationParams(authorization: string): Params {
+export function parseAuthorizationParams(params: Params, authorization: string) {
   authorization = authorization.trim()
   if (authorization.substring(0, 6).toLowerCase() === 'oauth ') {
     authorization = authorization.substring(6).trim()
   } else {
-    return {}
+    return
   }
 
-  const collectedParams: Params = {}
   while (true) {
     const eqIndex = authorization.indexOf('="')
     const keyEscaped = authorization.substring(0, eqIndex)
     authorization = authorization.substring(eqIndex + 2)
     const quoteIndex = authorization.indexOf('"')
     const valueEscaped = authorization.substring(0, quoteIndex)
-    collectedParams[keyEscaped] = valueEscaped
+    params.addOneEscaped(keyEscaped, valueEscaped)
     if (authorization[quoteIndex + 1] !== ',') {
       break
     }
     authorization = authorization.substring(quoteIndex + 2).trim()
   }
-  return collectedParams
 }
 
 export interface MiddlewareParams {
@@ -47,12 +42,16 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
       return await next()
     }
 
+    const params = new Params()
+
     // Parse Authorization header, if there is any
     const authorization: string | undefined = ctx.request.headers.authorization
-    const authorizationParams = typeof authorization === 'string' ? parseAuthorizationParams(authorization) : {}
+    if (typeof authorization === 'string') {
+      parseAuthorizationParams(params, authorization)
+    }
 
     // Test and extract body
-    let requestParams: Params
+    let requestParams: ParamObj
     const testUrlEncoded = ctx.request.is('x-www-form-urlencoded')
     if (testUrlEncoded === null) {
       // No body
@@ -64,18 +63,14 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
       // Has body
       requestParams = ctx.request.body
     }
+    params.extend(requestParams)
 
-    // Percent-encode body
-    const convertedRequestParams: Params = {}
-    for (const [k, v] of Object.entries(requestParams)) {
-      convertedRequestParams[encodeURIComponent(k)] = encodeURIComponent(v)
-    }
+    const consumerKeyList = params.get('oauth_consumer_key')
+    ctx.assert(consumerKeyList.length === 1, 400, 'Consumer Key should be present and unique')
+    const consumerKey = decodeURIComponent(consumerKeyList[0])
 
-    const collectedParams = { ...convertedRequestParams, ...authorizationParams }
-
-    ctx.assert('oauth_consumer_key' in collectedParams, 400, 'Consumer Key should be given')
-    const consumerKey = decodeURIComponent(collectedParams.oauth_consumer_key)
-    const oauthToken = collectedParams.oauth_token && decodeURIComponent(collectedParams.oauth_token)
+    const oauthTokenList = params.get('oauth_token')
+    const oauthToken = oauthTokenList.length !== 0 ? decodeURIComponent(oauthTokenList[0]) : undefined
     const [consumerSecret, tokenSecret] = await Promise.all([
       args.getConsumerSecret(consumerKey),
       (async () => {
@@ -88,14 +83,14 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
     if (consumerSecret == null || tokenSecret == null) {
       return ctx.throw(401)
     }
-    if (!verify(collectedParams, ctx.request.method, ctx.request.URL.toString(), consumerSecret, tokenSecret)) {
+    if (!verify(params, ctx.request.method, ctx.request.URL.toString(), consumerSecret, tokenSecret)) {
       return ctx.throw(401)
     }
 
     (ctx.request as any).oauth = {
       consumerKey,
       oauthToken,
-      collectedParams,
+      collectedParams: params,
     } as OAuthData
     return await next()
   }

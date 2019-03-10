@@ -1,8 +1,6 @@
 import * as crypto from 'crypto'
 
-interface Params {
-  [key: string]: string
-}
+import Params from './params'
 
 export class InvalidParameterError extends Error {
   constructor(private innerParam: string, msg?: string) {
@@ -16,9 +14,9 @@ export class InvalidParameterError extends Error {
 
 /**
  * Verify the given request as per Section 9.
- * @param params Collected parameters as per Section 9.1.1. Should contain Authorization header parameters, request body
- * parameters, and URL query parameters. Keys and values should be percent-encoded. `oauth_signature_method` should be
- * `'HMAC-SHA1'`. It should contain `oauth_signature`.
+ * @param params Collected parameters as per Section 9.1.1. Should contain Authorization header parameters, request
+ * body parameters, and URL query parameters. Keys and values should be percent-encoded.  `oauth_signature_method`
+ * should be `'HMAC-SHA1'`. It should contain `oauth_signature`.
  * @param method HTTP method used for request.
  * @param requestUrl URL used for request.
  * @param consumerSecret OAuth 1.0a Consumer Secret.
@@ -34,28 +32,18 @@ export default function verify(
   consumerSecret: string,
   tokenSecret: string = '',
 ): boolean {
-  if (params.oauth_signature_method !== 'HMAC-SHA1') {
+  const oauthSignatureMethod = params.get('oauth_signature_method')
+  if (oauthSignatureMethod.length !== 1 || oauthSignatureMethod[0] !== 'HMAC-SHA1') {
     throw new InvalidParameterError('oauth_signature_method', 'oauth_signature_method should be HMAC-SHA1')
   }
-  const oauthSignature = params.oauth_signature
-  if (oauthSignature == null) {
-    throw new InvalidParameterError('oauth_signature', 'oauth_signature must be present')
+
+  const oauthSignature = params.get('oauth_signature')
+  if (oauthSignature.length !== 1) {
+    throw new InvalidParameterError('oauth_signature', 'oauth_signature must be present and unique')
   }
 
-  const processedParams = { ...params }
-  delete processedParams.realm
-  delete processedParams.oauth_signature
-
-  const entries = Object.entries(processedParams)
-  entries.sort((a, b) => {
-    // Sort by key
-    const x = a[0].localeCompare(b[0])
-    if (x !== 0) {
-      return x
-    }
-    // Sort by value
-    return a[1].localeCompare(b[1])
-  })
+  params.remove('realm')
+  params.remove('oauth_signature')
 
   const methodString = method.toUpperCase() // uppercase method
   const url = new URL(requestUrl)
@@ -67,7 +55,7 @@ export default function verify(
     url.port = ''
   }
   const requestUrlString = url.toString()
-  const paramsString = entries.map(([k, v]) => `${k}=${v}`).join('&')
+  const paramsString = params.sorted()
 
   const base =
     `${encodeURIComponent(methodString)}&${encodeURIComponent(requestUrlString)}&${encodeURIComponent(paramsString)}`
@@ -77,5 +65,5 @@ export default function verify(
   hmac.update(base)
   const digest = hmac.digest()
   const calculatedSignature = digest.toString('base64')
-  return oauthSignature === encodeURIComponent(calculatedSignature)
+  return oauthSignature[0] === encodeURIComponent(calculatedSignature)
 }
