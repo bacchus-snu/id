@@ -81,8 +81,7 @@ export default class Groups {
       umem AS (SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1),
       pend_umem AS (SELECT user_idx, group_idx FROM pending_user_memberships WHERE user_idx = $1)
     SELECT DISTINCT ON (g.idx)
-      g.idx,
-      g.name_ko,
+      g.*,
       (umem.user_idx IS NOT NULL) AS is_member,
       (dir.user_idx IS NOT NULL) AS is_direct_member,
       (pend_umem.user_idx IS NOT NULL) AS is_pending,
