@@ -333,7 +333,7 @@ export default class GroupAdmin extends Vue {
 
     const response = await axios.post(
       '/api/group/' + this.gid + '/reject',
-      this.multipleSelectionPending,
+      list,
       {
         validateStatus: () => true,
       },
