@@ -4,6 +4,7 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
 import { createGroup, createUser, createGroupRelation } from '../test_utils'
+import * as uuid from 'uuid/v4'
 import { model } from '../setup'
 
 const name: Translation = {
@@ -40,19 +41,6 @@ test('create and delete group', async t => {
   }, ['group_reachable_cache'])
 })
 
-test('set owner user', async t => {
-  await model.pgDo(async tr => {
-    const groupIdx = await createGroup(tr, model)
-    const userIdx = await createUser(tr, model)
-
-    await model.groups.setOwnerUser(tr, groupIdx, userIdx)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, userIdx)
-
-    await model.groups.setOwnerUser(tr, groupIdx, null)
-    t.is((await model.groups.getByIdx(tr, groupIdx)).ownerUserIdx, null)
-  }, ['users', 'group_reachable_cache'])
-})
-
 test('set owner group', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model)
@@ -64,6 +52,84 @@ test('set owner group', async t => {
     await model.groups.setOwnerGroup(tr, groupIdx, null)
     t.is((await model.groups.getByIdx(tr, groupIdx)).ownerGroupIdx, null)
   }, ['group_reachable_cache'])
+})
+
+test('get group list about user', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const ownerGroupIdx = await createGroup(tr, model)
+    const noOwnerGroupIdx = await createGroup(tr, model)
+    await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx)
+    await model.groups.setOwnerGroup(tr, ownerGroupIdx, ownerGroupIdx)
+    await createGroupRelation(tr, model, ownerGroupIdx, groupIdx)
+
+    const userIdx = await createUser(tr, model)
+    const pendingUserIdx = await createUser(tr, model)
+    const ownerUserIdx = await createUser(tr, model)
+    await model.users.addPendingUserMembership(tr, pendingUserIdx, groupIdx)
+    await model.users.addUserMembership(tr, ownerUserIdx, ownerGroupIdx)
+
+    let group
+
+    group = (await model.groups.getUserGroupList(tr, userIdx)).find(g => g.idx === noOwnerGroupIdx)
+    t.is(group, undefined)
+
+    group = (await model.groups.getUserGroupList(tr, userIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.false(group.isMember)
+      t.false(group.isDirectMember)
+      t.false(group.isPending)
+      t.false(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, pendingUserIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.false(group.isMember)
+      t.false(group.isDirectMember)
+      t.true(group.isPending)
+      t.false(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, ownerUserIdx)).find(g => g.idx === groupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.true(group.isMember)
+      t.false(group.isDirectMember)
+      t.false(group.isPending)
+      t.true(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+
+    group = (await model.groups.getUserGroupList(tr, ownerUserIdx)).find(g => g.idx === ownerGroupIdx)
+    if (group) {
+      t.truthy(group.name.ko)
+      t.truthy(group.name.en)
+      t.truthy(group.description.ko)
+      t.truthy(group.description.en)
+      t.true(group.isMember)
+      t.true(group.isDirectMember)
+      t.false(group.isPending)
+      t.true(group.isOwner)
+    } else {
+      t.fail('group not found')
+    }
+  }, ['users', 'group_reachable_cache'])
 })
 
 test('get reachable group object', async t => {

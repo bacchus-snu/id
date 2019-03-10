@@ -7,6 +7,8 @@ import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
+import { listGroups, listMembers, listPending,
+  applyGroup, acceptGroup, rejectGroup, leaveGroup } from './handlers/groups'
 
 export function createRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -24,7 +26,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @param password password.
    * 200 if success, 401 if not.
    */
-  router.post('/api/login-pam', loginPAM(model))
+  router.post('/api/login/pam', loginPAM(model))
   /**
    * Legacy login API route.
    * CAUTION: response code 200 means failure in sign in.
@@ -114,7 +116,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/get-passwd', getPasswd(model))
+  router.get('/api/nss/passwd', getPasswd(model))
 
   /**
    * Get the group map
@@ -122,7 +124,60 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/get-group', getGroup(model))
+  router.get('/api/nss/group', getGroup(model))
+
+  /**
+   * Get get the group list, along with is_member, is_pending, is_owner
+   * 200 on success
+   * 401 if not logged in
+   */
+  router.get('/api/group', listGroups(model))
+
+  /**
+   * Get get the group's member list, if requested by an owner.
+   * 200 on success
+   * 401 if not owner
+   */
+  router.get('/api/group/:gid/members', listMembers(model))
+
+  /**
+   * Get get the group's pending member list, if requested by an owner.
+   * 200 on success
+   * 401 if not owner
+   */
+  router.get('/api/group/:gid/pending', listPending(model))
+
+  /**
+   * Apply to join the group.
+   * 200 on success
+   * 400 if already applied or already a member, or invalid group
+   * 401 if not logged in
+   */
+  router.post('/api/group/:gid/apply', applyGroup(model))
+
+  /**
+   * Accent a join request.
+   * 200 on success
+   * 400 if any approval fails
+   * 401 if not owner
+   */
+  router.post('/api/group/:gid/accept', acceptGroup(model))
+
+  /**
+   * Reject a join request, or remove a user.
+   * 200 on success
+   * 400 if any rejection fails
+   * 401 if not owner
+   */
+  router.post('/api/group/:gid/reject', rejectGroup(model))
+
+  /**
+   * Leave a group.
+   * 200 on success
+   * 400 if not in group
+   * 401 if not logged in
+   */
+  router.post('/api/group/:gid/leave', leaveGroup(model))
 
   return router
 }

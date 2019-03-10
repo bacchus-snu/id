@@ -1,14 +1,24 @@
 import Model from './model'
+import { User } from './users'
 import { Translation } from './translation'
 import Transaction from './transaction'
 import { NoSuchEntryError } from './errors'
 
 export interface Group {
   idx: number
-  ownerUserIdx: number | null
   ownerGroupIdx: number | null
   name: Translation
   description: Translation
+}
+
+export interface GroupUserInfo {
+  idx: number
+  name: Translation
+  description: Translation
+  isMember: boolean
+  isDirectMember: boolean
+  isPending: boolean
+  isOwner: boolean
 }
 
 interface GroupReachable {
@@ -57,20 +67,46 @@ export default class Groups {
     return this.rowToGroup(result.rows[0])
   }
 
-  public async setOwnerUser(tr: Transaction, groupIdx: number, ownerUserIdx: number | null): Promise<void> {
-    const query = 'UPDATE groups SET owner_user_idx = $1 WHERE idx = $2 RETURNING idx'
-    const result = await tr.query(query, [ownerUserIdx, groupIdx])
-    if (result.rows.length === 0) {
-      throw new NoSuchEntryError()
-    }
-  }
-
   public async setOwnerGroup(tr: Transaction, groupIdx: number, ownerGroupIdx: number | null): Promise<void> {
     const query = 'UPDATE groups SET owner_group_idx = $1 WHERE idx = $2 RETURNING idx'
     const result = await tr.query(query, [ownerGroupIdx, groupIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+  }
+
+  public async getUserGroupList(tr: Transaction, userIdx: number): Promise<Array<GroupUserInfo>> {
+    const query = `
+    WITH
+      umem AS (SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1),
+      pend_umem AS (SELECT user_idx, group_idx FROM pending_user_memberships WHERE user_idx = $1)
+    SELECT DISTINCT ON (g.idx)
+      g.idx,
+      g.name_ko,
+      g.name_en,
+      g.description_ko,
+      g.description_en,
+      (umem.user_idx IS NOT NULL) AS is_member,
+      (dir.user_idx IS NOT NULL) AS is_direct_member,
+      (pend_umem.user_idx IS NOT NULL) AS is_pending,
+      (EXISTS (SELECT 1 FROM umem WHERE umem.group_idx = g.owner_group_idx)) AS is_owner
+    FROM umem
+    RIGHT JOIN group_reachable_cache gr ON umem.group_idx = gr.supergroup_idx
+    RIGHT JOIN groups g ON g.idx = gr.subgroup_idx
+    LEFT JOIN umem dir ON dir.group_idx = g.idx
+    LEFT JOIN pend_umem ON pend_umem.group_idx = g.idx
+    WHERE g.owner_group_idx IS NOT NULL
+    ORDER BY g.idx, umem.user_idx
+    `
+    const result = await tr.query(query, [userIdx])
+    return result.rows.map(row => this.rowToGroupUserInfo(row))
+  }
+
+  public async checkOwner(tr: Transaction, groupIdx: number, userIdx: number): Promise<boolean> {
+    const query = 'SELECT EXISTS (SELECT 1 FROM user_memberships mem INNER JOIN groups g ' +
+      'ON g.owner_group_idx = mem.group_idx WHERE mem.user_idx = $1 AND g.idx = $2)'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    return result.rows[0].exists
   }
 
   public async addGroupRelation(tr: Transaction, supergroupIdx: number, subgroupIdx: number): Promise<number> {
@@ -162,10 +198,26 @@ export default class Groups {
     return result.rows.map(row => row.idx)
   }
 
+  private rowToUser(row: any): User {
+    const user: User = {
+      idx: row.idx,
+      username: row.username,
+      name: row.name,
+      uid: row.uid,
+      shell: row.shell,
+      preferredLanguage: row.preferred_language,
+    }
+
+    if (row.student_number) {
+      user.studentNumber = row.student_number
+    }
+
+    return user
+  }
+
   private rowToGroup(row: any): Group {
     return {
       idx: row.idx,
-      ownerUserIdx: row.owner_user_idx,
       ownerGroupIdx: row.owner_group_idx,
       name: {
         ko: row.name_ko,
@@ -175,6 +227,24 @@ export default class Groups {
         ko: row.description_ko,
         en: row.description_en,
       },
+    }
+  }
+
+  private rowToGroupUserInfo(row: any): GroupUserInfo {
+    return {
+      idx: row.idx,
+      name: {
+        ko: row.name_ko,
+        en: row.name_en,
+      },
+      description: {
+        ko: row.description_ko,
+        en: row.description_en,
+      },
+      isPending: row.is_pending,
+      isMember: row.is_member,
+      isDirectMember: row.is_direct_member,
+      isOwner: row.is_owner,
     }
   }
 

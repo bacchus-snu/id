@@ -119,6 +119,114 @@ test('get all user memberships', async t => {
   }, ['users', 'group_reachable_cache'])
 })
 
+test('get user membership by uid and gid', async t => {
+  await model.pgDo(async tr => {
+    const userIdx = await createUser(tr, model)
+    const groupIdx = await createGroup(tr, model)
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+
+    let result
+    result = await model.users.hasUserMembership(tr, userIdx, groupIdx + 1)
+    t.false(result)
+    result = await model.users.hasUserMembership(tr, userIdx, groupIdx)
+    t.true(result)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get all user membership users', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
+    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
+    const membership = await model.users.addUserMembership(tr, userIdx, groupIdx)
+
+    const allMembership = await model.users.getAllMembershipUsers(tr, groupIdx)
+
+    t.is(allMembership.length, 1)
+    t.is(allMembership[0].idx, userIdx)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get pending user membership by uid and gid', async t => {
+  await model.pgDo(async tr => {
+    const userIdx = await createUser(tr, model)
+    const groupIdx = await createGroup(tr, model)
+    await model.users.addPendingUserMembership(tr, userIdx, groupIdx)
+
+    let result
+    result = await model.users.hasPendingUserMembership(tr, userIdx, groupIdx + 1)
+    t.false(result)
+    result = await model.users.hasPendingUserMembership(tr, userIdx, groupIdx)
+    t.true(result)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('get all pending user membership users', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+    const userIdx = await createUser(tr, model)
+    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid())
+    const membership = await model.users.addPendingUserMembership(tr, userIdx, groupIdx)
+
+    const allPendingMembership = await model.users.getAllPendingMembershipUsers(tr, groupIdx)
+
+    t.is(allPendingMembership.length, 1)
+    t.is(allPendingMembership[0].idx, userIdx)
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('accept pending applications', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+
+    const userIdx1 = await createUser(tr, model)
+    const userIdx2 = await createUser(tr, model)
+    const userIdx3 = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, userIdx1, uuid())
+    await model.users.addStudentNumber(tr, userIdx2, uuid())
+    await model.users.addStudentNumber(tr, userIdx3, uuid())
+
+    await model.users.addUserMembership(tr, userIdx2, groupIdx)
+    await model.users.addPendingUserMembership(tr, userIdx3, groupIdx)
+
+    const result = await model.users.acceptUserMemberships(tr, groupIdx, [userIdx1, userIdx2, userIdx3])
+    t.is(result, 1)
+
+    const pendingMemberships = await model.users.getAllPendingMembershipUsers(tr, groupIdx)
+    t.is(pendingMemberships.length, 0)
+
+    const userMemberships = await model.users.getAllMembershipUsers(tr, groupIdx)
+    t.deepEqual(userMemberships.map(g => g.idx).sort(), [userIdx2, userIdx3].sort())
+  }, ['users', 'group_reachable_cache'])
+})
+
+test('reject pending applications', async t => {
+  await model.pgDo(async tr => {
+    const groupIdx = await createGroup(tr, model)
+
+    const userIdx1 = await createUser(tr, model)
+    const userIdx2 = await createUser(tr, model)
+    const userIdx3 = await createUser(tr, model)
+    await model.users.addStudentNumber(tr, userIdx1, uuid())
+    await model.users.addStudentNumber(tr, userIdx2, uuid())
+    await model.users.addStudentNumber(tr, userIdx3, uuid())
+
+    await model.users.addUserMembership(tr, userIdx1, groupIdx)
+    await model.users.addUserMembership(tr, userIdx2, groupIdx)
+    await model.users.addPendingUserMembership(tr, userIdx3, groupIdx)
+
+    const result = await model.users.rejectUserMemberships(tr, groupIdx, [userIdx2, userIdx3])
+    t.is(result, 2)
+
+    const pendingMemberships = await model.users.getAllPendingMembershipUsers(tr, groupIdx)
+    t.is(pendingMemberships.length, 0)
+
+    const userMemberships = await model.users.getAllMembershipUsers(tr, groupIdx)
+    t.is(userMemberships.length, 1)
+    t.deepEqual(userMemberships[0].idx, userIdx1)
+  }, ['users', 'group_reachable_cache'])
+})
+
 test('change password', async t => {
   await model.pgDo(async tr => {
     const username = uuid()

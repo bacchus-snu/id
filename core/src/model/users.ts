@@ -18,11 +18,14 @@ export interface User {
   uid: number
   shell: string
   preferredLanguage: Language
+  studentNumber?: string
 }
 
 export interface UserMembership {
+  idx: number
   userIdx: number
   groupIdx: number
+  pending: boolean
 }
 
 export default class Users {
@@ -284,13 +287,100 @@ export default class Users {
     return result.rows[0].idx
   }
 
-  public async getAllUserMemberships(tr: Transaction, userIdx: number): Promise<Array<UserMembership>> {
-    const query = 'SELECT user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
-    const result = await tr.query(query, [userIdx])
+  public async hasUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<boolean> {
+    try {
+      await this.getUserMembership(tr, userIdx, groupIdx)
+    } catch (e) {
+      if (e instanceof NoSuchEntryError) {
+        return false
+      }
+      throw e
+    }
+    return true
+  }
+
+  public async getUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'SELECT idx FROM user_memberships WHERE user_idx = $1 AND group_idx = $2'
+    const result = await tr.query(query, [userIdx, groupIdx])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+    return result.rows[0].idx
+  }
+
+  public async getAllUserMemberships(tr: Transaction, userIdx: number): Promise<Array<UserMembership>> {
+    const query = 'SELECT idx, user_idx, group_idx FROM user_memberships WHERE user_idx = $1'
+    const result = await tr.query(query, [userIdx])
     return result.rows.map(row => this.rowToUserMembership(row))
+  }
+
+  public async getAllMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
+    const query = 'SELECT u.*, sn.student_number FROM user_memberships AS um INNER JOIN users AS u ' +
+      'ON um.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+      'WHERE um.group_idx = $1 ORDER BY um.idx'
+    const result = await tr.query(query, [groupIdx])
+    return result.rows.map(row => this.rowToUser(row))
+  }
+
+  public async addPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'INSERT INTO pending_user_memberships (user_idx, group_idx) VALUES ($1, $2) RETURNING idx'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    return result.rows[0].idx
+  }
+
+  public async deletePendingUserMembership(tr: Transaction, userMembershipIdx: number): Promise<number> {
+    const query = 'DELETE FROM pending_user_memberships WHERE idx = $1 RETURNING idx'
+    const result = await tr.query(query, [userMembershipIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
+  }
+
+  public async hasPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<boolean> {
+    try {
+      await this.getPendingUserMembership(tr, userIdx, groupIdx)
+    } catch (e) {
+      if (e instanceof NoSuchEntryError) {
+        return false
+      }
+      throw e
+    }
+    return true
+  }
+
+  public async getPendingUserMembership(tr: Transaction, userIdx: number, groupIdx: number): Promise<number> {
+    const query = 'SELECT idx FROM pending_user_memberships WHERE user_idx = $1 AND group_idx = $2'
+    const result = await tr.query(query, [userIdx, groupIdx])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return result.rows[0].idx
+  }
+
+  public async acceptUserMemberships(tr: Transaction, groupIdx: number, userIdx: Array<number>): Promise<number> {
+    const query = 'WITH accepted_users AS (DELETE FROM pending_user_memberships ' +
+      'WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx) ' +
+      'INSERT INTO user_memberships (user_idx, group_idx) SELECT user_idx, $1 FROM accepted_users ' +
+      'RETURNING user_idx'
+    const result = await tr.query(query, [groupIdx, userIdx])
+    return result.rows.length
+  }
+
+  public async rejectUserMemberships(tr: Transaction, groupIdx: number, userIdx: Array<number>): Promise<number> {
+    const query1 = 'DELETE FROM pending_user_memberships WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx'
+    const query2 = 'DELETE FROM user_memberships WHERE group_idx = $1 AND user_idx = ANY($2) RETURNING user_idx'
+    const result1 = await tr.query(query1, [groupIdx, userIdx])
+    const result2 = await tr.query(query2, [groupIdx, userIdx])
+    return result1.rows.length + result2.rows.length
+  }
+
+  public async getAllPendingMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
+    const query = 'SELECT u.*, sn.student_number FROM pending_user_memberships AS pum INNER JOIN users AS u ' +
+      'ON pum.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+      'WHERE pum.group_idx = $1 ORDER BY pum.idx'
+    const result = await tr.query(query, [groupIdx])
+    return result.rows.map(row => this.rowToUser(row))
   }
 
   public async getUserReachableGroups(tr: Transaction, userIdx: number): Promise<Set<number>> {
@@ -323,7 +413,7 @@ export default class Users {
   }
 
   private rowToUser(row: any): User {
-    return {
+    const user: User = {
       idx: row.idx,
       username: row.username,
       name: row.name,
@@ -331,12 +421,29 @@ export default class Users {
       shell: row.shell,
       preferredLanguage: row.preferred_language,
     }
+
+    if (row.student_number) {
+      user.studentNumber = row.student_number
+    }
+
+    return user
   }
 
   private rowToUserMembership(row: any): UserMembership {
     return {
+      idx: row.idx,
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
+      pending: false,
+    }
+  }
+
+  private rowToPendingUserMembership(row: any): UserMembership {
+    return {
+      idx: row.idx,
+      userIdx: row.user_idx,
+      groupIdx: row.group_idx,
+      pending: true,
     }
   }
 
