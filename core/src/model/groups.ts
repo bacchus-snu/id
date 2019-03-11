@@ -83,6 +83,9 @@ export default class Groups {
     SELECT DISTINCT ON (g.idx)
       g.idx,
       g.name_ko,
+      g.name_en,
+      g.description_ko,
+      g.description_en,
       (umem.user_idx IS NOT NULL) AS is_member,
       (dir.user_idx IS NOT NULL) AS is_direct_member,
       (pend_umem.user_idx IS NOT NULL) AS is_pending,

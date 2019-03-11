@@ -72,7 +72,7 @@ module.exports = {
   ],
 
   proxy: {
-    '/api/': 'http://localhost:50080',
+    '/api/': 'http://id-dev.snucse.org:50080',
   },
 
   axios: {
