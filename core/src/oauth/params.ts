@@ -3,42 +3,44 @@ export interface ParamObj {
 }
 
 export default class Params {
-  private escapedParams: Map<string, Array<string>> = new Map()
+  private params: Map<string, Array<string>> = new Map()
 
   public extend(paramObj: ParamObj) {
     for (const [key, value] of Object.entries(paramObj)) {
-      const escapedKey = encodeURIComponent(key)
       if (Array.isArray(value)) {
         for (const innerValue of value) {
-          this.addOneEscaped(escapedKey, encodeURIComponent(innerValue))
+          this.addOne(key, innerValue)
         }
       } else {
-        this.addOneEscaped(escapedKey, encodeURIComponent(value))
+        this.addOne(key, value)
       }
     }
   }
 
-  public addOneEscaped(escapedKey: string, escapedValue: string) {
-    if (!this.escapedParams.has(escapedKey)) {
-      this.escapedParams.set(escapedKey, [])
+  public addOne(key: string, value: string) {
+    if (!this.params.has(key)) {
+      this.params.set(key, [])
     }
-    this.escapedParams.get(escapedKey)!.push(escapedValue)
+    this.params.get(key)!.push(value)
+  }
+
+  public addOneEscaped(escapedKey: string, escapedValue: string) {
+    this.addOne(decodeURIComponent(escapedKey), decodeURIComponent(escapedValue))
   }
 
   public get(key: string): Array<string> {
-    return this.escapedParams.get(encodeURIComponent(key)) || []
+    return this.params.get(key) || []
   }
 
   public remove(key: string): Array<string> | undefined {
-    const escapedKey = encodeURIComponent(key)
-    const ret = this.escapedParams.get(escapedKey)
-    this.escapedParams.delete(escapedKey)
+    const ret = this.params.get(key)
+    this.params.delete(key)
     return ret
   }
 
   public sorted(): string {
     const params =
-      [...this.escapedParams.entries()].map(([key, values]) => values.map(value => ({ key, value })))
+      [...this.params.entries()].map(([key, values]) => values.map(value => ({ key, value })))
     const paramsFlattened = ([] as Array<{ key: string, value: string }>).concat(...params)
     paramsFlattened.sort((a, b) => {
       // Sort by key
@@ -49,6 +51,6 @@ export default class Params {
       // Sort by value
       return a.value.localeCompare(b.value)
     })
-    return paramsFlattened.map(({ key: k, value: v }) => `${k}=${v}`).join('&')
+    return paramsFlattened.map(({ key, value }) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&')
   }
 }

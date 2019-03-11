@@ -15,8 +15,8 @@ export class InvalidParameterError extends Error {
 /**
  * Verify the given request as per Section 9.
  * @param params Collected parameters as per Section 9.1.1. Should contain Authorization header parameters, request
- * body parameters, and URL query parameters. Keys and values should be percent-encoded.  `oauth_signature_method`
- * should be `'HMAC-SHA1'`. It should contain `oauth_signature`.
+ * body parameters, and URL query parameters. `oauth_signature_method` should be `'HMAC-SHA1'`. It should contain
+ * `oauth_signature`.
  * @param method HTTP method used for request.
  * @param requestUrl URL used for request.
  * @param consumerSecret OAuth 1.0a Consumer Secret.
@@ -65,5 +65,5 @@ export default function verify(
   hmac.update(base)
   const digest = hmac.digest()
   const calculatedSignature = digest.toString('base64')
-  return oauthSignature[0] === encodeURIComponent(calculatedSignature)
+  return oauthSignature[0] === calculatedSignature
 }
