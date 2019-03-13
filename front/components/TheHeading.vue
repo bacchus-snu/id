@@ -1,6 +1,6 @@
 <template>
   <div>
-	  <el-menu active-text-color="#ff7e05" mode="horizontal">
+	  <el-menu active-text-color="#ff7e05" mode="horizontal" default-active="2">
       <el-menu-item index="1" class="topnav alink">
         <a class="div-link" href="https://www.snucse.org">
           <div>
