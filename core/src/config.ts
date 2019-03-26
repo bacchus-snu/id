@@ -14,53 +14,6 @@ export interface PostgreSQLConfig {
 }
 
 /**
- * LDAP server configuration.
- */
-export interface LDAPConfig {
-  /**
-   * Host to listen on.
-   */
-  listenHost: string
-
-  /**
-   * Port to listen on.
-   */
-  listenPort: number
-
-  /**
-   * Base DN.
-   * e.g. dc=snucse,dc=org
-   */
-  baseDN: string
-
-  /**
-   * Name of the OU containing users.
-   */
-  usersOU: string
-
-  /**
-   * Name of the OU containing groups.
-   */
-  groupsOU: string
-
-  /**
-   * DN for the subschema subentry.
-   * e.g. cn=subschema,dc=snucse,dc=org
-   */
-  subschemaDN: string
-
-  /**
-   * Path to x509 PEM-encoded certificate.
-   */
-  certificate: string
-
-  /**
-   * Path to x509 PEM-encoded private key.
-   */
-  key: string
-}
-
-/**
  * REST API server configuration.
  */
 export interface APIConfig {
@@ -227,11 +180,6 @@ export default interface Config {
    * Bunyan logging level.
    */
   logLevel: number
-
-  /**
-   * LDAP server configuration.
-   */
-  ldap: LDAPConfig
 
   /**
    * API server configuration.

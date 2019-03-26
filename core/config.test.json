@@ -1,16 +1,6 @@
 {
   "instanceName": "id-core",
   "logLevel": 61,
-  "ldap": {
-    "listenHost": "127.0.0.1",
-    "listenPort": "50636",
-    "baseDN": "dc=snucse,dc=org",
-    "usersOU": "users",
-    "groupsOU": "groups",
-    "subschemaDN": "cn=subschema,dc=snucse,dc=org",
-    "certificate": "",
-    "key": ""
-  },
   "api": {
     "listenHost": "127.0.0.1",
     "listenPort": "50080",
