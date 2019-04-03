@@ -1,6 +1,6 @@
 <template>
   <div>
-	  <el-menu active-text-color="#ff7e05" mode="horizontal">
+	  <el-menu active-text-color="#ff7e05" mode="horizontal" default-active="2">
       <el-menu-item index="1" class="topnav alink">
         <a class="div-link" href="https://www.snucse.org">
           <div>
@@ -158,6 +158,7 @@ export default class TheHeading extends Vue {
 .alink {
   font-size: 16px;
   color: #4b4a4a;
+  padding: 0px;
 }
 .alink:hover:not(.active) {
   background-color: white;
@@ -171,5 +172,8 @@ export default class TheHeading extends Vue {
 }
 .div-link {
   outline: 0;
+}
+.div-link div {
+  margin: 0px 20px;
 }
 </style>

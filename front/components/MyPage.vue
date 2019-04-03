@@ -150,7 +150,7 @@ export default class MyPage extends Vue {
   private readonly groupApplyNotifyTrans: Translation = {
     ko: '복부전생, 연합전공, 연계전공을 포함한 모든 컴퓨터공학부 구성원은 \'컴퓨터 공학 전공\'그룹에 신청해야 합니다.',
     en: 'Every CSE student(includes double, minor, combined, extended major student)'
-        + 'should apply to \'CSE major\' group.',
+        + ' should apply to \'CSE major\' group.',
   }
   private readonly notificationTrans: Translation = {
     ko: '알림',
