@@ -35,6 +35,13 @@
           </div>
         </a>
       </el-menu-item>
+	    <el-menu-item index="7" class="topnav alink">
+        <a class="div-link" href="https://www.snucse.org/sign-up">
+          <div>
+            {{ snucseSignupTrans[lang] }}<i class="el-icon-more-outline"></i>
+          </div>
+        </a>
+	    </el-menu-item>
       <!--
       <el-menu-item @click="routeTo('/help')" index="7" class="topnav alink">
         {{ helpTrans[lang] }}<i class="el-icon-question"></i>
@@ -83,6 +90,11 @@ export default class TheHeading extends Vue {
   private readonly bacchusTrans: Translation = {
     ko: '바쿠스',
     en: 'Bacchus',
+  }
+
+  private readonly snucseSignupTrans: Translation = {
+    ko: '스누씨 가입',
+    en: 'SNUCSE Signup',
   }
 
   private readonly helpTrans: Translation = {
