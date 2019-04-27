@@ -1,5 +1,5 @@
 import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccountObjectClass, PosixGroup } from './types'
+import { PosixGroup } from './types'
 import { OrganizationalUnit, organizationalUnitObjectClass, posixGroupObjectClass } from './types'
 import { RootDSE } from './types'
 import { Subschema, subschemaObjectClass } from './types'
@@ -7,7 +7,7 @@ import * as bunyan from 'bunyan'
 import Model from '../model/model'
 import { User } from '../model/users'
 import Config from '../config'
-import { NoSuchEntryError, AuthenticationError } from '../model/errors'
+import { NoSuchEntryError, AuthenticationError, AuthorizationError } from '../model/errors'
 
 const createServer = (options: ldap.ServerOptions, model: Model, config: Config) => {
   const server = ldap.createServer(options)
@@ -19,36 +19,6 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
   const groupsDN = `ou=${config.ldap.groupsOU},${config.ldap.baseDN}`
   const parsedUsersDN = ldap.parseDN(usersDN)
   const parsedGroupsDN = ldap.parseDN(groupsDN)
-
-  const userToPosixAccount: (user: User) => ldap.SearchEntry<PosixAccount> = user => {
-    if (user.username === null || user.shell === null) {
-      throw new Error('Cannot convert to posixAccount')
-    }
-    return {
-      dn: `cn=${user.username},${usersDN}`,
-      attributes: {
-        uid: user.username,
-        cn: user.username,
-        gecos: user.name,
-        homeDirectory: `${config.posix.homeDirectoryPrefix}/${user.username}`,
-        loginShell: user.shell,
-        objectClass: posixAccountObjectClass,
-        uidNumber: user.uid === null ? config.posix.nullUid : user.uid,
-        gidNumber: config.posix.userGroupGid,
-      },
-    }
-  }
-  const usersToPosixAccounts: (users: Array<User>) => Array<ldap.SearchEntry<PosixAccount>> = users => {
-    const posixAccounts: Array<ldap.SearchEntry<PosixAccount>> = []
-    users.forEach(user => {
-      try {
-        posixAccounts.push(userToPosixAccount(user))
-      } catch (e) {
-        // do nothing
-      }
-    })
-    return posixAccounts
-  }
 
   const subschema: ldap.SearchEntry<Subschema> = {
     dn: config.ldap.subschemaDN,
@@ -100,18 +70,35 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
     }
     const cn = req.dn.rdns[0].attrs.cn.value
     try {
-      const userIdx = await model.pgDo(c => model.users.authenticate(c, cn, req.credentials))
-      if (await model.pgDo(c => model.users.assignUid(c, userIdx, config.posix.minUid))) {
-        // assigned uid
-        // user must log in again
-        return next(new ldap.InvalidCredentialsError())
-      } else {
-        res.end()
-        return next()
-      }
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.authenticate(tr, cn, req.credentials)
+        const remoteHost = req.connection.remoteAddress
+        if (!remoteHost) {
+          // this means socket was already destroyed
+          res.end()
+          return next(new ldap.ProtocolError())
+        }
+        // bind request from unknown host will create error log
+        let host
+        try {
+          host = await model.hosts.getHostByInet(tr, remoteHost)
+        } catch (e) {
+          if (e instanceof NoSuchEntryError) {
+            throw new AuthorizationError()
+          } else {
+            throw e
+          }
+        }
+        await model.hosts.authorizeUserByHost(tr, userIdx, host)
+      })
+      res.end()
+      return next()
     } catch (e) {
       if (e instanceof AuthenticationError) {
         return next(new ldap.InvalidCredentialsError())
+      }
+      if (e instanceof AuthorizationError) {
+        return next(new ldap.InsufficientAccessRightsError())
       }
       server.log.error(e)
       return next(new ldap.OtherError())
@@ -145,8 +132,7 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
         res.send(usersOU)
       } else {
         // Same results for 'one' and 'sub'
-        // TODO: do not assign uid if the user is not capable to sign in to the LDAP host.
-        usersToPosixAccounts(await model.pgDo(c => model.users.getAll(c))).forEach(account => {
+        (await model.pgDo(tr => model.users.getAllAsPosixAccounts(tr))).forEach(account => {
           if (req.filter.matches(account.attributes)) {
             res.send(account)
           }
@@ -156,11 +142,12 @@ const createServer = (options: ldap.ServerOptions, model: Model, config: Config)
       if (parentDN.equals(parsedUsersDN)) {
         const wantedUid = req.dn.rdns[0].attrs.cn.value
         try {
-          const user = await model.pgDo(c => model.users.getByUsername(c, wantedUid))
-          res.send(userToPosixAccount(user))
+          const user = await model.pgDo(tr => model.users.getByUsernameAsPosixAccount(tr, wantedUid))
+          res.send(user)
         } catch (e) {
           if (!(e instanceof NoSuchEntryError)) {
-            throw e
+            server.log.error(e)
+            return next(new ldap.OtherError())
           }
         }
       }

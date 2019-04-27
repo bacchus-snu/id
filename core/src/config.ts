@@ -73,6 +73,11 @@ export interface APIConfig {
    * Port to listen on.
    */
   listenPort: number
+
+  /**
+   * Trust X-Forwarded-For headers
+   */
+   proxy: boolean
 }
 
 /**
@@ -186,8 +191,6 @@ export interface PosixConfig {
    */
   minUid: number
 
-  nullUid: number
-
   /**
    * Prefix for home directory.
    */
@@ -202,6 +205,16 @@ export interface MiscConfig {
    * Slack chat message API Endpoint.
    */
   slackAPIEndpoint: string
+}
+
+/**
+ * Permission configurations.
+ */
+export interface PermissionConfig {
+  /**
+   * SNUCSE3 login permission idx.
+   */
+  snucse: number
 }
 
 export default interface Config {
@@ -249,4 +262,9 @@ export default interface Config {
    * Miscellaneous configuration.
    */
   misc: MiscConfig
+
+  /**
+   * Permission configuration.
+   */
+  permissions: PermissionConfig
 }

@@ -1,22 +1,8 @@
-import test from 'ava'
+import test, { GenericTestContext } from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 import * as crypto from 'crypto'
-
-import * as fs from 'fs'
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
-import app from '../setup'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config.postgresql, log)
+import { app, model, config } from '../setup'
 
 test('create user step by step', async t => {
   const agent = request.agent(app)
@@ -41,9 +27,9 @@ test('create user step by step', async t => {
   t.is(response.status, 200)
 
   let token: string = ''
-  await model.pgDo(async c => {
-    const idx = await model.emailAddresses.getIdxByAddress(c, emailLocal, emailDomain)
-    const result = await c.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [idx])
+  await model.pgDo(async tr => {
+    const idx = await model.emailAddresses.getIdxByAddress(tr, emailLocal, emailDomain)
+    const result = await tr.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [idx])
     token = result.rows[0].token
   })
 
@@ -108,8 +94,8 @@ test('create user step by step', async t => {
   })
   t.is(response.status, 201)
 
-  await model.pgDo(async c => {
-    await c.query('TRUNCATE student_numbers')
+  await model.pgDo(async tr => {
+    await tr.query('TRUNCATE student_numbers')
   })
 })
 
@@ -118,14 +104,14 @@ test('get user email addresses', async t => {
   const password = uuid()
   let userIdx
 
-  await model.pgDo(async c => {
-    const emailIdx1 = await model.emailAddresses.create(c, uuid(), uuid())
-    const emailIdx2 = await model.emailAddresses.create(c, uuid(), uuid())
+  await model.pgDo(async tr => {
+    const emailIdx1 = await model.emailAddresses.create(tr, uuid(), uuid())
+    const emailIdx2 = await model.emailAddresses.create(tr, uuid(), uuid())
 
-    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(c, userIdx, emailIdx1)
-    await model.emailAddresses.validate(c, userIdx, emailIdx2)
-  })
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.emailAddresses.validate(tr, userIdx, emailIdx1)
+    await model.emailAddresses.validate(tr, userIdx, emailIdx2)
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -152,11 +138,11 @@ test('change password', async t => {
   const emailDomain = uuid()
   let userIdx = -1
 
-  await model.pgDo(async c => {
-    const emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(c, userIdx, emailIdx)
-  })
+  await model.pgDo(async tr => {
+    const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.emailAddresses.validate(tr, userIdx, emailIdx)
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -169,8 +155,8 @@ test('change password', async t => {
   t.is(response.status, 200)
 
   let token
-  await model.pgDo(async c => {
-    const result = await c.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [userIdx])
+  await model.pgDo(async tr => {
+    const result = await tr.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [userIdx])
     t.is(result.rows.length, 1)
     token = result.rows[0].token
   })
@@ -188,8 +174,8 @@ test('change password', async t => {
   })
   t.is(response.status, 200)
 
-  await model.pgDo(async c => {
-    await model.users.authenticate(c, username, newPassword)
+  await model.pgDo(async tr => {
+    await model.users.authenticate(tr, username, newPassword)
   })
 
   t.pass()
@@ -201,12 +187,12 @@ test('change shell', async t => {
   const newShell = uuid()
   let userIdx = -1
 
-  await model.pgDo(async c => {
-    const emailIdx = await model.emailAddresses.create(c, uuid(), uuid())
-    userIdx = await model.users.create(c, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(c, userIdx, emailIdx)
-    await model.shells.addShell(c, newShell)
-  })
+  await model.pgDo(async tr => {
+    const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid())
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    await model.emailAddresses.validate(tr, userIdx, emailIdx)
+    await model.shells.addShell(tr, newShell)
+  }, ['users'])
 
   const agent = request.agent(app)
 
@@ -236,8 +222,8 @@ test('verification email resend limit', async t => {
   const resendLimit = config.email.resendLimit
   let emailIdx = -1
 
-  await model.pgDo(async c => {
-    emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
+  await model.pgDo(async tr => {
+    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
   })
 
   const agent = request.agent(app)
@@ -264,11 +250,11 @@ test('password change email resend limit', async t => {
   const resendLimit = config.email.resendLimit
   let emailIdx = -1
 
-  await model.pgDo(async c => {
-    emailIdx = await model.emailAddresses.create(c, emailLocal, emailDomain)
-    const userIdx = await model.users.create(c, uuid(), uuid(), uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(c, userIdx, emailIdx)
-  })
+  await model.pgDo(async tr => {
+    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
+    const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en')
+    await model.emailAddresses.validate(tr, userIdx, emailIdx)
+  }, ['users'])
 
   const agent = request.agent(app)
   let response
@@ -287,3 +273,45 @@ test('password change email resend limit', async t => {
   })
   t.is(response.status, 400)
 })
+
+{
+  const NUMBER_OF_USERS_TO_CREATE = 100
+  test('multiple user creation', async t => {
+    const promises: Array<Promise<void>> = []
+    const indices: Array<number> = []
+    let count = 0
+
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      promises[i] = model.pgDo(async tr => {
+        indices[i] = await model.users.create(tr, i.toString(), 'password' + i, i.toString(), '/bin/bash', 'en')
+      }, ['users']).then(async () => {
+        count++
+        if (count === NUMBER_OF_USERS_TO_CREATE) {
+          await verifyResult(t, indices)
+          await cleanUpUsers(t, indices)
+        }
+      }).catch(reason => {
+        throw reason
+      })
+    }
+
+    await Promise.all(promises)
+  })
+
+  async function verifyResult<T>(t: GenericTestContext<T>, indcies: Array<number>) {
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      await model.pgDo(async tr => {
+        const user = await model.users.getByUserIdx(tr, indcies[i])
+        t.is(user.name, i.toString())
+      })
+    }
+  }
+
+  async function cleanUpUsers<T>(t: GenericTestContext<T>, indices: Array<number>) {
+    for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
+      await model.pgDo(async tr => {
+        await model.users.delete(tr, indices[i])
+      })
+    }
+  }
+}

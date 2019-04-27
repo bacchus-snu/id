@@ -3,16 +3,18 @@
   "logLevel": 61,
   "ldap": {
     "listenHost": "127.0.0.1",
-    "listenPort": "50389",
-    "usersDN": "ou=users,dc=snucse,dc=org",
-    "groupsDN": "ou=groups,dc=snucse,dc=org",
+    "listenPort": "50636",
+    "baseDN": "dc=snucse,dc=org",
+    "usersOU": "users",
+    "groupsOU": "groups",
     "subschemaDN": "cn=subschema,dc=snucse,dc=org",
     "certificate": "",
     "key": ""
   },
   "api": {
     "listenHost": "127.0.0.1",
-    "listenPort": "50080"
+    "listenPort": "50080",
+    "proxy": false
   },
   "session": {
     "key": "id-session",
@@ -37,7 +39,8 @@
     "sudoerGroupName": "csesudoers",
     "sudoerGroupGid": 100600,
     "defaultShell": "/bin/bash",
-    "minUid": 100000
+    "minUid": 100000,
+    "homeDirectoryPrefix": "/csehome"
   },
   "postgresql": {
     "host": "127.0.0.1",
@@ -48,5 +51,8 @@
   },
   "misc": {
     "slackAPIEndpoint": ""
+  },
+  "permissions": {
+    "snucse": 1
   }
 }

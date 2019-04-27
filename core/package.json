@@ -3,10 +3,11 @@
   "version": "0.0.2-dev",
   "description": "Identity management service for SNUCSE",
   "scripts": {
-    "build": "rm -rf ./dist && tsc",
+    "build": "rm -rf ./dist && tsc && cp -r ./test/ldap/cert ./dist/test/ldap/",
     "lint": "tslint --project ./tsconfig.json",
-    "start": "node dist/src/index.js",
-    "test": "npm run lint && npm run build && nyc ava --color --verbose"
+    "start": "npm run rebuild-cache && node dist/src/index.js",
+    "test": "npm run lint && npm run build && nyc ava --color --verbose",
+    "rebuild-cache": "node dist/bootstrap/rebuild_group_cache.js"
   },
   "repository": {
     "type": "git",

@@ -12,6 +12,8 @@ drop table if exists user_memberships cascade;
 drop table if exists permissions cascade;
 drop table if exists permission_requirements cascade;
 drop table if exists pending_user_memberships cascade;
+drop table if exists hosts cascade;
+drop table if exists host_groups cascade;
 drop type if exists language cascade;
 
 -- Allowed shells to use
@@ -37,7 +39,7 @@ create table users (
   name text not null check (name <> ''),
 
   -- posixAccount
-  uid integer unique,
+  uid integer unique not null,
   shell text not null references shells(shell),
 
   -- Language preference
@@ -96,7 +98,6 @@ create table reserved_usernames (
 
 create table groups (
   idx serial primary key,
-  owner_user_idx integer references users(idx) on delete set null,
   owner_group_idx integer references groups(idx) on delete set null,
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
@@ -145,6 +146,18 @@ create table pending_user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
   group_idx integer not null references groups(idx) on delete cascade,
-  created_at timestamp with time zone not null,
   unique (user_idx, group_idx)
-)
+);
+
+create table host_groups (
+  idx serial primary key,
+  name text not null check (name <> ''),
+  required_permission integer references permissions(idx) on delete cascade
+);
+
+create table hosts (
+  idx serial primary key,
+  name text not null check (name <> ''),
+  host inet unique not null check (text(host) <> ''),
+  host_group integer references host_groups(idx) on delete set null
+);

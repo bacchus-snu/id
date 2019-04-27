@@ -70,8 +70,8 @@ export default class SignUpForm extends Vue {
     en: 'Your account is created',
   }
   private readonly successTransTemp: Translation = {
-    ko: '계정 생성 신청이 완료되었습니다. 승인을 기다려주십시오.',
-    en: 'Your account was created. Please wait for the confirmation of admin.',
+    ko: '계정 생성이 완료되었습니다. 컴퓨터공학부 실습실 사용을 위해서는 그룹에 신청해 주십시오.',
+    en: 'Your account has been created. If you want to use the CSE lab computers, you should apply to a group',
   }
   private readonly failTrans: Translation = {
     ko: '계정 생성 실패',
@@ -90,9 +90,13 @@ export default class SignUpForm extends Vue {
     en: 'The password should be at least 8 characters',
   }
   private readonly usernameValidateTrans: Translation = {
-    ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자, _ 만 포함된 20자 이하여야 합니다.',
+    ko: '유저명은 영문자 소문자로 시작하고 영문자 소문자, 숫자만 포함된 20자 이하여야 합니다.',
     en: 'Username should be under 20 letters which only contains ' +
-    'lowercase alphabet, numbers, or underscores and starts with lowercase alphabet.',
+    'lowercase alphabet or numbers, and starts with lowercase alphabet.',
+  }
+  private readonly tipsTrans: Translation = {
+    ko: '안내',
+    en: 'Notification',
   }
 
   @Provide()
@@ -131,7 +135,7 @@ export default class SignUpForm extends Vue {
   }
 
   private validateUsername(rule, value, callback) {
-    if (!/^[a-z][a-z0-9_]+$/.test(value) || value.length > 20) {
+    if (!/^[a-z][a-z0-9]+$/.test(value) || value.length > 20) {
       callback(new Error(this.usernameValidateTrans[this.lang]))
     } else {
       callback()
@@ -197,8 +201,9 @@ export default class SignUpForm extends Vue {
       return
     }
 
-    // this.$notify.success(this.successTrans[this.lang])
-    this.$notify.success(this.successTransTemp[this.lang])
+    this.$alert(this.successTransTemp[this.lang], this.tipsTrans[this.lang], {
+      confirmButtonText: 'OK',
+    })
     this.$router.push('/')
   }
 

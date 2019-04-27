@@ -10,6 +10,7 @@ import Config from '../config'
 
 const createServer = (log: Bunyan, model: Model, config: Config) => {
   const app = new Koa()
+  app.proxy = config.api.proxy
   const router = createRouter(model, config)
 
   app.use(bodyParser())

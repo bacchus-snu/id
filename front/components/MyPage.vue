@@ -2,8 +2,24 @@
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
     <el-row>
-      <el-col :md="{span: 8, offset: 4}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
-        <el-card class="account">
+      <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+        <el-card shadow="hover" class="account">
+          <div slot="header" class="card-head">
+            <span>{{ groupAdminTrans[lang] }}</span>
+          </div>
+          <template>
+            <h2 class="group-apply-notify">
+              {{ groupApplyNotifyTrans[lang] }}
+            </h2>
+            <h2>{{ groupAdminInfoTrans[lang] }}</h2>
+            <el-button class="button" type="warning" @click="groupAdminButton">
+              {{ groupAdminButtonTrans[lang] }}
+            </el-button>
+          </template>
+        </el-card>
+      </el-col>
+      <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
+        <el-card shadow="hover" class="account">
           <div slot="header" class="card-head">
             <span>{{ passwordTrans[lang] }}</span>
           </div>
@@ -25,7 +41,7 @@
         </el-card>
       </el-col>
       <el-col :md="8" :sm="24" :xs="24">
-        <el-card class="account">
+        <el-card shadow="hover" class="account">
           <div slot="header" class="card-head">
             <span>{{ shellTrans[lang] }}</span>
           </div>
@@ -69,6 +85,19 @@ export default class MyPage extends Vue {
     } else {
       return `Welcome, ${this.username}.`
     }
+  }
+
+  private readonly groupAdminTrans: Translation = {
+    ko: '그룹관리',
+    en: 'Group Admnistration',
+  }
+  private readonly groupAdminInfoTrans: Translation = {
+    ko: '그룹 관리를 하려면 버튼을 클릭하세요.',
+    en: 'Please click button to administrate groups.',
+  }
+  private readonly groupAdminButtonTrans: Translation = {
+    ko: '그룹관리로 이동',
+    en: 'Go to group admin page',
   }
   private readonly passwordTrans: Translation = {
     ko: '비밀번호 변경',
@@ -117,6 +146,15 @@ export default class MyPage extends Vue {
   private readonly successShellChangeTrans: Translation = {
     ko: '성공적으로 셸이 변경되었습니다.',
     en: 'Your shell was successfully changed.',
+  }
+  private readonly groupApplyNotifyTrans: Translation = {
+    ko: '복부전생, 연합전공, 연계전공을 포함한 모든 컴퓨터공학부 구성원은 \'컴퓨터 공학 전공\'그룹에 신청해야 합니다.',
+    en: 'Every CSE student(includes double, minor, combined, extended major student)'
+        + ' should apply to \'CSE major\' group.',
+  }
+  private readonly notificationTrans: Translation = {
+    ko: '알림',
+    en: 'Notification',
   }
 
   get lang(): Language {
@@ -197,6 +235,11 @@ export default class MyPage extends Vue {
   private concatEmail(email: EmailAddress): string {
     return `${email.local}@${email.domain}`
   }
+
+  private groupAdminButton() {
+    this.$router.push('/group')
+    return
+  }
 }
 </script>
 
@@ -244,5 +287,10 @@ export default class MyPage extends Vue {
 
 .card-head {
   font-size: 24px;
+}
+
+.group-apply-notify {
+  font-weight: bold;
+  color: #ff0000;
 }
 </style>

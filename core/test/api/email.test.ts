@@ -2,21 +2,7 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as nodemailer from 'nodemailer'
 import * as uuid from 'uuid/v4'
-
-import Model from '../../src/model/model'
-import * as bunyan from 'bunyan'
-import Config from '../../src/config'
-import * as fs from 'fs'
-import app from '../setup'
-
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-const model = new Model(config.postgresql, log)
+import { app, model, config } from '../setup'
 
 test.skip('email configuration is correct', async t => {
   const emailOption = {
@@ -38,10 +24,10 @@ test('check token api', async t => {
   const local = uuid()
   const domain = uuid()
 
-  await model.pgDo(async c => {
-    const emailAddressIdx = await model.emailAddresses.create(c, local, domain)
-    await model.emailAddresses.generateVerificationToken(c, emailAddressIdx)
-    const result = await c.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [emailAddressIdx])
+  await model.pgDo(async tr => {
+    const emailAddressIdx = await model.emailAddresses.create(tr, local, domain)
+    await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx)
+    const result = await tr.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [emailAddressIdx])
 
     token = result.rows[0].token
   })
@@ -82,6 +68,11 @@ test('test email validation', async t => {
   response = await agent.post('/api/email/verify').send({
     emailLocal: 'example',
     emailDomain: 'snu.ac.kr',
+  })
+  // if test repeated serveral times, then it will be blocked by
+  // resend limit and make test fails. so clean it up
+  await model.pgDo(async c => {
+    await c.query('DELETE FROM email_addresses WHERE address_local = $1', ['example'])
   })
   t.is(response.status, 200)
 })

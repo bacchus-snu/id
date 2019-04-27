@@ -23,6 +23,12 @@ export class AuthenticationError extends ControllableError {
   }
 }
 
+export class AuthorizationError extends ControllableError {
+  constructor() {
+    super('Authorization fail')
+  }
+}
+
 export class NotActivatedError extends ControllableError {
   constructor() {
     super('Account not activated yet')
