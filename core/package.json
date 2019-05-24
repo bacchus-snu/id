@@ -19,7 +19,7 @@
     "url": "https://github.com/bacchus-snu/id/issues"
   },
   "dependencies": {
-    "argon2": "^0.19.3",
+    "argon2": "^0.21.0",
     "axios": "^0.18.0",
     "bunyan": "^1.8.12",
     "koa": "^2.5.2",
