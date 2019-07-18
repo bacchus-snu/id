@@ -1,7 +1,7 @@
 import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
-import { app, model } from '../setup'
+import { app, model } from '../_setup'
 
 test('test getShells', async t => {
   let result

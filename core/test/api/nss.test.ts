@@ -1,8 +1,8 @@
-import test, { GenericTestContext } from 'ava'
+import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
-import { app, model, config } from '../setup'
-import { createUser } from '../test_utils'
+import { app, model, config } from '../_setup'
+import { createUser } from '../_test_utils'
 
 test.serial('fetch passwd entries', async t => {
   const agent = request.agent(app)

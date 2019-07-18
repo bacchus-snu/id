@@ -50,7 +50,10 @@ test('should error if oauth_signature_method is not HMAC-SHA1', t => {
   const method = 'GET'
   const requestUrl = 'https://id.snucse.org/api/oauth/1.0a/request'
   const consumerSecret = 'foofoo'
-  const error = t.throws(() => verify(params, method, requestUrl, consumerSecret), InvalidParameterError)
+  const error: InvalidParameterError = t.throws(
+    () => verify(params, method, requestUrl, consumerSecret),
+    InvalidParameterError,
+  )
   t.is(error.parameter, 'oauth_signature_method')
 })
 
@@ -66,7 +69,10 @@ test('should error if oauth_signature is not present', t => {
   const method = 'GET'
   const requestUrl = 'https://id.snucse.org/api/oauth/1.0a/request'
   const consumerSecret = 'foofoo'
-  const error = t.throws(() => verify(params, method, requestUrl, consumerSecret), InvalidParameterError)
+  const error: InvalidParameterError = t.throws(
+    () => verify(params, method, requestUrl, consumerSecret),
+    InvalidParameterError,
+  )
   t.is(error.parameter, 'oauth_signature')
 })
 
