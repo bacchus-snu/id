@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as ldap from 'ldapjs'
 import { Client } from 'ldapjs'
 import createLDAPServer from '../../src/ldap/server'
-import { model, config, log } from '../setup'
+import { model, config, log } from '../_setup'
 import * as uuid from 'uuid/v4'
 
 const ldapOptions = {

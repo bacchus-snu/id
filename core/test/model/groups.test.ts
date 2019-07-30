@@ -3,9 +3,9 @@ import test from 'ava'
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
-import { createGroup, createUser, createGroupRelation } from '../test_utils'
+import { createGroup, createUser, createGroupRelation } from '../_test_utils'
 import * as uuid from 'uuid/v4'
-import { model } from '../setup'
+import { model } from '../_setup'
 
 const name: Translation = {
   ko: '도지',

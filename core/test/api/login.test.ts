@@ -2,7 +2,7 @@ import test from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
-import { app, model, config } from '../setup'
+import { app, model, config } from '../_setup'
 
 test('test login with credential', async t => {
   let username: string = ''

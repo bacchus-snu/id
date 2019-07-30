@@ -5,8 +5,8 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError, AuthenticationError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
-import { createEmailAddress, createUser } from '../test_utils'
-import { model } from '../setup'
+import { createEmailAddress, createUser } from '../_test_utils'
+import { model } from '../_setup'
 
 test('create extra email', async t => {
   await model.pgDo(async tr => {
