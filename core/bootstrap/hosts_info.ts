@@ -114,6 +114,10 @@ export const LOUNGE: Array<HostTemplate> = [
   { name: '314-C08', host: '147.46.127.125' },
   { name: '314-C09', host: '147.46.127.126' },
   { name: '314-C10', host: '147.46.127.127' },
+  { name: '314-C11', host: '147.46.127.128' },
+  { name: '314-C12', host: '147.46.127.129' },
+  { name: '314-C13', host: '147.46.127.130' },
+  { name: '314-C14', host: '147.46.127.131' },
 ]
 
 export const PRACTICE_SERVER: Array<HostTemplate> = [
