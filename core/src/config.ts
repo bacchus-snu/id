@@ -151,16 +151,6 @@ export interface PosixConfig {
 }
 
 /**
- * Miscellaneous configurations.
- */
-export interface MiscConfig {
-  /**
-   * Slack chat message API Endpoint.
-   */
-  slackAPIEndpoint: string
-}
-
-/**
  * Permission configurations.
  */
 export interface PermissionConfig {
@@ -205,11 +195,6 @@ export default interface Config {
    * POSIX configuration.
    */
   posix: PosixConfig
-
-  /**
-   * Miscellaneous configuration.
-   */
-  misc: MiscConfig
 
   /**
    * Permission configuration.

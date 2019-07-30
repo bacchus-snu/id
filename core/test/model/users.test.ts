@@ -5,8 +5,8 @@ import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
 
-import { createUser, createGroup } from '../test_utils'
-import { model } from '../setup'
+import { createUser, createGroup } from '../_test_utils'
+import { model } from '../_setup'
 
 test('create and delete user', async t => {
   await model.pgDo(async tr => {

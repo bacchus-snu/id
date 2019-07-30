@@ -1,6 +1,6 @@
 import test from 'ava'
-import { model } from '../setup'
-import { delay } from '../test_utils'
+import { model } from '../_setup'
+import { delay } from '../_test_utils'
 
 test('resolve deadlock', async t => {
   const transactionStages: Array<number> = [0, 0]

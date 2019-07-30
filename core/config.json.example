@@ -39,9 +39,6 @@
     "password": "INSERT_PASSWORD_HERE",
     "database": "id"
   },
-  "misc": {
-    "slackAPIEndpoint": "SLACK_API_URL_HERE"
-  },
   "permissions": {
     "snucse": 1
   }
