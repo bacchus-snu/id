@@ -24,8 +24,9 @@ test.serial('fetch passwd entries', async t => {
 
   // With host
   await model.pgDo(async tr => {
-    return await model.hosts.addHost(tr, 'test', '127.0.0.1')
-  })
+    await model.hosts.addHost(tr, 'test', '127.0.0.1')
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 
   response = await agent.get('/api/nss/passwd')
   t.is(response.status, 200)
@@ -33,7 +34,8 @@ test.serial('fetch passwd entries', async t => {
 
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
-  })
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 })
 
 test.serial('fetch group entries', async t => {
@@ -58,8 +60,9 @@ test.serial('fetch group entries', async t => {
 
   // With host
   await model.pgDo(async tr => {
-    return await model.hosts.addHost(tr, 'test', '127.0.0.1')
-  })
+    await model.hosts.addHost(tr, 'test', '127.0.0.1')
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 
   response = await agent.get('/api/nss/group')
   t.is(response.status, 200)
@@ -68,15 +71,17 @@ test.serial('fetch group entries', async t => {
 
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
-  })
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 })
 
 test.serial('test not-modified posix entries', async t => {
   const agent = request.agent(app)
 
   await model.pgDo(async tr => {
-    return await model.hosts.addHost(tr, 'test', '127.0.0.1')
-  })
+    await model.hosts.addHost(tr, 'test', '127.0.0.1')
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 
   let response
   let lastMod
@@ -97,5 +102,6 @@ test.serial('test not-modified posix entries', async t => {
 
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
-  })
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['hosts'])
 })
