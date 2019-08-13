@@ -1,8 +1,8 @@
-import test, { GenericTestContext } from 'ava'
+import test, { ExecutionContext } from 'ava'
 import * as request from 'supertest'
 import * as uuid from 'uuid/v4'
 import * as crypto from 'crypto'
-import { app, model, config } from '../setup'
+import { app, model, config } from '../_setup'
 
 test('create user step by step', async t => {
   const agent = request.agent(app)
@@ -298,7 +298,7 @@ test('password change email resend limit', async t => {
     await Promise.all(promises)
   })
 
-  async function verifyResult<T>(t: GenericTestContext<T>, indcies: Array<number>) {
+  async function verifyResult(t: ExecutionContext, indcies: Array<number>) {
     for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
       await model.pgDo(async tr => {
         const user = await model.users.getByUserIdx(tr, indcies[i])
@@ -307,7 +307,7 @@ test('password change email resend limit', async t => {
     }
   }
 
-  async function cleanUpUsers<T>(t: GenericTestContext<T>, indices: Array<number>) {
+  async function cleanUpUsers(t: ExecutionContext, indices: Array<number>) {
     for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
       await model.pgDo(async tr => {
         await model.users.delete(tr, indices[i])

@@ -4,8 +4,8 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 import * as uuid from 'uuid/v4'
 
-import { createUser, createGroup, createPermission, createGroupRelation } from '../test_utils'
-import { model } from '../setup'
+import { createUser, createGroup, createPermission, createGroupRelation } from '../_test_utils'
+import { model } from '../_setup'
 
 const name: Translation = {
   ko: '도지',

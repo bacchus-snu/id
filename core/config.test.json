@@ -49,9 +49,6 @@
     "password": "",
     "database": "id"
   },
-  "misc": {
-    "slackAPIEndpoint": ""
-  },
   "permissions": {
     "snucse": 1
   }

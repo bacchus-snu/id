@@ -90,20 +90,6 @@ export function createUser(model: Model, config: Config): IMiddleware {
           validateStudentNumber(studentNumber)
           await model.users.addStudentNumber(tr, userIdx, studentNumber)
         }
-
-        try {
-          const notificationMessage = `이름: ${name}
-          Username: ${username}
-          Student number: ${studentNumbers[0]}
-          E-mail: ${emailAddress.local}@${emailAddress.domain}`
-          await axios.post(config.misc.slackAPIEndpoint, {
-            text: notificationMessage,
-            username: 'id watch',
-            channel: '#id-notifications',
-          })
-        } catch (e) {
-          model.log.warn(`No slack notification sent for: ${username}`)
-        }
       }, ['users'])
     } catch (e) {
       ctx.status = 400
