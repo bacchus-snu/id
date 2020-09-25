@@ -35,7 +35,7 @@ export default class SignUpPage extends Vue {
   }
 
   private async asyncData() {
-    const result = await axios.get(process.env.baseUrl + '/api/shells', {
+    const result = await axios.get('/api/shells', {
       validateStatus: () => true,
     })
     return { shellList : result.data.shells }

@@ -1,6 +1,13 @@
 <template>
   <div>
     <h1 class="welcome">{{ welcomeTrans }}</h1>
+    <h2 class="snucse-signup">
+      {{ snucseSignupHeadTrans[lang]}}
+      <a href="https://www.snucse.org/sign-up">
+        {{ snucseSignupTrans[lang] }}
+      </a>
+      {{ snucseSignupTailTrans[lang] }}
+    </h2>
     <el-row>
       <el-col :md="{span: 8}" :sm="{span: 24, offset: 0}" :xs="{span: 24, offset: 0}">
         <el-card shadow="hover" class="account">
@@ -157,6 +164,21 @@ export default class MyPage extends Vue {
     en: 'Notification',
   }
 
+  private readonly snucseSignupHeadTrans: Translation = {
+    ko: '스누씨에 가입하려면 ',
+    en: 'To signup SNUCSE, click',
+  }
+
+  private readonly snucseSignupTrans: Translation = {
+    ko: '여기',
+    en: 'HERE',
+  }
+
+  private readonly snucseSignupTailTrans: Translation = {
+    ko: '를 클릭하십시오',
+    en: '',
+  }
+
   get lang(): Language {
     return this.$store.state.language
   }
@@ -292,5 +314,13 @@ export default class MyPage extends Vue {
 .group-apply-notify {
   font-weight: bold;
   color: #ff0000;
+}
+
+.snucse-signup {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align: center;
+  margin-top: 4%;
 }
 </style>
