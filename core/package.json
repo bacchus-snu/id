@@ -3,7 +3,7 @@
   "version": "0.0.2-dev",
   "description": "Identity management service for SNUCSE",
   "scripts": {
-    "build": "rm -rf ./dist && tsc && cp -r ./test/ldap/cert ./dist/test/ldap/",
+    "build": "rm -rf ./dist && tsc",
     "lint": "tslint --project ./tsconfig.json",
     "start": "npm run rebuild-cache && node dist/src/index.js",
     "test": "npm run lint && npm run build && nyc ava --color --verbose",
@@ -26,7 +26,6 @@
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
     "koa-session": "^5.8.3",
-    "ldapjs": "^1.0.2",
     "moment": "^2.22.2",
     "nodemailer": "^4.6.8",
     "pg": "^7.4.3",

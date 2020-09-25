@@ -5,8 +5,6 @@ import * as argon2 from 'argon2'
 import * as phc from '@phc/format'
 import * as moment from 'moment'
 import * as crypto from 'crypto'
-import * as ldap from 'ldapjs'
-import { PosixAccount, posixAccountObjectClass } from '../ldap/types'
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en'
@@ -29,14 +27,10 @@ export interface UserMembership {
 }
 
 export default class Users {
-  private readonly usersDN: string
-  private posixAccountsCache: Array<ldap.SearchEntry<PosixAccount>> | null
   private posixPasswdCache: string
   private posixGroupCache: string
   private posixLastModified: Date
   constructor(private readonly model: Model) {
-    this.usersDN = `ou=${this.model.config.ldap.usersOU},${this.model.config.ldap.baseDN}`
-    this.posixAccountsCache = null
     this.posixPasswdCache = ''
     this.posixGroupCache = ''
     this.posixLastModified = new Date()
@@ -49,7 +43,6 @@ export default class Users {
     const passwordDigest = await argon2.hash(password)
     const uid = await this.generateUid(tr)
     const result = await tr.query(query, [username, passwordDigest, name, uid, shell, preferredLanguage])
-    this.posixAccountsCache = null
     this.posixPasswdCache = ''
     this.posixGroupCache = ''
     return result.rows[0].idx
@@ -61,7 +54,6 @@ export default class Users {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
-    this.posixAccountsCache = null
     this.posixPasswdCache = ''
     this.posixGroupCache = ''
     return result.rows[0].idx
@@ -81,13 +73,6 @@ export default class Users {
     const users: Array<User> = []
     result.rows.forEach(row => users.push(this.rowToUser(row)))
     return users
-  }
-
-  public async getAllAsPosixAccounts(tr: Transaction): Promise<Array<ldap.SearchEntry<PosixAccount>>> {
-    if (this.posixAccountsCache === null) {
-      this.posixAccountsCache = this.usersToPosixAccounts(await this.getAll(tr))
-    }
-    return this.posixAccountsCache
   }
 
   public getPosixLastModified(): Date {
@@ -115,11 +100,6 @@ export default class Users {
       throw new NoSuchEntryError()
     }
     return this.rowToUser(result.rows[0])
-  }
-
-  public async getByUsernameAsPosixAccount(tr: Transaction, username: string):
-      Promise<ldap.SearchEntry<PosixAccount>> {
-    return this.userToPosixAccount(await this.getByUsername(tr, username))
   }
 
   public async getByUserIdx(tr: Transaction, userIdx: number): Promise<User> {
@@ -259,7 +239,6 @@ export default class Users {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
-    this.posixAccountsCache = null
     return result.rows[0].idx
   }
 
@@ -457,37 +436,6 @@ export default class Users {
         resolve(buf)
       })
     })
-  }
-
-  private usersToPosixAccounts(users: Array<User>): Array<ldap.SearchEntry<PosixAccount>> {
-    const posixAccounts: Array<ldap.SearchEntry<PosixAccount>> = []
-    users.forEach(user => {
-      try {
-        posixAccounts.push(this.userToPosixAccount(user))
-      } catch (e) {
-        // do nothing
-      }
-    })
-    return posixAccounts
-  }
-
-  private userToPosixAccount(user: User): ldap.SearchEntry<PosixAccount> {
-    if (user.username === null || user.shell === null) {
-      throw new Error('Cannot convert to posixAccount')
-    }
-    return {
-      dn: `cn=${user.username},${this.usersDN}`,
-      attributes: {
-        uid: user.username,
-        cn: user.username,
-        gecos: user.name,
-        homeDirectory: `${this.model.config.posix.homeDirectoryPrefix}/${user.username}`,
-        loginShell: user.shell,
-        objectClass: posixAccountObjectClass,
-        uidNumber: user.uid,
-        gidNumber: this.model.config.posix.userGroupGid,
-      },
-    }
   }
 
   // Set posix{Passwd, Group}Cache based on the user array. Should be sorted.
