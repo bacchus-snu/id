@@ -52,7 +52,7 @@ test('should error if oauth_signature_method is not HMAC-SHA1', t => {
   const consumerSecret = 'foofoo'
   const error: InvalidParameterError = t.throws(
     () => verify(params, method, requestUrl, consumerSecret),
-    InvalidParameterError,
+    { instanceOf: InvalidParameterError },
   )
   t.is(error.parameter, 'oauth_signature_method')
 })
@@ -71,7 +71,7 @@ test('should error if oauth_signature is not present', t => {
   const consumerSecret = 'foofoo'
   const error: InvalidParameterError = t.throws(
     () => verify(params, method, requestUrl, consumerSecret),
-    InvalidParameterError,
+    { instanceOf: InvalidParameterError },
   )
   t.is(error.parameter, 'oauth_signature')
 })

@@ -1,0 +1,6 @@
+test
+dist
+node_modules
+config.*
+Dockerfile
+.dockerignore

@@ -18,6 +18,11 @@ const host =
   process.env.HOST ||
   process.env.npm_package_config_nuxt_host ||
   "localhost"
+const backend =
+  argv.backend ||
+  process.env.BACKEND ||
+  process.env.npm_package_config_nuxt_backend ||
+  "http://id-dev.snucse.org:50080"
 module.exports = {
   env: {
     baseUrl:
@@ -72,7 +77,7 @@ module.exports = {
   ],
 
   proxy: {
-    '/api/': 'http://id-dev.snucse.org:50080',
+    '/api/': backend,
   },
 
   axios: {
