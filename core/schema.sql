@@ -159,5 +159,6 @@ create table hosts (
   idx serial primary key,
   name text not null check (name <> ''),
   host inet unique not null check (text(host) <> ''),
-  host_group integer references host_groups(idx) on delete set null
+  host_group integer references host_groups(idx) on delete set null,
+  host_pubkey bytea unique check (octet_length(host_pubkey) = 32)
 );

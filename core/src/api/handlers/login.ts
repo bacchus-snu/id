@@ -1,7 +1,9 @@
-import Model from '../../model/model'
 import { IMiddleware } from 'koa-router'
+
 import Config from '../../config'
 import { ControllableError, AuthorizationError } from '../../model/errors'
+import Model from '../../model/model'
+import { verifyPubkeyReq } from '../pubkey'
 
 export function login(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -62,9 +64,22 @@ export function loginPAM(model: Model): IMiddleware {
     try {
       await model.pgDo(async tr => {
         try {
+          let host
+          if (ctx.headers['x-bacchus-id-pubkey']) {
+            const verifyResult = verifyPubkeyReq(ctx)
+            if (verifyResult == null) {
+              ctx.status = 401
+              return
+            }
+
+            // signature verified, find host info
+            host = await model.hosts.getHostByPubkey(tr, verifyResult.publicKey)
+          } else {
+            // Remember to configure app.proxy and X-Forwarded-For when deploying
+            host = await model.hosts.getHostByInet(tr, ctx.ip)
+          }
+
           const userIdx = await model.users.authenticate(tr, username, password)
-          // Remember to configure app.proxy and X-Forwarded-For when deploying
-          const host = await model.hosts.getHostByInet(tr, ctx.ip)
           await model.hosts.authorizeUserByHost(tr, userIdx, host)
         } catch (e) {
           if (e instanceof ControllableError) {

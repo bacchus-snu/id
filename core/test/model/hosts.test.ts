@@ -1,4 +1,5 @@
 import test from 'ava'
+import * as tweetnacl from 'tweetnacl'
 import * as uuid from 'uuid/v4'
 
 import * as fs from 'fs'
@@ -31,6 +32,30 @@ test('add host and host group', async t => {
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
 
     byInet = await model.hosts.getHostByInet(tr, host)
+    t.is(byInet.host, host)
+    t.is(byInet.hostGroupIdx, hostGroupIdx)
+
+    await model.hosts.deleteHost(tr, hostIdx)
+  })
+})
+
+test('add host with pubkey', async t => {
+  const name = uuid()
+  const host = '127.0.2.1'
+  const hostGroupName = uuid()
+  const keyPair = tweetnacl.sign.keyPair()
+  await model.pgDo(async tr => {
+    const hostIdx = await model.hosts.addHost(tr, name, host, keyPair.publicKey)
+    const query = 'SELECT idx FROM hosts WHERE host = $1'
+    const result = await tr.query(query, [host])
+    t.is(result.rows[0].idx, hostIdx)
+    let byInet = await model.hosts.getHostByPubkey(tr, keyPair.publicKey)
+    t.is(byInet.idx, hostIdx)
+
+    const hostGroupIdx = await model.hosts.addHostGroup(tr, hostGroupName)
+    await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
+
+    byInet = await model.hosts.getHostByPubkey(tr, keyPair.publicKey)
     t.is(byInet.host, host)
     t.is(byInet.hostGroupIdx, hostGroupIdx)
 

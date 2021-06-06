@@ -1,5 +1,6 @@
 import test from 'ava'
 import * as request from 'supertest'
+import * as tweetnacl from 'tweetnacl'
 import * as uuid from 'uuid/v4'
 import * as moment from 'moment'
 import { app, model, config } from '../_setup'
@@ -40,7 +41,7 @@ test('test login with credential', async t => {
   })
 })
 
-test('test PAM login with credential and host', async t => {
+test.serial('test PAM login with credential and host', async t => {
   let username: string = ''
   let password: string = ''
   let userIdx: number = -1
@@ -100,6 +101,112 @@ test('test PAM login with credential and host', async t => {
     password,
   })
   t.is(response.status, 401)
+
+  // Cleanup
+  await model.pgDo(async tr => {
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
+  })
+})
+
+test.serial('test PAM login with credential and pubkey', async t => {
+  let username: string = ''
+  let password: string = ''
+  let userIdx: number = -1
+  let hostIdx: number = -1
+  let groupIdx: number = -1
+  let hostGroupIdx: number = -1
+  let permissionIdx: number = -1
+
+  const trans = {
+    ko: uuid(),
+    en: uuid(),
+  }
+
+  const keypair = tweetnacl.sign.keyPair()
+  const publicKey = Buffer.from(keypair.publicKey)
+  const secretKey = Buffer.from(keypair.secretKey)
+  await model.pgDo(async tr => {
+    username = uuid()
+    password = uuid()
+
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
+    groupIdx = await model.groups.create(tr, trans, trans)
+    await model.users.addUserMembership(tr, userIdx, groupIdx)
+
+    hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1', publicKey)
+    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group')
+    await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
+
+    permissionIdx = await model.permissions.create(tr, trans, trans)
+    await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
+    await model.hosts.setHostGroupPermission(tr, hostGroupIdx, permissionIdx)
+    tr.ensureHasAccessExclusiveLock('hosts')
+  }, ['users', 'group_reachable_cache', 'hosts'])
+
+  const agent = request.agent(app)
+
+  let response
+
+  // cannot authorize without signature
+  {
+    const body = JSON.stringify({ username, password })
+    response = await agent.post('/api/login/pam')
+      .set('Content-Type', 'application/json')
+      .send(body)
+    t.is(response.status, 401)
+  }
+
+  // wrong password
+  {
+    const body = JSON.stringify({ username, password: 'doge!' })
+    let timestamp = Date.now().toString()
+    timestamp = timestamp.substring(0, timestamp.length - 3)
+    const signature = tweetnacl.sign.detached(Buffer.from(timestamp + body), secretKey)
+    response = await agent.post('/api/login/pam')
+      .set('Content-Type', 'application/json')
+      .set('X-Bacchus-Id-Pubkey', publicKey.toString('base64'))
+      .set('X-Bacchus-Id-Timestamp', timestamp)
+      .set('X-Bacchus-Id-Signature', Buffer.from(signature).toString('base64'))
+      .send(body)
+    t.is(response.status, 401)
+  }
+
+  // success case
+  {
+    const body = JSON.stringify({ username, password })
+    let timestamp = Date.now().toString()
+    timestamp = timestamp.substring(0, timestamp.length - 3)
+    const signature = tweetnacl.sign.detached(Buffer.from(timestamp + body), secretKey)
+    response = await agent.post('/api/login/pam')
+      .set('Content-Type', 'application/json')
+      .set('X-Bacchus-Id-Pubkey', publicKey.toString('base64'))
+      .set('X-Bacchus-Id-Timestamp', timestamp)
+      .set('X-Bacchus-Id-Signature', Buffer.from(signature).toString('base64'))
+      .send(body)
+    t.is(response.status, 200)
+  }
+
+  await model.pgDo(async tr => {
+    const newGroupIdx = await model.groups.create(tr, trans, trans)
+    const newPermissionIdx = await model.permissions.create(tr, trans, trans)
+    await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
+    await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
+  }, ['group_reachable_cache'])
+
+  {
+    const body = JSON.stringify({ username, password })
+    let timestamp = Date.now().toString()
+    timestamp = timestamp.substring(0, timestamp.length - 3)
+    const signature = tweetnacl.sign.detached(Buffer.from(timestamp + body), secretKey)
+    response = await agent.post('/api/login/pam')
+      .set('Content-Type', 'application/json')
+      .set('X-Bacchus-Id-Pubkey', publicKey.toString('base64'))
+      .set('X-Bacchus-Id-Timestamp', timestamp)
+      .set('X-Bacchus-Id-Signature', Buffer.from(signature).toString('base64'))
+      .send(body)
+    t.is(response.status, 401)
+  }
 
   // Cleanup
   await model.pgDo(async tr => {
