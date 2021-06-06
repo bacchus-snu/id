@@ -1,3 +1,5 @@
+import * as tweetnacl from 'tweetnacl'
+
 import Model from '../../model/model'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
@@ -62,9 +64,45 @@ export function loginPAM(model: Model): IMiddleware {
     try {
       await model.pgDo(async tr => {
         try {
+          let host
+          if (ctx.headers['x-bacchus-id-pubkey']) {
+            const hostPubkey = Buffer.from(ctx.headers['x-bacchus-id-pubkey'], 'base64')
+            const reqTimestamp = parseInt(ctx.headers['x-bacchus-id-timestamp'], 10)
+            const signature = Buffer.from(ctx.headers['x-bacchus-id-signature'], 'base64')
+
+            if (
+              hostPubkey.length !== tweetnacl.sign.publicKeyLength ||
+              Number.isNaN(reqTimestamp) ||
+              signature.length !== tweetnacl.sign.signatureLength
+            ) {
+              // bad signature info
+              ctx.status = 400
+              return
+            }
+
+            const now = Date.now()
+            if (Math.abs(now / 1000 - reqTimestamp) > 30) {
+              // time drift
+              ctx.status = 400
+              return
+            }
+
+            const rawBody = ctx.request.rawBody
+            const msgText = String(reqTimestamp) + rawBody
+            const message = Buffer.from(msgText, 'utf8')
+            if (!tweetnacl.sign.detached.verify(message, signature, hostPubkey)) {
+              ctx.status = 401
+              return
+            }
+
+            // signature verified, find host info
+            host = await model.hosts.getHostByPubkey(tr, hostPubkey)
+          } else {
+            // Remember to configure app.proxy and X-Forwarded-For when deploying
+            host = await model.hosts.getHostByInet(tr, ctx.ip)
+          }
+
           const userIdx = await model.users.authenticate(tr, username, password)
-          // Remember to configure app.proxy and X-Forwarded-For when deploying
-          const host = await model.hosts.getHostByInet(tr, ctx.ip)
           await model.hosts.authorizeUserByHost(tr, userIdx, host)
         } catch (e) {
           if (e instanceof ControllableError) {

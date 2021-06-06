@@ -8,6 +8,7 @@ export interface Host {
   name: string
   host: string
   hostGroupIdx: number | null
+  hostPubkey?: Buffer
 }
 
 export interface HostGroup {
@@ -20,9 +21,9 @@ export default class Hosts {
   constructor(private readonly model: Model) {
   }
 
-  public async addHost(tr: Transaction, name: string, host: string): Promise<number> {
-    const query = 'INSERT INTO hosts(name, host) VALUES ($1, $2) RETURNING idx'
-    const result = await tr.query(query, [name, host])
+  public async addHost(tr: Transaction, name: string, host: string, pubkey?: Uint8Array): Promise<number> {
+    const query = 'INSERT INTO hosts(name, host, host_pubkey) VALUES ($1, $2, $3) RETURNING idx'
+    const result = await tr.query(query, [name, host, pubkey])
     return result.rows[0].idx
   }
 
@@ -62,8 +63,19 @@ export default class Hosts {
       inet = inet.substring(inet.lastIndexOf(':') + 1)
     }
 
-    const query = 'SELECT idx, name, host, host_group FROM hosts WHERE host(host) = $1'
+    // forbid inet authentication with pubkey registered
+    const query = `SELECT idx, name, host, host_group, host_pubkey FROM hosts
+      WHERE host(host) = $1 AND host_pubkey IS NULL`
     const result = await tr.query(query, [inet])
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError()
+    }
+    return this.rowToHost(result.rows[0])
+  }
+
+  public async getHostByPubkey(tr: Transaction, pubkey: Uint8Array): Promise<Host> {
+    const query = 'SELECT idx, name, host, host_group, host_pubkey FROM hosts WHERE host_pubkey = $1'
+    const result = await tr.query(query, [pubkey])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
@@ -102,6 +114,7 @@ export default class Hosts {
       name: row.name,
       host: row.host,
       hostGroupIdx: row.host_group,
+      hostPubkey: row.host_pubkey || undefined,
     }
   }
 
