@@ -41,7 +41,7 @@ test('test login with credential', async t => {
   })
 })
 
-test('test PAM login with credential and host', async t => {
+test.serial('test PAM login with credential and host', async t => {
   let username: string = ''
   let password: string = ''
   let userIdx: number = -1
@@ -63,8 +63,8 @@ test('test PAM login with credential and host', async t => {
     groupIdx = await model.groups.create(tr, trans, trans)
     await model.users.addUserMembership(tr, userIdx, groupIdx)
 
-    hostIdx = await model.hosts.addHost(tr, 'test1', '127.0.0.1')
-    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group 1')
+    hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1')
+    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group')
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
 
     permissionIdx = await model.permissions.create(tr, trans, trans)
@@ -104,12 +104,12 @@ test('test PAM login with credential and host', async t => {
 
   // Cleanup
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test1'])
-    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group 1'])
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
   })
 })
 
-test('test PAM login with credential and pubkey', async t => {
+test.serial('test PAM login with credential and pubkey', async t => {
   let username: string = ''
   let password: string = ''
   let userIdx: number = -1
@@ -134,8 +134,8 @@ test('test PAM login with credential and pubkey', async t => {
     groupIdx = await model.groups.create(tr, trans, trans)
     await model.users.addUserMembership(tr, userIdx, groupIdx)
 
-    hostIdx = await model.hosts.addHost(tr, 'test2', '127.0.0.2', publicKey)
-    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group 2')
+    hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1', publicKey)
+    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group')
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
 
     permissionIdx = await model.permissions.create(tr, trans, trans)
@@ -210,8 +210,8 @@ test('test PAM login with credential and pubkey', async t => {
 
   // Cleanup
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test2'])
-    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group 2'])
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['test'])
+    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group'])
   })
 })
 

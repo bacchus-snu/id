@@ -1,9 +1,9 @@
-import * as tweetnacl from 'tweetnacl'
-
-import Model from '../../model/model'
 import { IMiddleware } from 'koa-router'
+
 import Config from '../../config'
 import { ControllableError, AuthorizationError } from '../../model/errors'
+import Model from '../../model/model'
+import { verifyPubkeyReq } from '../pubkey'
 
 export function login(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -66,37 +66,14 @@ export function loginPAM(model: Model): IMiddleware {
         try {
           let host
           if (ctx.headers['x-bacchus-id-pubkey']) {
-            const hostPubkey = Buffer.from(ctx.headers['x-bacchus-id-pubkey'], 'base64')
-            const reqTimestamp = parseInt(ctx.headers['x-bacchus-id-timestamp'], 10)
-            const signature = Buffer.from(ctx.headers['x-bacchus-id-signature'], 'base64')
-
-            if (
-              hostPubkey.length !== tweetnacl.sign.publicKeyLength ||
-              Number.isNaN(reqTimestamp) ||
-              signature.length !== tweetnacl.sign.signatureLength
-            ) {
-              // bad signature info
-              ctx.status = 400
-              return
-            }
-
-            const now = Date.now()
-            if (Math.abs(now / 1000 - reqTimestamp) > 30) {
-              // time drift
-              ctx.status = 400
-              return
-            }
-
-            const rawBody = ctx.request.rawBody
-            const msgText = String(reqTimestamp) + rawBody
-            const message = Buffer.from(msgText, 'utf8')
-            if (!tweetnacl.sign.detached.verify(message, signature, hostPubkey)) {
+            const verifyResult = verifyPubkeyReq(ctx)
+            if (verifyResult == null) {
               ctx.status = 401
               return
             }
 
             // signature verified, find host info
-            host = await model.hosts.getHostByPubkey(tr, hostPubkey)
+            host = await model.hosts.getHostByPubkey(tr, verifyResult.publicKey)
           } else {
             // Remember to configure app.proxy and X-Forwarded-For when deploying
             host = await model.hosts.getHostByInet(tr, ctx.ip)

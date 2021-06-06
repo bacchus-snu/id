@@ -1,13 +1,24 @@
-import Model from '../../model/model'
-import { User } from '../../model/users'
 import { IMiddleware } from 'koa-router'
+
+import Model from '../../model/model'
 import { NoSuchEntryError } from '../../model/errors'
+import { verifyPubkeyReq } from '../pubkey'
 
 export function getPasswd(model: Model): IMiddleware {
   return async (ctx, next) => {
     try {
       await model.pgDo(async tr => {
-        await model.hosts.getHostByInet(tr, ctx.ip)
+        if (ctx.headers['x-bacchus-id-pubkey']) {
+          const verifyResult = verifyPubkeyReq(ctx)
+          if (verifyResult == null) {
+            ctx.status = 401
+            return
+          }
+
+          await model.hosts.getHostByPubkey(tr, verifyResult.publicKey)
+        } else {
+          await model.hosts.getHostByInet(tr, ctx.ip)
+        }
       })
     } catch (e) {
         if (e instanceof NoSuchEntryError) {
@@ -45,7 +56,17 @@ export function getGroup(model: Model): IMiddleware {
   return async (ctx, next) => {
     try {
       await model.pgDo(async tr => {
-        await model.hosts.getHostByInet(tr, ctx.ip)
+        if (ctx.headers['x-bacchus-id-pubkey']) {
+          const verifyResult = verifyPubkeyReq(ctx)
+          if (verifyResult == null) {
+            ctx.status = 401
+            return
+          }
+
+          await model.hosts.getHostByPubkey(tr, verifyResult.publicKey)
+        } else {
+          await model.hosts.getHostByInet(tr, ctx.ip)
+        }
       })
     } catch (e) {
         if (e instanceof NoSuchEntryError) {
