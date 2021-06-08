@@ -1,5 +1,5 @@
 import test from 'ava'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import { model } from '../_setup'
 
 test('get, add, and remove shells', async t => {

@@ -1,5 +1,5 @@
 export interface ParamObj {
-  [key: string]: string | Array<string>
+  [key: string]: string | Array<string> | undefined
 }
 
 export default class Params {
@@ -11,7 +11,7 @@ export default class Params {
         for (const innerValue of value) {
           this.addOne(key, innerValue)
         }
-      } else {
+      } else if (value != null) {
         this.addOne(key, value)
       }
     }

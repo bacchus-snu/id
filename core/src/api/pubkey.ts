@@ -6,9 +6,9 @@ export interface VerifyResult {
 }
 
 export function verifyPubkeyReq(ctx: Context): VerifyResult | null {
-  const hostPubkey = Buffer.from(ctx.headers['x-bacchus-id-pubkey'], 'base64')
-  const reqTimestamp = parseInt(ctx.headers['x-bacchus-id-timestamp'], 10)
-  const signature = Buffer.from(ctx.headers['x-bacchus-id-signature'], 'base64')
+  const hostPubkey = Buffer.from(String(ctx.headers['x-bacchus-id-pubkey']), 'base64')
+  const reqTimestamp = parseInt(String(ctx.headers['x-bacchus-id-timestamp']), 10)
+  const signature = Buffer.from(String(ctx.headers['x-bacchus-id-signature']), 'base64')
 
   if (
     hostPubkey.length !== tweetnacl.sign.publicKeyLength ||

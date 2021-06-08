@@ -1,6 +1,6 @@
 import test from 'ava'
 import * as request from 'supertest'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import { app, model, config } from '../_setup'
 import { createUser } from '../_test_utils'
 

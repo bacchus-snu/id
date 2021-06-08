@@ -1,7 +1,7 @@
 import test from 'ava'
 import * as request from 'supertest'
 import * as tweetnacl from 'tweetnacl'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import * as moment from 'moment'
 import { app, model, config } from '../_setup'
 
