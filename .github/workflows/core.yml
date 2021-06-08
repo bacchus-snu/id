@@ -1,0 +1,53 @@
+name: Test core
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - core/**
+  pull_request:
+    branches:
+      - master
+    paths:
+      - core/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: node:14-buster
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_PASSWORD: foo
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Prepare database
+        env:
+          PGPASSFILE: /tmp/pgpass
+        run: |
+          apt update && apt install -y postgresql
+          echo 'postgres:5432:*:postgres:foo' > $PGPASSFILE
+          chmod 600 $PGPASSFILE
+          psql -h postgres -U postgres -w -c 'create database id;'
+          psql -h postgres -U postgres -w id < ./core/schema.sql
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-core-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build.0-${{ env.cache-name }}-${{ hashFiles('core/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build.0-${{ env.cache-name }}-
+            ${{ runner.os }}-build.0-
+            ${{ runner.os }}-
+      - name: Install dependencies
+        run: 'cd core && npm ci && cd ..'
+      - name: Run tests
+        run: 'cd core && npm test && cd ..'

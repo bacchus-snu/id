@@ -33,10 +33,10 @@
     "homeDirectoryPrefix": "/csehome"
   },
   "postgresql": {
-    "host": "127.0.0.1",
+    "host": "postgres",
     "port": 5432,
     "user": "postgres",
-    "password": "",
+    "password": "foo",
     "database": "id"
   },
   "permissions": {
