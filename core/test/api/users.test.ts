@@ -1,6 +1,6 @@
 import test, { ExecutionContext } from 'ava'
 import * as request from 'supertest'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import * as crypto from 'crypto'
 import { app, model, config } from '../_setup'
 

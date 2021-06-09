@@ -2,7 +2,7 @@ import test from 'ava'
 
 import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 
 import { createUser, createGroup, createPermission, createGroupRelation } from '../_test_utils'
 import { model } from '../_setup'

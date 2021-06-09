@@ -1,0 +1,39 @@
+name: Test front
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - front/**
+  pull_request:
+    branches:
+      - master
+    paths:
+      - front/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js 14
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-front-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build.0-${{ env.cache-name }}-${{ hashFiles('core/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build.0-${{ env.cache-name }}-
+            ${{ runner.os }}-build.0-
+            ${{ runner.os }}-
+      - name: Install dependencies
+        run: 'cd front && npm ci && cd ..'
+      - name: Run lint
+        run: 'cd front && npm run lint && cd ..'
+      - name: Run build
+        run: 'cd front && npm run build && cd ..'

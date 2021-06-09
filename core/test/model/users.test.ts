@@ -2,7 +2,7 @@ import test from 'ava'
 
 import * as phc from '@phc/format'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import * as moment from 'moment'
 
 import { createUser, createGroup } from '../_test_utils'

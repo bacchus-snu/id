@@ -1,8 +1,6 @@
 import Model from '../../model/model'
 import { User } from '../../model/users'
-import { Group, GroupUserInfo } from '../../model/groups'
 import { IMiddleware } from 'koa-router'
-import Config from '../../config'
 
 export function listGroups(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -43,7 +41,7 @@ export function listMembers(model: Model): IMiddleware {
 
       let user = null
       let owner = false
-      let users = null
+      let users: Array<User> = []
       try {
         await model.pgDo(async tr => {
           user = await model.users.getByUsername(tr, username)
@@ -64,14 +62,14 @@ export function listMembers(model: Model): IMiddleware {
       }
 
       ctx.status = 200
-      ctx.body = users
-      ctx.body.forEach((u: any) => {
+      users.forEach((u: any) => {
         u.uid = u.idx
         delete u.idx
         delete u.username
         delete u.shell
         delete u.preferredLanguage
       })
+      ctx.body = users
     } else {
       ctx.status = 401
       return
@@ -88,7 +86,7 @@ export function listPending(model: Model): IMiddleware {
 
       let user = null
       let owner = false
-      let users = null
+      let users: Array<User> = []
       try {
         await model.pgDo(async tr => {
           user = await model.users.getByUsername(tr, username)
@@ -109,14 +107,14 @@ export function listPending(model: Model): IMiddleware {
       }
 
       ctx.status = 200
-      ctx.body = users
-      ctx.body.forEach((u: any) => {
+      users.forEach((u: any) => {
         u.uid = u.idx
         delete u.idx
         delete u.username
         delete u.shell
         delete u.preferredLanguage
       })
+      ctx.body = users
     } else {
       ctx.status = 401
       return

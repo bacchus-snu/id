@@ -61,7 +61,16 @@ export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
       return ctx.throw('Body should be form data', 400)
     } else {
       // Has body
-      requestParams = ctx.request.body
+      if (typeof ctx.request.body === 'string') {
+        return ctx.throw('Body should be a dict', 400)
+      }
+      requestParams = {}
+      for (const [key, value] of Object.entries(ctx.request.body)) {
+        if (typeof value !== 'string') {
+          return ctx.throw('Body should be a dict to string', 400)
+        }
+        requestParams[key] = value
+      }
     }
     params.extend(requestParams)
 

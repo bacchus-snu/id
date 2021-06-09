@@ -4,7 +4,7 @@ import { Translation } from '../../src/model/translation'
 import { NoSuchEntryError } from '../../src/model/errors'
 
 import { createGroup, createUser, createGroupRelation } from '../_test_utils'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import { model } from '../_setup'
 
 const name: Translation = {

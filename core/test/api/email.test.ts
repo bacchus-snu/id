@@ -1,7 +1,7 @@
 import test from 'ava'
 import * as request from 'supertest'
 import * as nodemailer from 'nodemailer'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 import { app, model, config } from '../_setup'
 
 test.skip('email configuration is correct', async t => {
