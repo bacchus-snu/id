@@ -184,20 +184,20 @@ export function issueJWT(model: Model, config: Config): IMiddleware {
         return
       }
 
-      const { permission } = body
+      const { permissionIdx } = body
       let hasPermission: boolean = false
-      if (permission) {
-        if (typeof permission !== 'number') {
+      if (permissionIdx) {
+        if (typeof permissionIdx !== 'number') {
           ctx.status = 400
           return
         }
         try {
           await model.pgDo(async tr => {
             try {
-              const hp = await model.permissions.checkUserHavePermission(tr, userIdx, permission)
+              const hp = await model.permissions.checkUserHavePermission(tr, userIdx, permissionIdx)
               hasPermission = hp
             } catch (e) {
-              ctx.status = 200
+              ctx.status = 500
               throw e
             }
           })
@@ -209,10 +209,10 @@ export function issueJWT(model: Model, config: Config): IMiddleware {
       const payload = {
         userIdx: ctx.session.userIdx,
         username: ctx.session.username,
-        permission: -1,
+        permissionIdx: -1,
       }
       if (hasPermission) {
-        payload.permission = permission
+        payload.permissionIdx = permissionIdx
       }
       const key = createPrivateKey(config.jwt.privateKey)
       const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
@@ -225,7 +225,7 @@ export function issueJWT(model: Model, config: Config): IMiddleware {
         .sign(key)
 
       let data
-      if (permission) {
+      if (permissionIdx) {
         data = {
           token: jwt,
           hasPermission,

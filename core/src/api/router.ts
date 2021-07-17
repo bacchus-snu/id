@@ -65,7 +65,9 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    * Issue JWT token
    * 200 if success, 401 if not.
-   * @returns username username.
+   * @param permissionIdx permission id to be checked
+   * @returns token jwt token.
+   * @returns hasPermission true if user has permission of `permissionIdx`
    */
   router.post('/api/issue-jwt', issueJWT(model, config))
 
