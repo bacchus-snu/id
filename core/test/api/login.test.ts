@@ -3,6 +3,8 @@ import * as request from 'supertest'
 import * as tweetnacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 import * as moment from 'moment'
+import { jwtVerify } from 'jose/jwt/verify'
+import { createPublicKey } from 'crypto'
 import { app, model, config } from '../_setup'
 
 test('test login with credential', async t => {
@@ -298,4 +300,62 @@ test('test legacy login', async t => {
     member_password: password,
   })
   t.is(response.status, 200)
+})
+
+test('test jwt', async t => {
+  let username: string = ''
+  let password: string = ''
+  let userIdx: number = -1
+
+  await model.pgDo(async tr => {
+    username = uuid()
+    password = uuid()
+    userIdx = await model.users.create(
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
+
+  const agent = request.agent(app)
+
+  let response
+
+  response = await agent.get('/api/issue-jwt').send()
+  t.is(response.status, 401)
+
+  response = await agent.post('/api/login').send({
+    username,
+    password,
+  })
+  t.is(response.status, 200)
+
+  response = await agent.get('issue-jwt').send()
+  t.is(response.status, 200)
+  const token = response.body.token as string
+
+  const publicKey = createPublicKey({
+    key: config.jwt.privateKey,
+    format: 'pem',
+  })
+
+  const { payload, protectedHeader } = await jwtVerify(token, publicKey)
+  t.is(protectedHeader.alg, 'ES256')
+  t.is(protectedHeader.typ, 'JWT')
+
+  t.is(payload.aud, config.jwt.audience)
+  t.is(payload.iss, config.jwt.issuer)
+
+  t.is(payload.userIdx, userIdx)
+  t.is(payload.username, username)
+
+  const now = Math.floor(new Date().getTime() / 1000)
+  if (payload.exp) {
+    t.true(now < payload.exp)
+  } else {
+    t.fail()
+  }
+
+  response = await agent.get('/api/logout').send()
+  t.is(response.status, 200)
+
+  response = await agent.get('/api/issue-jwt').send()
+  t.is(response.status, 401)
 })
