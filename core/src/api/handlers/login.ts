@@ -168,7 +168,7 @@ export function checkLogin(): IMiddleware {
   }
 }
 
-export function issueJWT(config: Config): IMiddleware {
+export function issueJWT(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     if (ctx.session && !ctx.session.isNew) {
       if (!ctx.session.userIdx || !ctx.session.username) {
@@ -176,9 +176,43 @@ export function issueJWT(config: Config): IMiddleware {
         return
       }
 
+      const body: any = ctx.request.body
+      const userIdx = ctx.session.userIdx
+
+      if (!body || typeof body !== 'object') {
+        ctx.status = 400
+        return
+      }
+
+      const { permission } = body
+      let hasPermission: boolean = false
+      if (permission) {
+        if (typeof permission !== 'number') {
+          ctx.status = 400
+          return
+        }
+        try {
+          await model.pgDo(async tr => {
+            try {
+              const hp = await model.permissions.checkUserHavePermission(tr, userIdx, permission)
+              hasPermission = hp
+            } catch (e) {
+              ctx.status = 200
+              throw e
+            }
+          })
+        } catch (e) {
+          return
+        }
+      }
+
       const payload = {
         userIdx: ctx.session.userIdx,
         username: ctx.session.username,
+        permission: -1,
+      }
+      if (hasPermission) {
+        payload.permission = permission
       }
       const key = createPrivateKey(config.jwt.privateKey)
       const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
@@ -190,8 +224,16 @@ export function issueJWT(config: Config): IMiddleware {
         .setExpirationTime(expiry)
         .sign(key)
 
-      const data = {
-        token: jwt,
+      let data
+      if (permission) {
+        data = {
+          token: jwt,
+          hasPermission,
+        }
+      } else {
+        data = {
+          token: jwt,
+        }
       }
       ctx.body = data
       ctx.status = 200

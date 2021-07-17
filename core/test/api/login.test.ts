@@ -6,6 +6,7 @@ import * as moment from 'moment'
 import { jwtVerify } from 'jose/jwt/verify'
 import { createPublicKey } from 'crypto'
 import { app, model, config } from '../_setup'
+import { createUser, createGroup, createPermission, createGroupRelation } from '../_test_utils'
 
 test('test login with credential', async t => {
   let username: string = ''
@@ -327,30 +328,111 @@ test('test jwt', async t => {
   })
   t.is(response.status, 200)
 
-  response = await agent.post('/api/issue-jwt').send()
-  t.is(response.status, 200)
-  const token = response.body.token as string
+  // with no permission check
+  {
+    response = await agent.post('/api/issue-jwt').send()
+    t.is(response.status, 200)
+    const token = response.body.token as string
+    t.falsy(response.body.hasPermission)
 
-  const publicKey = createPublicKey({
-    key: config.jwt.privateKey,
-    format: 'pem',
-  })
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
 
-  const { payload, protectedHeader } = await jwtVerify(token, publicKey)
-  t.is(protectedHeader.alg, 'ES256')
-  t.is(protectedHeader.typ, 'JWT')
+    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
+    t.is(protectedHeader.alg, 'ES256')
+    t.is(protectedHeader.typ, 'JWT')
 
-  t.is(payload.aud, config.jwt.audience)
-  t.is(payload.iss, config.jwt.issuer)
+    t.is(payload.aud, config.jwt.audience)
+    t.is(payload.iss, config.jwt.issuer)
 
-  t.is(payload.userIdx, userIdx)
-  t.is(payload.username, username)
+    t.is(payload.userIdx, userIdx)
+    t.is(payload.username, username)
+    t.is(payload.permission, -1)
 
-  const now = Math.floor(new Date().getTime() / 1000)
-  if (payload.exp) {
-    t.true(now < payload.exp)
-  } else {
-    t.fail()
+    const now = Math.floor(new Date().getTime() / 1000)
+    if (payload.exp) {
+      t.true(now < payload.exp)
+    } else {
+      t.fail()
+    }
+  }
+
+  // with permission check, but has no permission
+  let groupIdx = -1
+  let permissionIdx = -1
+  {
+    await model.pgDo(async tr => {
+      groupIdx = await createGroup(tr, model)
+      permissionIdx = await createPermission(tr, model)
+      await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
+    }, ['group_reachable_cache'])
+    response = await agent.post('/api/issue-jwt').send({
+      permission: permissionIdx,
+    })
+    t.is(response.status, 200)
+    const token = response.body.token as string
+    t.false(response.body.hasPermission)
+
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
+
+    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
+    t.is(protectedHeader.alg, 'ES256')
+    t.is(protectedHeader.typ, 'JWT')
+
+    t.is(payload.aud, config.jwt.audience)
+    t.is(payload.iss, config.jwt.issuer)
+
+    t.is(payload.userIdx, userIdx)
+    t.is(payload.username, username)
+    t.is(payload.permission, -1)
+
+    const now = Math.floor(new Date().getTime() / 1000)
+    if (payload.exp) {
+      t.true(now < payload.exp)
+    } else {
+      t.fail()
+    }
+  }
+
+  // with permission check, and has permission
+  {
+    await model.pgDo(async tr => {
+      await model.users.addUserMembership(tr, userIdx, groupIdx)
+    })
+    response = await agent.post('/api/issue-jwt').send({
+      permission: permissionIdx,
+    })
+    t.is(response.status, 200)
+    const token = response.body.token as string
+    t.true(response.body.hasPermission)
+
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
+
+    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
+    t.is(protectedHeader.alg, 'ES256')
+    t.is(protectedHeader.typ, 'JWT')
+
+    t.is(payload.aud, config.jwt.audience)
+    t.is(payload.iss, config.jwt.issuer)
+
+    t.is(payload.userIdx, userIdx)
+    t.is(payload.username, username)
+    t.is(payload.permission, permissionIdx)
+
+    const now = Math.floor(new Date().getTime() / 1000)
+    if (payload.exp) {
+      t.true(now < payload.exp)
+    } else {
+      t.fail()
+    }
   }
 
   response = await agent.get('/api/logout').send()

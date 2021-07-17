@@ -67,7 +67,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 200 if success, 401 if not.
    * @returns username username.
    */
-  router.post('/api/issue-jwt', issueJWT(config))
+  router.post('/api/issue-jwt', issueJWT(model, config))
 
   /**
    * Get shell list.
