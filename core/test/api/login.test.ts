@@ -349,7 +349,7 @@ test('test jwt', async t => {
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
-    t.is(payload.permission, -1)
+    t.is(payload.permissionIdx, -1)
 
     const now = Math.floor(new Date().getTime() / 1000)
     if (payload.exp) {
@@ -369,7 +369,7 @@ test('test jwt', async t => {
       await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
     }, ['group_reachable_cache'])
     response = await agent.post('/api/issue-jwt').send({
-      permission: permissionIdx,
+      permissionIdx,
     })
     t.is(response.status, 200)
     const token = response.body.token as string
@@ -389,7 +389,7 @@ test('test jwt', async t => {
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
-    t.is(payload.permission, -1)
+    t.is(payload.permissionIdx, -1)
 
     const now = Math.floor(new Date().getTime() / 1000)
     if (payload.exp) {
@@ -405,7 +405,7 @@ test('test jwt', async t => {
       await model.users.addUserMembership(tr, userIdx, groupIdx)
     })
     response = await agent.post('/api/issue-jwt').send({
-      permission: permissionIdx,
+      permissionIdx,
     })
     t.is(response.status, 200)
     const token = response.body.token as string
@@ -425,7 +425,7 @@ test('test jwt', async t => {
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
-    t.is(payload.permission, permissionIdx)
+    t.is(payload.permissionIdx, permissionIdx)
 
     const now = Math.floor(new Date().getTime() / 1000)
     if (payload.exp) {
