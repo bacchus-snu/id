@@ -327,7 +327,7 @@ test('test jwt', async t => {
   })
   t.is(response.status, 200)
 
-  response = await agent.get('issue-jwt').send()
+  response = await agent.get('/api/issue-jwt').send()
   t.is(response.status, 200)
   const token = response.body.token as string
 
