@@ -1,4 +1,6 @@
 import { IMiddleware } from 'koa-router'
+import { SignJWT } from 'jose/jwt/sign'
+import { createPrivateKey } from 'crypto'
 
 import Config from '../../config'
 import { ControllableError, AuthorizationError } from '../../model/errors'
@@ -156,6 +158,40 @@ export function checkLogin(): IMiddleware {
     if (ctx.session && !ctx.session.isNew) {
       const data = {
         username: ctx.session.username,
+      }
+      ctx.body = data
+      ctx.status = 200
+    } else {
+      ctx.status = 401
+    }
+    await next()
+  }
+}
+
+export function issueJWT(config: Config): IMiddleware {
+  return async (ctx, next) => {
+    if (ctx.session && !ctx.session.isNew) {
+      if (!ctx.session.userIdx || !ctx.session.username) {
+        ctx.status = 401
+        return
+      }
+
+      const payload = {
+        userIdx: ctx.session.userIdx,
+        username: ctx.session.username,
+      }
+      const key = createPrivateKey(config.jwt.privateKey)
+      const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
+      const jwt = await new SignJWT(payload)
+        .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
+        .setIssuedAt()
+        .setIssuer(config.jwt.issuer)
+        .setAudience(config.jwt.audience)
+        .setExpirationTime(expiry)
+        .sign(key)
+
+      const data = {
+        token: jwt,
       }
       ctx.body = data
       ctx.status = 200
