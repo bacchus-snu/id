@@ -318,7 +318,7 @@ test('test jwt', async t => {
 
   let response
 
-  response = await agent.get('/api/issue-jwt').send()
+  response = await agent.post('/api/issue-jwt').send()
   t.is(response.status, 401)
 
   response = await agent.post('/api/login').send({
@@ -327,7 +327,7 @@ test('test jwt', async t => {
   })
   t.is(response.status, 200)
 
-  response = await agent.get('/api/issue-jwt').send()
+  response = await agent.post('/api/issue-jwt').send()
   t.is(response.status, 200)
   const token = response.body.token as string
 
@@ -356,6 +356,6 @@ test('test jwt', async t => {
   response = await agent.get('/api/logout').send()
   t.is(response.status, 200)
 
-  response = await agent.get('/api/issue-jwt').send()
+  response = await agent.post('/api/issue-jwt').send()
   t.is(response.status, 401)
 })
