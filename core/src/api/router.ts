@@ -2,7 +2,7 @@ import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import oauth10a from '../oauth/koa'
-import { login, loginPAM, logout, checkLogin, loginLegacy } from './handlers/login'
+import { login, loginPAM, logout, checkLogin, loginLegacy, issueJWT } from './handlers/login'
 import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
@@ -61,6 +61,15 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns username username.
    */
   router.get('/api/check-login', checkLogin())
+
+  /**
+   * Issue JWT token
+   * 200 if success, 401 if not.
+   * @param permissionIdx permission id to be checked
+   * @returns token jwt token.
+   * @returns hasPermission true if user has permission of `permissionIdx`
+   */
+  router.post('/api/issue-jwt', issueJWT(model, config))
 
   /**
    * Get shell list.

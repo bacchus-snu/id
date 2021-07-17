@@ -160,6 +160,33 @@ export interface PermissionConfig {
   snucse: number
 }
 
+/**
+ * Permission configurations.
+ */
+export interface JWTConfig {
+  /**
+   * JWT private key
+   * Should be PEM formatted pkcs8 type key.
+   * Algorithm should be EC(namedCurve = P-256)
+   */
+  privateKey: string
+
+  /**
+   * Token expiry in second
+   */
+  expirySec: number
+
+  /**
+   * Issuer (`iss`)
+   */
+  issuer: string
+
+  /**
+   * Audience (`aud`)
+   */
+  audience: string
+}
+
 export default interface Config {
   /**
    * Name of this id core instance.
@@ -200,4 +227,9 @@ export default interface Config {
    * Permission configuration.
    */
   permissions: PermissionConfig
+
+  /**
+   * JWT configuration.
+   */
+  jwt: JWTConfig
 }
