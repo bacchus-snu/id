@@ -1,3 +1,4 @@
+import * as cors from '@koa/cors'
 import * as Koa from 'koa'
 import * as Bunyan from 'bunyan'
 import * as bodyParser from 'koa-bodyparser'
@@ -22,7 +23,24 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
     log.error('API error', e)
   })
 
-  app.use(router.routes()).use(router.allowedMethods())
+  app
+    .use(cors({
+      origin(ctx) {
+        const origin = ctx.headers.origin
+        if (origin == null) {
+          return ''
+        }
+
+        if (config.api.corsAllowedOrigins.includes(origin)) {
+          return origin
+        }
+        return ''
+      },
+      allowMethods: 'POST',
+      credentials: true,
+    }))
+    .use(router.routes())
+    .use(router.allowedMethods())
 
   return app
 }

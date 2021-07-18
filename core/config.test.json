@@ -4,7 +4,10 @@
   "api": {
     "listenHost": "127.0.0.1",
     "listenPort": "50080",
-    "proxy": false
+    "proxy": false,
+    "corsAllowedOrigins": [
+      "https://reservation.snucse.org"
+    ]
   },
   "session": {
     "key": "id-session",
