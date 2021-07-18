@@ -30,7 +30,12 @@ export interface APIConfig {
   /**
    * Trust X-Forwarded-For headers
    */
-   proxy: boolean
+  proxy: boolean
+
+  /**
+   * Allowed origins for CORS
+   */
+  corsAllowedOrigins: Array<string>
 }
 
 /**

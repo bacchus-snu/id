@@ -435,6 +435,27 @@ test('test jwt', async t => {
     }
   }
 
+  // cross origin
+  {
+    response = await agent.options('/api/issue-jwt').send()
+    t.falsy(response.header['access-control-allow-origin'])
+
+    response = await agent.options('/api/issue-jwt')
+      .set('origin', 'https://reservation.snucse.org')
+      .set('access-control-request-method', 'POST')
+      .send()
+    t.is(response.status, 204)
+    t.is(response.header['access-control-allow-origin'], 'https://reservation.snucse.org')
+    t.is(response.header['access-control-allow-methods'], 'POST')
+    t.is(response.header['access-control-allow-credentials'], 'true')
+
+    response = await agent.post('/api/issue-jwt')
+      .set('origin', 'https://reservation.snucse.org')
+      .set('access-control-request-method', 'POST')
+      .send()
+    t.is(response.status, 200)
+  }
+
   response = await agent.get('/api/logout').send()
   t.is(response.status, 200)
 
