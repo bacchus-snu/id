@@ -11,6 +11,7 @@
     "key": "id-session",
     "maxAge": 3600000,
     "signed": true,
+    "sameSite": "None",
     "rolling": false,
     "renew": true
   },
