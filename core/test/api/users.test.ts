@@ -141,13 +141,18 @@ test('get user info with jwt', async t => {
   const password = uuid()
   const emailLocal = uuid()
   const emailDomain = uuid()
-  let userIdx
+  const studentNumbers = [
+    '1111-11111',
+    '1111-21111',
+    '1111-31111',
+  ]
+  let userIdx: number
 
   await model.pgDo(async tr => {
     const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
 
     userIdx = await model.users.create(tr, username, password, name, '/bin/bash', 'en')
-    await model.users.addStudentNumber(tr, userIdx, '1111-11111')
+    await Promise.all(studentNumbers.map(sn => model.users.addStudentNumber(tr, userIdx, sn)))
     await model.emailAddresses.validate(tr, userIdx, emailIdx)
   }, ['users'])
 
@@ -167,9 +172,8 @@ test('get user info with jwt', async t => {
   t.is(response.status, 200)
   t.is(response.body.username, username)
   t.is(response.body.name, name)
-  t.is(response.body.studentNumber, '1111-11111')
-  t.is(response.body.emailAddresses.length, 1)
-  t.is(response.body.emailAddresses[0], `${emailLocal}@${emailDomain}`)
+  t.deepEqual([...response.body.studentNumbers].sort(), studentNumbers)
+  t.deepEqual(response.body.emailAddresses, [`${emailLocal}@${emailDomain}`])
 
   await model.pgDo(async tr => {
     await tr.query('DELETE FROM users WHERE username = $1', [username])

@@ -348,9 +348,10 @@ export function getUserInfo(model: Model, config: Config): IMiddleware {
     }
 
     try {
-      const [user, emails] = await model.pgDo(async tr => {
+      const [user, studentNumbers, emails] = await model.pgDo(async tr => {
         return Promise.all([
-          model.users.getByUserIdx(tr, userIdx, { withStudentNumber: true }),
+          model.users.getByUserIdx(tr, userIdx),
+          model.users.getStudentNumbersByUserIdx(tr, userIdx),
           model.emailAddresses.getEmailsByOwnerIdx(tr, userIdx),
         ])
       })
@@ -359,7 +360,7 @@ export function getUserInfo(model: Model, config: Config): IMiddleware {
       ctx.body = {
         username: user.username,
         name: user.name,
-        studentNumber: user.studentNumber,
+        studentNumbers,
         emailAddresses: emails.map(({ local, domain }) => `${local}@${domain}`),
       }
     } catch (e) {
