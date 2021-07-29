@@ -2,10 +2,11 @@ import Model from '../../model/model'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
-import { EmailOption, sendEmail } from '../email'
+import { sendEmail } from '../email'
 import { ResendLimitExeededError, InvalidEmailError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
-import axios from 'axios'
+import { jwtVerify } from 'jose/jwt/verify'
+import { createPublicKey } from 'crypto'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
@@ -307,6 +308,67 @@ export function getUserEmails(model: Model): IMiddleware {
 
     ctx.status = 200
     ctx.body = { emails }
+    await next()
+  }
+}
+
+export function getUserInfo(model: Model, config: Config): IMiddleware {
+  return async (ctx, next) => {
+    // authorize
+    let userIdx: number
+    const auth = ctx.header.authorization
+
+    if (typeof auth === 'string' && auth.startsWith('Bearer ')) {
+      const jwt = auth.substring('Bearer '.length)
+
+      const key = createPublicKey(config.jwt.privateKey)
+      try {
+        const result = await jwtVerify(jwt, key, {
+          algorithms: ['ES256'],
+          issuer: config.jwt.issuer,
+          audience: config.jwt.audience,
+          currentDate: new Date(),
+        })
+
+        if (typeof result.payload.userIdx === 'number') {
+          userIdx = result.payload.userIdx
+        } else {
+          ctx.status = 400
+          return
+        }
+      } catch (e) {
+        ctx.status = 401
+        return
+      }
+    } else if (ctx.session && ctx.session.userIdx && typeof ctx.session.userIdx === 'number') {
+      userIdx = ctx.session.userIdx
+    } else {
+      ctx.status = 401
+      return
+    }
+
+    try {
+      const [user, emails] = await model.pgDo(async tr => {
+        return Promise.all([
+          model.users.getByUserIdx(tr, userIdx, { withStudentNumber: true }),
+          model.emailAddresses.getEmailsByOwnerIdx(tr, userIdx),
+        ])
+      })
+
+      ctx.status = 200
+      ctx.body = {
+        username: user.username,
+        name: user.name,
+        studentNumber: user.studentNumber,
+        emailAddresses: emails.map(({ local, domain }) => `${local}@${domain}`),
+      }
+    } catch (e) {
+      // user not found??
+      console.error(e)
+      ctx.status = 500
+      return
+    }
+
     await next()
   }
 }

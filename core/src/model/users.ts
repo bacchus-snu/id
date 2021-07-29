@@ -26,6 +26,10 @@ export interface UserMembership {
   pending: boolean
 }
 
+export interface GetByUserIdxOptions {
+  withStudentNumber?: boolean
+}
+
 export default class Users {
   private posixPasswdCache: string
   private posixGroupCache: string
@@ -102,8 +106,15 @@ export default class Users {
     return this.rowToUser(result.rows[0])
   }
 
-  public async getByUserIdx(tr: Transaction, userIdx: number): Promise<User> {
-    const query = 'SELECT idx, username, name, uid, shell FROM users WHERE idx = $1'
+  public async getByUserIdx(tr: Transaction, userIdx: number, options?: GetByUserIdxOptions): Promise<User> {
+    let query
+    if (options && options.withStudentNumber) {
+      query = 'SELECT u.idx, u.username, u.name, u.uid, u.shell, sn.student_number FROM users u ' +
+        'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+        'WHERE u.idx = $1'
+    } else {
+      query = 'SELECT idx, username, name, uid, shell FROM users WHERE idx = $1'
+    }
     const result = await tr.query(query, [userIdx])
     if (result.rows.length !== 1) {
       throw new NoSuchEntryError()

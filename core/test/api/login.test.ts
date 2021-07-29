@@ -462,3 +462,46 @@ test('test jwt', async t => {
   response = await agent.post('/api/issue-jwt').send()
   t.is(response.status, 401)
 })
+
+test('login and jwt', async t => {
+  let username: string = ''
+  let password: string = ''
+  let userIdx: number = -1
+
+  await model.pgDo(async tr => {
+    username = uuid()
+    password = uuid()
+    userIdx = await model.users.create(
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
+
+  const agent = request.agent(app)
+  let response
+
+  {
+    response = await agent.post('/api/login/jwt').send({ username, password })
+    t.is(response.status, 200)
+    const token = response.body.token as string
+    t.falsy(response.body.hasPermission)
+
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
+
+    const { payload } = await jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: new Date(),
+      },
+    )
+
+    t.is(payload.userIdx, userIdx)
+    t.is(payload.username, username)
+    t.is(payload.permissionIdx, -1)
+  }
+})

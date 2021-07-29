@@ -2,8 +2,10 @@ import * as Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import oauth10a from '../oauth/koa'
-import { login, loginPAM, logout, checkLogin, loginLegacy, issueJWT } from './handlers/login'
-import { createUser, changePassword, sendChangePasswordEmail, getUserEmails } from './handlers/users'
+import { login, loginPAM, loginIssueJWT, logout, checkLogin,
+  loginLegacy, issueJWT } from './handlers/login'
+import { createUser, changePassword, sendChangePasswordEmail,
+  getUserEmails, getUserInfo } from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
@@ -72,6 +74,15 @@ export function createRouter(model: Model, config: Config): Router {
   router.post('/api/issue-jwt', issueJWT(model, config))
 
   /**
+   * Login and issue JWT token without cookies
+   * 200 if success, 401 if not.
+   * @param permissionIdx permission id to be checked
+   * @returns token jwt token.
+   * @returns hasPermission true if user has permission of `permissionIdx`
+   */
+  router.post('/api/login/jwt', loginIssueJWT(model, config))
+
+  /**
    * Get shell list.
    * 200 if success.
    * @returns shells: Array of string.
@@ -123,6 +134,16 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns emails: Array of EmailAddress.
    */
   router.get('/api/user/emails', getUserEmails(model))
+
+  /**
+   * Get user info.
+   * 200 if success.
+   * @param Authorization header with JWT.
+   * @returns username
+   * @returns name
+   * @returns studentNumber
+   */
+  router.get('/api/user/info', getUserInfo(model, config))
 
   /**
    * Get user current shell.
