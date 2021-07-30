@@ -328,6 +328,31 @@ test('test jwt', async t => {
   })
   t.is(response.status, 200)
 
+  // test expiry
+  {
+    response = await agent.post('/api/issue-jwt').send()
+    t.is(response.status, 200)
+    const token = response.body.token as string
+
+    const futureDate = new Date()
+    futureDate.setSeconds(futureDate.getSeconds() + config.jwt.expirySec + 20)
+
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
+    t.throwsAsync(() => jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: futureDate,
+      },
+    ))
+  }
+
   // with no permission check
   {
     response = await agent.post('/api/issue-jwt').send()
@@ -339,24 +364,20 @@ test('test jwt', async t => {
       key: config.jwt.privateKey,
       format: 'pem',
     })
-
-    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
-    t.is(protectedHeader.alg, 'ES256')
-    t.is(protectedHeader.typ, 'JWT')
-
-    t.is(payload.aud, config.jwt.audience)
-    t.is(payload.iss, config.jwt.issuer)
+    const { payload } = await jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: new Date(),
+      },
+    )
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
     t.is(payload.permissionIdx, -1)
-
-    const now = Math.floor(new Date().getTime() / 1000)
-    if (payload.exp) {
-      t.true(now < payload.exp)
-    } else {
-      t.fail()
-    }
   }
 
   // with permission check, but has no permission
@@ -379,24 +400,20 @@ test('test jwt', async t => {
       key: config.jwt.privateKey,
       format: 'pem',
     })
-
-    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
-    t.is(protectedHeader.alg, 'ES256')
-    t.is(protectedHeader.typ, 'JWT')
-
-    t.is(payload.aud, config.jwt.audience)
-    t.is(payload.iss, config.jwt.issuer)
+    const { payload } = await jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: new Date(),
+      },
+    )
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
     t.is(payload.permissionIdx, -1)
-
-    const now = Math.floor(new Date().getTime() / 1000)
-    if (payload.exp) {
-      t.true(now < payload.exp)
-    } else {
-      t.fail()
-    }
   }
 
   // with permission check, and has permission
@@ -415,24 +432,20 @@ test('test jwt', async t => {
       key: config.jwt.privateKey,
       format: 'pem',
     })
-
-    const { payload, protectedHeader } = await jwtVerify(token, publicKey)
-    t.is(protectedHeader.alg, 'ES256')
-    t.is(protectedHeader.typ, 'JWT')
-
-    t.is(payload.aud, config.jwt.audience)
-    t.is(payload.iss, config.jwt.issuer)
+    const { payload } = await jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: new Date(),
+      },
+    )
 
     t.is(payload.userIdx, userIdx)
     t.is(payload.username, username)
     t.is(payload.permissionIdx, permissionIdx)
-
-    const now = Math.floor(new Date().getTime() / 1000)
-    if (payload.exp) {
-      t.true(now < payload.exp)
-    } else {
-      t.fail()
-    }
   }
 
   // cross origin
@@ -461,4 +474,47 @@ test('test jwt', async t => {
 
   response = await agent.post('/api/issue-jwt').send()
   t.is(response.status, 401)
+})
+
+test('login and jwt', async t => {
+  let username: string = ''
+  let password: string = ''
+  let userIdx: number = -1
+
+  await model.pgDo(async tr => {
+    username = uuid()
+    password = uuid()
+    userIdx = await model.users.create(
+      tr, username, password, uuid(), '/bin/bash', 'en')
+  }, ['users'])
+
+  const agent = request.agent(app)
+  let response
+
+  {
+    response = await agent.post('/api/login/jwt').send({ username, password })
+    t.is(response.status, 200)
+    const token = response.body.token as string
+    t.falsy(response.body.hasPermission)
+
+    const publicKey = createPublicKey({
+      key: config.jwt.privateKey,
+      format: 'pem',
+    })
+
+    const { payload } = await jwtVerify(
+      token,
+      publicKey,
+      {
+        algorithms: ['ES256'],
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        currentDate: new Date(),
+      },
+    )
+
+    t.is(payload.userIdx, userIdx)
+    t.is(payload.username, username)
+    t.is(payload.permissionIdx, -1)
+  }
 })

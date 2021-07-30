@@ -243,3 +243,85 @@ export function issueJWT(model: Model, config: Config): IMiddleware {
     await next()
   }
 }
+
+export function loginIssueJWT(model: Model, config: Config): IMiddleware {
+  return async (ctx, next) => {
+    const body: any = ctx.request.body
+
+    if (!body || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const { username, password } = body
+    let userIdx: number = -1
+
+    const { permissionIdx } = body
+    let hasPermission: boolean = false
+    if (permissionIdx && typeof permissionIdx !== 'number') {
+      ctx.status = 400
+      return
+    }
+    try {
+      await model.pgDo(async tr => {
+        try {
+          userIdx = await model.users.authenticate(tr, username, password)
+          if (permissionIdx) {
+            hasPermission = await model.permissions.checkUserHavePermission(
+              tr,
+              userIdx,
+              permissionIdx,
+            )
+          }
+        } catch (e) {
+          if (e instanceof ControllableError) {
+            ctx.status = 401
+          } else {
+            ctx.status = 500
+          }
+
+          throw e
+        }
+      })
+    } catch (e) {
+      return
+    }
+
+    if (userIdx === -1) {
+      ctx.status = 500
+      return
+    }
+
+    const payload = {
+      userIdx,
+      username,
+      permissionIdx: -1,
+    }
+    if (hasPermission) {
+      payload.permissionIdx = permissionIdx
+    }
+    const key = createPrivateKey(config.jwt.privateKey)
+    const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
+    const jwt = await new SignJWT(payload)
+      .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
+      .setIssuedAt()
+      .setIssuer(config.jwt.issuer)
+      .setAudience(config.jwt.audience)
+      .setExpirationTime(expiry)
+      .sign(key)
+
+    let data
+    if (permissionIdx) {
+      data = {
+        token: jwt,
+        hasPermission,
+      }
+    } else {
+      data = {
+        token: jwt,
+      }
+    }
+    ctx.body = data
+    ctx.status = 200
+  }
+}

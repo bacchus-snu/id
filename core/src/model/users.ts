@@ -385,6 +385,14 @@ export default class Users {
     return result.rows[0].user_idx
   }
 
+  public async getStudentNumbersByUserIdx(tr: Transaction, userIdx: number): Promise<Array<string>> {
+    const query = 'SELECT sn.student_number FROM users u ' +
+      'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
+      'WHERE u.idx = $1'
+    const result = await tr.query(query, [userIdx])
+    return result.rows.map(row => row.student_number)
+  }
+
   public async addStudentNumber(tr: Transaction, userIdx: number, studentNumber: string): Promise<number> {
     const query = 'INSERT INTO student_numbers(student_number, owner_idx) VALUES ($1, $2) RETURNING idx'
     const result = await tr.query(query, [studentNumber, userIdx])
