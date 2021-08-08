@@ -17,14 +17,16 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "lint": "./node_modules/.bin/wotan -e '**/*.js' -e '**/*.d.ts' -p tsconfig.json -c tslint.json"
+    "lint": "eslint . --ext .js,.ts,.vue"
   },
   "devDependencies": {
-    "@fimbul/valtyr": "^0.12.0",
-    "@fimbul/ve": "^0.12.0",
-    "@fimbul/wotan": "^0.12.0",
-    "@types/node": "^9.4.6",
+    "@types/node": "^16.4.13",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^7.15.1",
     "ts-loader": "^3.5.0",
-    "typescript": "^2.7.2"
+    "typescript": "^4.3.5",
+    "vue-eslint-parser": "^7.10.0"
   }
 }
