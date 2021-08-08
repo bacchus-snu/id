@@ -4,7 +4,7 @@
   "description": "Identity management service for SNUCSE",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
-    "lint": "tslint --project ./tsconfig.json",
+    "lint": "eslint . --ext .js,.ts",
     "start": "npm run rebuild-cache && node dist/src/index.js",
     "test": "npm run lint && npm run build && nyc ava --color --verbose",
     "rebuild-cache": "node dist/bootstrap/rebuild_group_cache.js"
