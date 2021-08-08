@@ -17,10 +17,11 @@ module.exports = {
     'plugin:vue/essential',
   ],
   rules: {
-    'semi': ['error', 'never'],
+    semi: 'off',
     'no-sequences': 'error',
-    'quotes': ['error', 'single'],
+    quotes: ['error', 'single'],
     'arrow-parens': ['error', 'as-needed'],
+    '@typescript-eslint/semi': ['error', 'never'],
     '@typescript-eslint/naming-convention': [
       'error',
       {

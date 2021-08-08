@@ -7,7 +7,8 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   rules: {
-    'no-extra-semi': 'error',
+    'semi': 'off',
+    '@typescript-eslint/semi': ['error', 'never'],
     'no-sequences': 'error',
     quotes: ['error', 'single'],
     'sort-keys': 'off',
@@ -47,4 +48,4 @@ module.exports = {
     ],
     'no-constant-condition' : ['error', { checkLoops: false }],
   },
-};
+}
