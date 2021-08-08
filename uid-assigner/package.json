@@ -28,7 +28,7 @@
     "koa-session": "^5.8.3",
     "ldapjs": "^1.0.2",
     "moment": "^2.22.2",
-    "nodemailer": "^4.6.8",
+    "nodemailer": "^6.4.16",
     "pg": "^7.4.3",
     "uuid": "^3.3.2"
   },
