@@ -46,4 +46,12 @@ module.exports = {
     ],
     '@typescript-eslint/array-type': ['error', { default: 'generic' }],
   },
+  overrides: [
+    {
+      files: ['*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 }

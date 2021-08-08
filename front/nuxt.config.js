@@ -1,7 +1,7 @@
 const parseArgs = require('minimist')
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
-    H: 'hostname',
+    H: 'hostname', // eslint-disable-line @typescript-eslint/naming-convention
     p: 'port'
   },
   string: ['H'],
@@ -59,8 +59,6 @@ module.exports = {
   /*
   ** Build configuration
   */
-  css: ['~/assets/css/main.css'],
-
   plugins: [
     '~/plugins/element-ui',
   ],
@@ -68,6 +66,7 @@ module.exports = {
   css: [
     'element-ui/lib/theme-chalk/index.css',
     'element-ui/lib/theme-chalk/reset.css',
+    '~/assets/css/main.css',
   ],
 
   build: {},
