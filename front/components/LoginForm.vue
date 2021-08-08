@@ -41,9 +41,9 @@ import { Translation, Language } from '../types/translation'
 @Component({})
 export default class LoginForm extends Vue {
 
-  private username: string = ''
-  private password: string = ''
-  private isLoggingIn: boolean = false
+  private username = ''
+  private password = ''
+  private isLoggingIn = false
   private readonly pleaseLoginTrans: Translation = {
     ko: '통합 계정 관리를 위해 로그인하십시오.',
     en: 'Please login to manage your integrated account.',

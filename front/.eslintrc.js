@@ -1,28 +1,31 @@
 module.exports = {
   root: true,
   env: {
+    browser: true,
     node: true,
   },
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  parser: 'vue-eslint-parser',
+  parserOptions: {
+    parser: '@typescript-eslint/parser',
+  },
+  plugins: [
+    '@typescript-eslint',
+  ],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:vue/essential',
+  ],
   rules: {
-    'semi': 'off',
-    '@typescript-eslint/semi': ['error', 'never'],
+    semi: 'off',
     'no-sequences': 'error',
     quotes: ['error', 'single'],
-    'sort-keys': 'off',
-    'sort-imports': 'off',
-    '@typescript-eslint/array-type': ['error', { default: 'generic' }],
     'arrow-parens': ['error', 'as-needed'],
+    '@typescript-eslint/semi': ['error', 'never'],
     '@typescript-eslint/naming-convention': [
       'error',
       {
         selector: 'default',
-        filter: {
-          regex: '^oauth_',
-          match: false,
-        },
         format: ['camelCase'],
         leadingUnderscore: 'allow',
         trailingUnderscore: 'allow',
@@ -41,11 +44,15 @@ module.exports = {
         selector: 'typeProperty',
         format: ['camelCase', 'snake_case'],
       },
-      {
-        selector: 'classProperty',
-        format: ['camelCase', 'UPPER_CASE']
-      }
     ],
-    'no-constant-condition' : ['error', { checkLoops: false }],
+    '@typescript-eslint/array-type': ['error', { default: 'generic' }],
   },
+  overrides: [
+    {
+      files: ['*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 }

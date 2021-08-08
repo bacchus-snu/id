@@ -79,12 +79,12 @@ export default class MyPage extends Vue {
   private shellList: Array<string> = []
   private emailList: Array<EmailAddress> = []
 
-  private isEmailSendRequested: boolean = false
-  private isShellChangeRequested: boolean = false
-  private isEmailSent: boolean = false
-  private isShellChanged: boolean = false
+  private isEmailSendRequested = false
+  private isShellChangeRequested = false
+  private isEmailSent = false
+  private isShellChanged = false
   private selectedEmail: EmailAddress | null = null
-  private selectedShell: string = ''
+  private selectedShell = ''
 
   get welcomeTrans() {
     if (this.lang === 'ko') {

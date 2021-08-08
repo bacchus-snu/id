@@ -1,6 +1,6 @@
 <template>
   <div>
-	  <el-menu active-text-color="#ff7e05" mode="horizontal" default-active="2">
+    <el-menu active-text-color="#ff7e05" mode="horizontal" default-active="2">
       <el-menu-item index="1" class="topnav alink">
         <a class="div-link" href="https://www.snucse.org">
           <div>
@@ -42,7 +42,7 @@
       -->
       <el-button class="topbutton" type="warning" @click="changeLang">{{ langTrans[lang] }}</el-button>
       <el-button class="topbutton" v-if="loggedIn" :disabled="isLoggingOut" type="warning" @click="onLogout">{{ logoutTrans[lang] }}</el-button>
-	  </el-menu>
+    </el-menu>
   </div>
 </template>
 
@@ -54,7 +54,7 @@ import { AxiosResponse } from 'axios'
 
 @Component({})
 export default class TheHeading extends Vue {
-  private isLoggingOut: boolean = false
+  private isLoggingOut = false
   private readonly snucseTrans: Translation = {
     ko: '스누씨',
     en: 'SNUCSE',
