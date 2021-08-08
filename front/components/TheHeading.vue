@@ -54,7 +54,7 @@ import { AxiosResponse } from 'axios'
 
 @Component({})
 export default class TheHeading extends Vue {
-  private isLoggingOut: boolean = false
+  private isLoggingOut = false
   private readonly snucseTrans: Translation = {
     ko: '스누씨',
     en: 'SNUCSE',

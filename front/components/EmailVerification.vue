@@ -30,11 +30,11 @@ export default class EmailVerification extends Vue {
     email: '',
   }
 
-  private isSubmitted: boolean = false
-  private isEmailSent: boolean = false
+  private isSubmitted = false
+  private isEmailSent = false
 
-  private emailLocal: string = ''
-  private emailDomain: string = ''
+  private emailLocal = ''
+  private emailDomain = ''
   private readonly emailTrans: Translation = {
     ko: '회원가입 링크를 받을 메일을 입력해주세요.',
     en: 'Please input your e-mail to receive sign up link.',

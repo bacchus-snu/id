@@ -31,11 +31,11 @@ export default class ValidateForm extends Vue {
     email: '',
   }
 
-  private isSubmitted: boolean = false
-  private isEmailSent: boolean = false
+  private isSubmitted = false
+  private isEmailSent = false
 
-  private emailLocal: string = ''
-  private emailDomain: string = ''
+  private emailLocal = ''
+  private emailDomain = ''
   private readonly emailTrans: Translation = {
     ko: '메일주소를 입력해주세요.',
     en: 'Enter your email address.',
