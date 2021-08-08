@@ -20,7 +20,7 @@ test.skip('email configuration is correct', async t => {
 })
 
 test('check token api', async t => {
-  let token: string = ''
+  let token = ''
   const local = uuid()
   const domain = uuid()
 

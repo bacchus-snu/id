@@ -26,7 +26,7 @@ test('create user step by step', async t => {
   })
   t.is(response.status, 200)
 
-  let token: string = ''
+  let token = ''
   await model.pgDo(async tr => {
     const idx = await model.emailAddresses.getIdxByAddress(tr, emailLocal, emailDomain)
     const result = await tr.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [idx])

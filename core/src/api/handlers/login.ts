@@ -185,7 +185,7 @@ export function issueJWT(model: Model, config: Config): IMiddleware {
       }
 
       const { permissionIdx } = body
-      let hasPermission: boolean = false
+      let hasPermission = false
       if (permissionIdx) {
         if (typeof permissionIdx !== 'number') {
           ctx.status = 400
@@ -254,10 +254,10 @@ export function loginIssueJWT(model: Model, config: Config): IMiddleware {
     }
 
     const { username, password } = body
-    let userIdx: number = -1
+    let userIdx = -1
 
     const { permissionIdx } = body
-    let hasPermission: boolean = false
+    let hasPermission = false
     if (permissionIdx && typeof permissionIdx !== 'number') {
       ctx.status = 400
       return

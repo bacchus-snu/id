@@ -29,9 +29,9 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
       return
     }
 
-    let emailIdx: number = -1
-    let token: string = ''
-    let resendCount: number = -1
+    let emailIdx = -1
+    let token = ''
+    let resendCount = -1
 
     try {
       // create email address and generate token
