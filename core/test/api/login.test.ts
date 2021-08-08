@@ -9,9 +9,9 @@ import { app, model, config } from '../_setup'
 import { createUser, createGroup, createPermission, createGroupRelation } from '../_test_utils'
 
 test('test login with credential', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
 
   await model.pgDo(async tr => {
     username = uuid()
@@ -45,13 +45,13 @@ test('test login with credential', async t => {
 })
 
 test.serial('test PAM login with credential and host', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
-  let hostIdx: number = -1
-  let groupIdx: number = -1
-  let hostGroupIdx: number = -1
-  let permissionIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
+  let hostIdx = -1
+  let groupIdx = -1
+  let hostGroupIdx = -1
+  let permissionIdx = -1
 
   const trans = {
     ko: uuid(),
@@ -113,13 +113,13 @@ test.serial('test PAM login with credential and host', async t => {
 })
 
 test.serial('test PAM login with credential and pubkey', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
-  let hostIdx: number = -1
-  let groupIdx: number = -1
-  let hostGroupIdx: number = -1
-  let permissionIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
+  let hostIdx = -1
+  let groupIdx = -1
+  let hostGroupIdx = -1
+  let permissionIdx = -1
 
   const trans = {
     ko: uuid(),
@@ -219,9 +219,9 @@ test.serial('test PAM login with credential and pubkey', async t => {
 })
 
 test('test checkLogin', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
 
   await model.pgDo(async tr => {
     username = uuid()
@@ -255,10 +255,10 @@ test('test checkLogin', async t => {
 })
 
 test('test legacy login', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
-  let userMembershipIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
+  let userMembershipIdx = -1
   const trans = {
     ko: uuid(),
     en: uuid(),
@@ -278,6 +278,7 @@ test('test legacy login', async t => {
 
   const agent = request.agent(app)
 
+  /* eslint-disable @typescript-eslint/naming-convention */
   let response
 
   response = await agent.post('/Authentication/Login.aspx').send({
@@ -303,10 +304,12 @@ test('test legacy login', async t => {
   t.is(response.status, 200)
 })
 
+/* eslint-enable @typescript-eslint/naming-convention */
+
 test('test jwt', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
 
   await model.pgDo(async tr => {
     username = uuid()
@@ -477,9 +480,9 @@ test('test jwt', async t => {
 })
 
 test('login and jwt', async t => {
-  let username: string = ''
-  let password: string = ''
-  let userIdx: number = -1
+  let username = ''
+  let password = ''
+  let userIdx = -1
 
   await model.pgDo(async tr => {
     username = uuid()

@@ -220,7 +220,7 @@ export function getUserShell(model: Model): IMiddleware {
 
     const userIdx = ctx.session.userIdx
 
-    let shell: string = ''
+    let shell = ''
     try {
       await model.pgDo(async tr => {
         shell = await model.users.getShell(tr, userIdx)

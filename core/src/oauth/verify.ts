@@ -30,7 +30,7 @@ export default function verify(
   method: string,
   requestUrl: string,
   consumerSecret: string,
-  tokenSecret: string = '',
+  tokenSecret = '',
 ): boolean {
   const oauthSignatureMethod = params.get('oauth_signature_method')
   if (oauthSignatureMethod.length !== 1 || oauthSignatureMethod[0] !== 'HMAC-SHA1') {
