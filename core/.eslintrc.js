@@ -18,18 +18,20 @@ module.exports = {
       'error',
       {
         selector: 'default',
+        filter: {
+          regex: '^oauth_',
+          match: false,
+        },
         format: ['camelCase'],
         leadingUnderscore: 'allow',
         trailingUnderscore: 'allow',
       },
-
       {
         selector: 'variable',
         format: ['camelCase', 'UPPER_CASE'],
         leadingUnderscore: 'allow',
         trailingUnderscore: 'allow',
       },
-
       {
         selector: 'typeLike',
         format: ['PascalCase'],
@@ -38,6 +40,11 @@ module.exports = {
         selector: 'typeProperty',
         format: ['camelCase', 'snake_case'],
       },
+      {
+        selector: 'classProperty',
+        format: ['camelCase', 'UPPER_CASE']
+      }
     ],
+    'no-constant-condition' : ['error', { checkLoops: false }],
   },
 };

@@ -3,7 +3,7 @@
 declare module '@phc/format' {
   export interface PHCObject {
     id: string
-    params?: object
+    params?: Record<string, string>
     salt: Buffer
     hash: Buffer
   }

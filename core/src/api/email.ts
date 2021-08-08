@@ -21,7 +21,7 @@ export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config
 
   const { address, token, subject, url, template, resendCount } = opt
 
-  if (!/^[a-zA-Z0-9-_\.]+@[a-zA-Z0-9-\.]+$/.test(address)) {
+  if (!/^[a-zA-Z0-9-_.]+@[a-zA-Z0-9-.]+$/.test(address)) {
     throw new InvalidEmailError()
   }
   if (resendCount >= config.email.resendLimit) {

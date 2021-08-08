@@ -278,6 +278,7 @@ test('test legacy login', async t => {
 
   const agent = request.agent(app)
 
+  /* eslint-disable @typescript-eslint/naming-convention */
   let response
 
   response = await agent.post('/Authentication/Login.aspx').send({
@@ -302,6 +303,8 @@ test('test legacy login', async t => {
   })
   t.is(response.status, 200)
 })
+
+/* eslint-enable @typescript-eslint/naming-convention */
 
 test('test jwt', async t => {
   let username = ''
