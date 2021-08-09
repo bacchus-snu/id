@@ -49,8 +49,6 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { Translation, Language } from '../types/translation'
-import axios from 'axios'
-import { AxiosResponse } from 'axios'
 
 @Component({})
 export default class TheHeading extends Vue {
@@ -117,7 +115,7 @@ export default class TheHeading extends Vue {
   }
 
   private async mounted() {
-    const response = await axios.get('/api/check-login', {
+    const response = await this.$axios.get('/api/check-login', {
       validateStatus: () => true,
     })
 
@@ -133,7 +131,7 @@ export default class TheHeading extends Vue {
 
     this.isLoggingOut = true
 
-    const result = await axios.get('/api/logout', {
+    const result = await this.$axios.get('/api/logout', {
       validateStatus: () => true,
     })
 

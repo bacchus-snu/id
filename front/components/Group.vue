@@ -73,7 +73,6 @@
 
 <script lang="ts">
 import { Component, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 
 @Component({})
@@ -161,7 +160,7 @@ export default class Group extends Vue {
   }
 
   private async mounted() {
-    const response = await axios.get('/api/check-login', {
+    const response = await this.$axios.get('/api/check-login', {
       validateStatus: () => true,
     })
 
@@ -169,7 +168,7 @@ export default class Group extends Vue {
       this.$router.push('/')
     }
 
-    const groupResponse = await axios.get('/api/group', {
+    const groupResponse = await this.$axios.get('/api/group', {
       validateStatus: () => true,
     })
 
@@ -177,7 +176,7 @@ export default class Group extends Vue {
   }
 
   private async applyGroup(idx: number) {
-    const response = await axios.post('/api/group/' + idx + '/apply')
+    const response = await this.$axios.post('/api/group/' + idx + '/apply')
     if (response.status === 200) {
       this.$router.go(0)
     } else {
@@ -200,7 +199,7 @@ export default class Group extends Vue {
   }
 
   private async leavegroup(idx: number) {
-    const response = await axios.post('/api/group/' + idx + '/leave')
+    const response = await this.$axios.post('/api/group/' + idx + '/leave')
     if (response.status === 200) {
       this.$router.go(0)
     } else {

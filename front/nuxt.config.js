@@ -80,7 +80,7 @@ module.exports = {
   },
 
   axios: {
-    // baseURL: 'http://id-dev.snucse.org:10101',
+    baseURL: backend,
     proxy: true,
   }
 }

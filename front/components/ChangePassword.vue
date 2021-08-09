@@ -17,7 +17,6 @@
 
 <script lang="ts">
 import { Component, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 
 @Component({})
@@ -102,7 +101,7 @@ export default class ChangePassword extends Vue {
 
   private async changePassword() {
     const token = this.$route.query.token
-    const response = await axios.post('/api/user/change-password', {
+    const response = await this.$axios.post('/api/user/change-password', {
       newPassword: this.models.newPassword,
       token,
     }, { validateStatus: () => true })

@@ -7,7 +7,6 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import Group from '~/components/Group'
-import axios from 'axios'
 
 @Component({
   components: {

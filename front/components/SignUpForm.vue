@@ -26,7 +26,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 import { Account } from '~/types/account'
 
@@ -187,7 +186,7 @@ export default class SignUpForm extends Vue {
   }
 
   private async signUpAccount() {
-    const response = await axios.post('/api/user', {
+    const response = await this.$axios.post('/api/user', {
       name: this.models.name,
       username: this.models.username,
       // maybe array later?

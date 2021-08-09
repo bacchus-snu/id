@@ -101,7 +101,6 @@
 
 <script lang="ts">
 import { Component, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 import { UserGroup } from '../types/user'
 import { ElTableColumn } from 'element-ui/types/table-column'
@@ -236,7 +235,7 @@ export default class GroupAdmin extends Vue {
   private async mounted() {
     this.gid = Number(this.$route.params.gid)
 
-    let response = await axios.get('/api/check-login', {
+    let response = await this.$axios.get('/api/check-login', {
       validateStatus: () => true,
     })
 
@@ -245,7 +244,7 @@ export default class GroupAdmin extends Vue {
       return
     }
 
-    response = await axios.get('/api/group/', { validateStatus: () => true })
+    response = await this.$axios.get('/api/group/', { validateStatus: () => true })
 
     if (response.data.filter(data => data.idx === this.gid).length === 0) {
       this.$router.push('/my-page')
@@ -254,7 +253,7 @@ export default class GroupAdmin extends Vue {
 
     this.groupNameTrans = response.data.filter(data => data.idx === this.gid)[0].name
 
-    response = await axios.get('/api/group/' + this.gid + '/pending', {
+    response = await this.$axios.get('/api/group/' + this.gid + '/pending', {
       validateStatus: () => true,
     })
 
@@ -271,7 +270,7 @@ export default class GroupAdmin extends Vue {
       this.handlePagePending()
     }
 
-    response = await axios.get('/api/group/' + this.gid + '/members', {
+    response = await this.$axios.get('/api/group/' + this.gid + '/members', {
       validateStatus: () => true,
     })
 
@@ -302,7 +301,7 @@ export default class GroupAdmin extends Vue {
       list[i] = this.multipleSelectionPending[i].uid
     }
 
-    const response = await axios.post(
+    const response = await this.$axios.post(
       '/api/group/' + this.gid + '/accept',
       list,
       {
@@ -331,7 +330,7 @@ export default class GroupAdmin extends Vue {
       list[i] = this.multipleSelectionPending[i].uid
     }
 
-    const response = await axios.post(
+    const response = await this.$axios.post(
       '/api/group/' + this.gid + '/reject',
       list,
       {
@@ -360,7 +359,7 @@ export default class GroupAdmin extends Vue {
       list[i] = this.multipleSelectionMember[i].uid
     }
 
-    const response = await axios.post(
+    const response = await this.$axios.post(
       '/api/group/' + this.gid + '/reject',
       list,
       {

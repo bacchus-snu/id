@@ -21,7 +21,6 @@
 
 <script lang="ts">
 import { Component, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 
 @Component({})
@@ -104,7 +103,7 @@ export default class ValidateForm extends Vue {
   }
 
   public async sendEmail() {
-    const response = await axios.post('/api/user/send-password-token', {
+    const response = await this.$axios.post('/api/user/send-password-token', {
       emailLocal: this.emailLocal,
       emailDomain: this.emailDomain,
     }, { validateStatus: () => true })

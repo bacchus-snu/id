@@ -70,7 +70,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Provide, Watch } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 import { EmailAddress } from '../types/user'
 
@@ -188,7 +187,7 @@ export default class MyPage extends Vue {
   }
 
   private async mounted() {
-    const response = await axios.get('/api/check-login', {
+    const response = await this.$axios.get('/api/check-login', {
       validateStatus: () => true,
     })
 
@@ -198,10 +197,10 @@ export default class MyPage extends Vue {
       this.$router.push('/')
     }
 
-    const shellResponse = await axios.get('/api/shells', {
+    const shellResponse = await this.$axios.get('/api/shells', {
       validateStatus: () => true,
     })
-    const emailResponse = await axios.get('/api/user/emails',
+    const emailResponse = await this.$axios.get('/api/user/emails',
       { validateStatus: () => true })
 
     this.shellList = shellResponse.data.shells
@@ -218,7 +217,7 @@ export default class MyPage extends Vue {
     if (this.selectedEmail === null) {
       return
     }
-    const response = await axios.post('/api/user/send-password-token', {
+    const response = await this.$axios.post('/api/user/send-password-token', {
       emailLocal: this.selectedEmail.local,
       emailDomain: this.selectedEmail.domain,
     }, { validateStatus: () => true })
@@ -242,7 +241,7 @@ export default class MyPage extends Vue {
   }
 
   private async changeShell() {
-    const response = await axios.post('/api/user/shell', {
+    const response = await this.$axios.post('/api/user/shell', {
       shell: this.selectedShell,
     }, { validateStatus: () => true })
 

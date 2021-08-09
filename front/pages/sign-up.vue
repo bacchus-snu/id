@@ -7,7 +7,6 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import SignUpForm from '~/components/SignUpForm'
-import axios from 'axios'
 
 @Component({
   components: {
@@ -23,7 +22,7 @@ export default class SignUpPage extends Vue {
       this.$router.push('/')
     }
 
-    const response = await axios.post('/api/email/check-token', { token }, {
+    const response = await this.$axios.post('/api/email/check-token', { token }, {
       validateStatus: () => true,
     })
 
@@ -34,8 +33,8 @@ export default class SignUpPage extends Vue {
     this.$store.commit('changeEmail', response.data)
   }
 
-  private async asyncData() {
-    const result = await axios.get('/api/shells', {
+  private async asyncData({ $axios }) {
+    const result = await $axios.get('/api/shells', {
       validateStatus: () => true,
     })
     return { shellList : result.data.shells }

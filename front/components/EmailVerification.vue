@@ -20,7 +20,6 @@
 
 <script lang="ts">
 import { Component, Vue, Provide } from 'nuxt-property-decorator'
-import axios from 'axios'
 import { Translation, Language } from '../types/translation'
 
 @Component({})
@@ -105,7 +104,7 @@ export default class EmailVerification extends Vue {
   }
 
   public async sendEmail() {
-    const response = await axios.post('/api/email/verify', {
+    const response = await this.$axios.post('/api/email/verify', {
       emailLocal: this.emailLocal,
       emailDomain: this.emailDomain,
     }, { validateStatus: () => true })
