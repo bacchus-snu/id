@@ -81,6 +81,6 @@ module.exports = {
 
   axios: {
     baseURL: backend,
-    proxy: true,
+    browserBaseURL: '/',
   }
 }
