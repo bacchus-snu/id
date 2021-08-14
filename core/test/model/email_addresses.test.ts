@@ -129,6 +129,14 @@ test('get user emails', async t => {
   }, ['users'])
 })
 
+test('returns empty email array if there are no emails', async t => {
+  await model.pgDo(async tr => {
+    const userIdx = await createUser(tr, model)
+    const result = await model.emailAddresses.getEmailsByOwnerIdx(tr, userIdx)
+    t.is(result.length, 0)
+  }, ['users'])
+})
+
 test('reset resend count of expired verification token', async t => {
   await model.pgDo(async tr => {
     const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid())

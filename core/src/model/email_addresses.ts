@@ -121,9 +121,6 @@ export default class EmailAddresses {
   public async getEmailsByOwnerIdx(tr: Transaction, ownerIdx: number): Promise<Array<EmailAddress>> {
     const query = 'SELECT address_local, address_domain FROM email_addresses WHERE owner_idx = $1'
     const result = await tr.query(query, [ownerIdx])
-    if (result.rows.length === 0) {
-      throw new NoSuchEntryError()
-    }
 
     return result.rows.map(row => ({
       local: row.address_local,
