@@ -57,7 +57,7 @@ export default class Hosts {
     }
   }
 
-  public async getHostByInet(tr: Transaction, inet: string): Promise<Host> {
+  public async getHostByInet(tr: Transaction, inet: string, unsafeBypassPubkey: boolean = false): Promise<Host> {
     // Remove occasional ipv6-mapped ipv4
     if (inet.lastIndexOf(':') !== -1) {
       inet = inet.substring(inet.lastIndexOf(':') + 1)
@@ -65,7 +65,7 @@ export default class Hosts {
 
     // forbid inet authentication with pubkey registered
     const query = `SELECT idx, name, host, host_group, host_pubkey FROM hosts
-      WHERE host(host) = $1 AND host_pubkey IS NULL`
+      WHERE host(host) = $1 ${unsafeBypassPubkey ? '' : 'AND host_pubkey IS NULL'}`
     const result = await tr.query(query, [inet])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
