@@ -1,6 +1,5 @@
 import Model from './model'
 import Transaction from './transaction'
-import { PoolClient } from 'pg'
 import { NoSuchEntryError, AuthorizationError } from './errors'
 
 export interface Host {
@@ -57,7 +56,7 @@ export default class Hosts {
     }
   }
 
-  public async getHostByInet(tr: Transaction, inet: string, unsafeBypassPubkey: boolean = false): Promise<Host> {
+  public async getHostByInet(tr: Transaction, inet: string, unsafeBypassPubkey = false): Promise<Host> {
     // Remove occasional ipv6-mapped ipv4
     if (inet.lastIndexOf(':') !== -1) {
       inet = inet.substring(inet.lastIndexOf(':') + 1)
