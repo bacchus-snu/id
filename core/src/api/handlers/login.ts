@@ -7,6 +7,12 @@ import { ControllableError, AuthorizationError } from '../../model/errors'
 import Model from '../../model/model'
 import { verifyPubkeyReq } from '../pubkey'
 
+class SignatureError extends ControllableError {
+  constructor() {
+    super('signature verification failed')
+  }
+}
+
 export function login(model: Model): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
@@ -71,7 +77,7 @@ export function loginPAM(model: Model): IMiddleware {
             const verifyResult = verifyPubkeyReq(ctx)
             if (verifyResult == null) {
               ctx.status = 401
-              return
+              throw new SignatureError()
             }
 
             // signature verified, find host info
