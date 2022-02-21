@@ -160,6 +160,20 @@ test.serial('test PAM login with credential and pubkey', async t => {
     t.is(response.status, 401)
   }
 
+  // bad signature
+  {
+    const body = JSON.stringify({ username, password: 'doge!' })
+    let timestamp = Date.now().toString()
+    timestamp = timestamp.substring(0, timestamp.length - 3)
+    response = await agent.post('/api/login/pam')
+      .set('Content-Type', 'application/json')
+      .set('X-Bacchus-Id-Pubkey', publicKey.toString('base64'))
+      .set('X-Bacchus-Id-Timestamp', timestamp)
+      .set('X-Bacchus-Id-Signature', Buffer.alloc(64, 0).toString('base64'))
+      .send(body)
+    t.is(response.status, 401)
+  }
+
   // wrong password
   {
     const body = JSON.stringify({ username, password: 'doge!' })
