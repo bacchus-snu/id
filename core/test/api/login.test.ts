@@ -162,7 +162,7 @@ test.serial('test PAM login with credential and pubkey', async t => {
 
   // bad signature
   {
-    const body = JSON.stringify({ username, password: 'doge!' })
+    const body = JSON.stringify({ username, password })
     let timestamp = Date.now().toString()
     timestamp = timestamp.substring(0, timestamp.length - 3)
     response = await agent.post('/api/login/pam')

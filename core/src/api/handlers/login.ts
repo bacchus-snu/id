@@ -5,13 +5,7 @@ import { createPrivateKey } from 'crypto'
 import Config from '../../config'
 import { ControllableError, AuthorizationError } from '../../model/errors'
 import Model from '../../model/model'
-import { verifyPubkeyReq } from '../pubkey'
-
-class SignatureError extends ControllableError {
-  constructor() {
-    super('signature verification failed')
-  }
-}
+import { SignatureError, verifyPubkeyReq } from '../pubkey'
 
 export function login(model: Model): IMiddleware {
   return async (ctx, next) => {
@@ -75,10 +69,6 @@ export function loginPAM(model: Model): IMiddleware {
           let host
           if (ctx.headers['x-bacchus-id-pubkey']) {
             const verifyResult = verifyPubkeyReq(ctx)
-            if (verifyResult == null) {
-              ctx.status = 401
-              throw new SignatureError()
-            }
 
             // signature verified, find host info
             host = await model.hosts.getHostByPubkey(tr, verifyResult.publicKey)
@@ -91,6 +81,8 @@ export function loginPAM(model: Model): IMiddleware {
           await model.hosts.authorizeUserByHost(tr, userIdx, host)
         } catch (e) {
           if (e instanceof ControllableError) {
+            ctx.status = 401
+          } else if (e instanceof SignatureError) {
             ctx.status = 401
           } else {
             ctx.status = 500
