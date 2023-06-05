@@ -56,7 +56,7 @@ export function createRouter(model: Model, config: Config): Router {
    * Logout API route.
    * Always set status code to 200, and clear session store.
    */
-  router.get('/api/logout', logout())
+  router.post('/api/logout', logout())
   /**
    * Check login.
    * 200 if already logged in, 401 if not.
