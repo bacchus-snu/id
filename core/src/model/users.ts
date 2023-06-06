@@ -1,6 +1,6 @@
 import Model from './model'
 import Transaction from './transaction'
-import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError } from './errors'
+import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError, BadParameterError } from './errors'
 import * as argon2 from 'argon2'
 import * as phc from '@phc/format'
 import * as moment from 'moment'
@@ -293,11 +293,19 @@ export default class Users {
     return result.rows.map(row => this.rowToUserMembership(row))
   }
 
-  public async getAllMembershipUsers(tr: Transaction, groupIdx: number): Promise<Array<User>> {
-    const query = 'SELECT u.*, sn.student_number FROM user_memberships AS um INNER JOIN users AS u ' +
+  public async getAllMembershipUsers(tr: Transaction, groupIdx: number, pagination?: { start: number; count: number }): Promise<Array<User>> {
+    let query = 'SELECT u.*, sn.student_number FROM user_memberships AS um INNER JOIN users AS u ' +
       'ON um.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx ' +
       'WHERE um.group_idx = $1 ORDER BY um.idx'
-    const result = await tr.query(query, [groupIdx])
+    const params = [groupIdx]
+    if (pagination != null) {
+      if (pagination.count <= 0 || pagination.start <= 0) {
+        throw new BadParameterError()
+      }
+      query += ' LIMIT $2 OFFSET $3'
+      params.push(pagination.count, pagination.start)
+    }
+    const result = await tr.query(query, params)
     return result.rows.map(row => this.rowToUser(row))
   }
 

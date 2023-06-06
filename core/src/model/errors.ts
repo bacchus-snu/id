@@ -52,3 +52,9 @@ export class InvalidEmailError extends ControllableError {
     super('Invalid email')
   }
 }
+
+export class BadParameterError extends ControllableError {
+  constructor() {
+    super('Bad parameter')
+  }
+}

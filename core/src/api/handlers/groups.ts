@@ -1,3 +1,4 @@
+import { BadParameterError } from '../../model/errors'
 import Model from '../../model/model'
 import { User } from '../../model/users'
 import { IMiddleware } from 'koa-router'
@@ -38,6 +39,15 @@ export function listMembers(model: Model): IMiddleware {
     if (ctx.session && !ctx.session.isNew) {
       const username = ctx.session.username
       const gid = Number(ctx.params.gid)
+      const start = Number(ctx.params.start)
+      const count = Number(ctx.params.count)
+      let pagination: { start: number; count: number } | undefined = undefined
+      if (!Number.isNaN(start) || !Number.isNaN(count)) {
+        pagination = {
+          start: Number.isNaN(start) ? 0 : start,
+          count: Number.isNaN(count) ? 10 : count,
+        }
+      }
 
       let user = null
       let owner = false
@@ -48,11 +58,15 @@ export function listMembers(model: Model): IMiddleware {
           owner = await model.groups.checkOwner(tr, gid, user.idx)
 
           if (owner) {
-            users = await model.users.getAllMembershipUsers(tr, gid)
+            users = await model.users.getAllMembershipUsers(tr, gid, pagination)
           }
         })
       } catch (e) {
-        ctx.status = 500
+        if (e instanceof BadParameterError) {
+          ctx.status = 400
+        } else {
+          ctx.status = 500
+        }
         return
       }
 
