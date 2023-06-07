@@ -261,7 +261,7 @@ test('test checkLogin', async t => {
   t.is(response.status, 200)
   t.is(response.body.username, username)
 
-  response = await agent.get('/api/logout').send()
+  response = await agent.post('/api/logout').send()
   t.is(response.status, 200)
 
   response = await agent.get('/api/check-login').send()
@@ -486,7 +486,7 @@ test('test jwt', async t => {
     t.is(response.status, 200)
   }
 
-  response = await agent.get('/api/logout').send()
+  response = await agent.post('/api/logout').send()
   t.is(response.status, 200)
 
   response = await agent.post('/api/issue-jwt').send()

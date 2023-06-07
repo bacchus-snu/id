@@ -131,7 +131,7 @@ export default class TheHeading extends Vue {
 
     this.isLoggingOut = true
 
-    const result = await this.$axios.get('/api/logout', {
+    const result = await this.$axios.post('/api/logout', {
       validateStatus: () => true,
     })
 
