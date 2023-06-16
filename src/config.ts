@@ -2,6 +2,8 @@
  * Configuration.
  */
 
+import { JWKS } from 'oidc-provider'
+
 /**
  * PostgreSQL connection configuration.
  */
@@ -192,6 +194,38 @@ export interface JWTConfig {
   audience: string
 }
 
+export interface OIDCConfig {
+  /**
+   * 
+   */
+  issuer: string
+
+  /**
+   * 
+   */
+  redisURL: string | undefined
+
+  /**
+   * 
+   */
+  jwks: JWKS
+
+  /**
+   * 
+   */
+  devInterations: boolean
+
+  /**
+   * 
+   */
+  deviceFlow: boolean
+
+  /**
+   * 
+   */
+  revocation: boolean
+}
+
 export default interface Config {
   /**
    * Name of this id core instance.
@@ -237,4 +271,9 @@ export default interface Config {
    * JWT configuration.
    */
   jwt: JWTConfig
+
+  /**
+   * OIDC configuration.
+   */
+  oidc: OIDCConfig
 }

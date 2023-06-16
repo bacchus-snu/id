@@ -4,6 +4,7 @@ import * as Bunyan from 'bunyan'
 import * as bodyParser from 'koa-bodyparser'
 import * as Session from 'koa-session'
 import * as crypto from 'crypto'
+import * as mount from 'koa-mount'
 
 import Model from '../model/model'
 import { createRouter } from './router'
@@ -41,6 +42,7 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
     }))
     .use(router.routes())
     .use(router.allowedMethods())
+    .use(mount(model.oidcProvider.app))
 
   return app
 }

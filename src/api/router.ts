@@ -13,6 +13,7 @@ import { getPasswd, getGroup } from './handlers/nss'
 import { listGroups, listMembers, listPending,
   applyGroup, acceptGroup, rejectGroup, leaveGroup } from './handlers/groups'
 import { getRequestToken } from './handlers/oauth'
+import createOIDCRouter from '../oidc/routes'
 
 function createOAuth10aRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -238,6 +239,12 @@ export function createRouter(model: Model, config: Config): Router {
    */
   const oauth10aRouter = createOAuth10aRouter(model, config)
   router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
+
+  /**
+   * 
+   */
+  const oidcRouter = createOIDCRouter(model.oidcProvider)
+  router.use(oidcRouter.routes())
 
   return router
 }

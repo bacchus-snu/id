@@ -9,6 +9,8 @@ import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 import Config from '../config'
 import Transaction from './transaction'
+import OIDCProvider from 'oidc-provider'
+import OIDCConfig from '../oidc/configuration'
 
 const PSQL_SERIALIZATION_FAILURE = '40001'
 const PSQL_DEADLOCK_DETECTED = '40P01'
@@ -26,6 +28,9 @@ export default class Model {
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
 
+  private readonly oidcConfig: OIDCConfig
+  public readonly oidcProvider: OIDCProvider
+
   constructor(public readonly config: Config, public readonly log: Bunyan) {
     this.pgConfig = config.postgresql
     this.pgPool = new pg.Pool(this.pgConfig)
@@ -36,6 +41,9 @@ export default class Model {
     this.permissions = new Permissions(this)
     this.shells = new Shells(this)
     this.hosts = new Hosts(this)
+
+    this.oidcConfig = new OIDCConfig(config)
+    this.oidcProvider = new OIDCProvider(config.oidc.issuer, this.oidcConfig)
   }
 
   /**
