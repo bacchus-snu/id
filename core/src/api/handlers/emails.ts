@@ -96,7 +96,7 @@ export function checkVerificationEmailToken(model: Model): IMiddleware {
         }
       })
     } catch (e) {
-      ctx.status = 400
+      ctx.status = 401
       return
     }
 

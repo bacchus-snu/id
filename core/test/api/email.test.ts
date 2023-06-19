@@ -39,7 +39,7 @@ test('check token api', async t => {
   response = await agent.post('/api/email/check-token').send({
     token: token + 'doge',
   })
-  t.is(response.status, 400)
+  t.is(response.status, 401)
 
   response = await agent.post('/api/email/check-token').send({
     token,
