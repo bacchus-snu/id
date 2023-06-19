@@ -3,7 +3,7 @@ import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
 import Config from '../../config'
 import { sendEmail } from '../email'
-import { ResendLimitExeededError, InvalidEmailError } from '../../model/errors'
+import { ResendLimitExeededError, InvalidEmailError, UserExistsError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
 import { jwtVerify } from 'jose/jwt/verify'
 import { createPublicKey } from 'crypto'
@@ -68,8 +68,13 @@ export function createUser(model: Model, config: Config): IMiddleware {
       // acquires access exclusive lock on 'users'
       await model.pgDo(async tr => {
         const emailAddressIdx = await model.emailAddresses.getIdxByAddress(tr, emailAddress.local, emailAddress.domain)
-        const userIdx = await model.users.create(
-          tr, username, password, name, config.posix.defaultShell, preferredLanguage)
+        let userIdx
+        try {
+          userIdx = await model.users.create(
+            tr, username, password, name, config.posix.defaultShell, preferredLanguage)
+        } catch (e) {
+          throw new UserExistsError()
+        }
         await model.emailAddresses.validate(tr, userIdx, emailAddressIdx)
         await model.emailAddresses.removeToken(tr, token)
 
@@ -93,6 +98,10 @@ export function createUser(model: Model, config: Config): IMiddleware {
         }
       }, ['users'])
     } catch (e) {
+      if (e instanceof UserExistsError) {
+        ctx.status = 409
+        return
+      }
       ctx.status = 400
       return
     }
@@ -150,7 +159,11 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
       }
       await sendEmail(option,  model.log, config)
     } catch (e) {
-      if (e instanceof ResendLimitExeededError || e instanceof InvalidEmailError) {
+      if (e instanceof ResendLimitExeededError) {
+        ctx.status = 429
+        return
+      }
+      if (e instanceof InvalidEmailError) {
         ctx.status = 400
         return
       }

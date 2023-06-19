@@ -290,7 +290,7 @@ test('verification email resend limit', async t => {
     emailLocal,
     emailDomain,
   })
-  t.is(response.status, 400)
+  t.is(response.status, 429)
 })
 
 test('password change email resend limit', async t => {
@@ -320,7 +320,7 @@ test('password change email resend limit', async t => {
     emailLocal,
     emailDomain,
   })
-  t.is(response.status, 400)
+  t.is(response.status, 429)
 })
 
 const NUMBER_OF_USERS_TO_CREATE = 100

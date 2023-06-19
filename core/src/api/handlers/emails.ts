@@ -2,8 +2,8 @@ import Model from '../../model/model'
 import Config from '../../config'
 import { EmailAddress } from '../../model/email_addresses'
 import { IMiddleware } from 'koa-router'
-import { EmailOption, sendEmail } from '../email'
-import { ResendLimitExeededError, InvalidEmailError } from '../../model/errors'
+import { sendEmail } from '../email'
+import { ResendLimitExeededError, InvalidEmailError, EmailInUseError } from '../../model/errors'
 import emailVerificationTemplate from '../templates/verification_email_template'
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
@@ -39,12 +39,16 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
         emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
         const isValidated = await model.emailAddresses.isValidatedEmail(tr, emailIdx)
         if (isValidated) {
-          throw new Error('already validated')
+          throw new EmailInUseError()
         }
         token = await model.emailAddresses.generateVerificationToken(tr, emailIdx)
         resendCount = await model.emailAddresses.getResendCount(tr, token)
       })
     } catch (e) {
+      if (e instanceof EmailInUseError) {
+        ctx.status = 409
+        return
+      }
       ctx.status = 400
       return
     }
@@ -61,7 +65,11 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
       }
       await sendEmail(option,  model.log, config)
     } catch (e) {
-      if (e instanceof ResendLimitExeededError || e instanceof InvalidEmailError) {
+      if (e instanceof ResendLimitExeededError) {
+        ctx.status = 429
+        return
+      }
+      if (e instanceof InvalidEmailError) {
         ctx.status = 400
         return
       }

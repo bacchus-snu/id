@@ -58,3 +58,15 @@ export class BadParameterError extends ControllableError {
     super('Bad parameter')
   }
 }
+
+export class UserExistsError extends ControllableError {
+  constructor() {
+    super('User already exists')
+  }
+}
+
+export class EmailInUseError extends ControllableError {
+  constructor() {
+    super('Email is already in use')
+  }
+}
