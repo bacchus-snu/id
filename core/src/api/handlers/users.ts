@@ -22,12 +22,12 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    if (!ctx.session.verificationToken) {
+    if (!body.token && !ctx.session.verificationToken) {
       ctx.status = 401
       return
     }
 
-    const token = ctx.session.verificationToken
+    const token = body.token || ctx.session.verificationToken
     let emailAddress: EmailAddress
 
     // check verification token
