@@ -5,7 +5,7 @@ import oauth10a from '../oauth/koa'
 import { login, loginPAM, loginIssueJWT, logout, checkLogin,
   loginLegacy, issueJWT } from './handlers/login'
 import { createUser, changePassword, sendChangePasswordEmail,
-  getUserEmails, getUserInfo } from './handlers/users'
+  getUserEmails, getUserInfo, checkChangePasswordEmailToken } from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
@@ -126,6 +126,12 @@ export function createRouter(model: Model, config: Config): Router {
    * @param emailDomain email domain.
    */
   router.post('/api/user/send-password-token', sendChangePasswordEmail(model, config))
+
+  /**
+   * Check password change email token.
+   * @param token verification token.
+   */
+  router.post('/api/user/check-password-token', checkChangePasswordEmailToken(model))
 
   /**
    * Get user's emails.

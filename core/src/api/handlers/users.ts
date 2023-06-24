@@ -175,6 +175,37 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
   }
 }
 
+export function checkChangePasswordEmailToken(model: Model): IMiddleware {
+  return async (ctx, next) => {
+    const body: any = ctx.request.body
+
+    if (body == null || typeof body !== 'object') {
+      ctx.status = 400
+      return
+    }
+
+    const { token } = body
+
+    try {
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.getUserIdxByPasswordToken(tr, token)
+        await model.users.ensureTokenNotExpired(tr, token)
+        const user = await model.users.getByUserIdx(tr, userIdx)
+        if (user.username === null) {
+          throw new Error()
+        }
+      })
+    } catch (e) {
+      ctx.status = 401
+      return
+    }
+
+    ctx.status = 204
+
+    await next()
+  }
+}
+
 export function changePassword(model: Model): IMiddleware {
   return async (ctx, next) => {
     const body: any = ctx.request.body
