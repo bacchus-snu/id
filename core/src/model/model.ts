@@ -68,15 +68,22 @@ export default class Model {
           return result
         } catch (e) {
           await client.query('ROLLBACK')
-          if (e.code === PSQL_SERIALIZATION_FAILURE || e.code === PSQL_DEADLOCK_DETECTED) {
-            retryCount++
-            if (retryCount < Model.MAX_TRANSACTION_RETRY) {
-              continue
+
+          if (e instanceof pg.DatabaseError) {
+            if (e.code === PSQL_SERIALIZATION_FAILURE || e.code === PSQL_DEADLOCK_DETECTED) {
+              retryCount++
+              if (retryCount < Model.MAX_TRANSACTION_RETRY) {
+                continue
+              }
             }
-          } else if (!(e instanceof ControllableError)) {
+            throw e
+          }
+
+          if (!(e instanceof ControllableError)) {
             // Controllable errors are properly handled by API implementations.
             this.log.error(e)
           }
+
           throw e
         }
       }
