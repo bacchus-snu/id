@@ -13,10 +13,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:14-buster
+    container: node:18.16-bookworm
     services:
       postgres:
-        image: postgres:13-alpine
+        image: postgres:15.3-alpine
         env:
           POSTGRES_PASSWORD: foo
         options: >-
@@ -26,7 +26,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Prepare database
         env:
           PGPASSFILE: /tmp/pgpass
@@ -37,17 +37,15 @@ jobs:
           psql -h postgres -U postgres -w -c 'create database id;'
           psql -h postgres -U postgres -w id < ./core/schema.sql
       - name: Cache dependencies
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-core-node-modules
+        uses: actions/cache@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build.0-${{ env.cache-name }}-${{ hashFiles('core/package-lock.json') }}
+          path: ~/.yarn
+          key: ${{ runner.os }}-build.0-core-${{ hashFiles('core/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build.0-${{ env.cache-name }}-
+            ${{ runner.os }}-build.0-core-
             ${{ runner.os }}-build.0-
             ${{ runner.os }}-
       - name: Install dependencies
-        run: 'cd core && npm ci && cd ..'
+        run: 'cd core && yarn install --frozen-lockfile && cd ..'
       - name: Run tests
-        run: 'cd core && npm test && cd ..'
+        run: 'cd core && yarn test && cd ..'

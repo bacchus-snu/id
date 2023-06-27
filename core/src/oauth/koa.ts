@@ -37,7 +37,7 @@ export interface OAuthData {
 }
 
 export default function oauth10a(args: MiddlewareParams): Koa.Middleware {
-  return async (ctx, next) => {
+  return async (ctx: Koa.ParameterizedContext, next) => {
     if (ctx.request.body == null) {
       return await next()
     }
