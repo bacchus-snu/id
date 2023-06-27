@@ -3,13 +3,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - core/**
   pull_request:
     branches:
       - master
-    paths:
-      - core/**
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -35,17 +31,17 @@ jobs:
           echo 'postgres:5432:*:postgres:foo' > $PGPASSFILE
           chmod 600 $PGPASSFILE
           psql -h postgres -U postgres -w -c 'create database id;'
-          psql -h postgres -U postgres -w id < ./core/schema.sql
+          psql -h postgres -U postgres -w id < ./schema.sql
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.yarn
-          key: ${{ runner.os }}-build.0-core-${{ hashFiles('core/yarn.lock') }}
+          key: ${{ runner.os }}-build.0-core-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build.0-core-
             ${{ runner.os }}-build.0-
             ${{ runner.os }}-
       - name: Install dependencies
-        run: 'cd core && yarn install --frozen-lockfile && cd ..'
+        run: 'yarn install --frozen-lockfile'
       - name: Run tests
-        run: 'cd core && yarn test && cd ..'
+        run: 'yarn test'
