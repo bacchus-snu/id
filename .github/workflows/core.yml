@@ -31,7 +31,7 @@ jobs:
           echo 'postgres:5432:*:postgres:foo' > $PGPASSFILE
           chmod 600 $PGPASSFILE
           psql -h postgres -U postgres -w -c 'create database id;'
-          psql -h postgres -U postgres -w id < ./core/schema.sql
+          psql -h postgres -U postgres -w id < ./schema.sql
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
