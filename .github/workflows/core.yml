@@ -35,13 +35,13 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.yarn
-          key: ${{ runner.os }}-build.0-core-${{ hashFiles('yarn.lock') }}
+          path: .yarn/cache
+          key: ${{ runner.os }}-build.1-core-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build.0-core-
-            ${{ runner.os }}-build.0-
+            ${{ runner.os }}-build.1-core-
+            ${{ runner.os }}-build.1-
             ${{ runner.os }}-
       - name: Install dependencies
-        run: 'yarn install --frozen-lockfile'
+        run: 'yarn install --immutable'
       - name: Run tests
         run: 'yarn test'
