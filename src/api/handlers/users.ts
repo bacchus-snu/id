@@ -5,7 +5,7 @@ import Config from '../../config'
 import { sendEmail } from '../email'
 import { ResendLimitExeededError, InvalidEmailError, UserExistsError } from '../../model/errors'
 import changePasswordTemplate from '../templates/change_password_email_template'
-import { jwtVerify } from 'jose/jwt/verify'
+import { jwtVerify } from 'jose'
 import { createPublicKey } from 'crypto'
 
 export function createUser(model: Model, config: Config): IMiddleware {
