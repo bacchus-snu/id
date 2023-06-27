@@ -16,8 +16,8 @@ FROM node:18-alpine as runner
 RUN apk add --no-cache tini
 WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
-COPY --from=deps /app/node_modules node_modules
+COPY --from=deps /app/.yarn ./.yarn
+COPY --from=deps /app/.pnp.* ./
 COPY --from=builder /app/dist dist
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["yarn", "start"]
