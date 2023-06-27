@@ -1,5 +1,5 @@
 import { IMiddleware } from 'koa-router'
-import { SignJWT } from 'jose/jwt/sign'
+import { SignJWT } from 'jose'
 import { createPrivateKey } from 'crypto'
 
 import Config from '../../config'
