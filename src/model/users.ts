@@ -239,6 +239,7 @@ export default class Users {
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()
     }
+    this.posixPasswdCache = ''
     return result.rows[0].idx
   }
 
