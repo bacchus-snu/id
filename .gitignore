@@ -24,6 +24,7 @@ Thumbs.db
 # Editors & IDEs
 .*.swp
 .*.swo
+.vim/
 .vscode/
 .vs/
 *.njsproj
