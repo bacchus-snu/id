@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto'
 import { inspect } from 'node:util'
 
 import isEmpty from 'lodash/isEmpty'
-import { koaBody as bodyParser } from 'koa-body'
+import bodyParser from 'koa-bodyparser'
 import * as Router from 'koa-router'
 
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js' // make your own, you'll need it anyway
