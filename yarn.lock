@@ -1209,6 +1209,7 @@ __metadata:
   resolution: "bacchus-id@workspace:."
   dependencies:
     "@koa/cors": ^4.0.0
+    "@phc/format": ^1.0.0
     "@types/bunyan": ^1.8.8
     "@types/koa": ^2.13.6
     "@types/koa-bodyparser": ^4.3.10

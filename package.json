@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@koa/cors": "^4.0.0",
+    "@phc/format": "^1.0.0",
     "argon2": "^0.30.3",
     "bunyan": "^1.8.15",
     "jose": "^4.14.4",
