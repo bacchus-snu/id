@@ -2,7 +2,10 @@
   "compilerOptions": {
     "outDir": "dist",
     "target": "es6",
-    "lib": ["es2018", "dom"],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
     "module": "commonjs",
     "strict": true,
     "noUnusedLocals": false,
@@ -10,8 +13,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "downlevelIteration": true,
-    "esModuleInterop": true,
-    "typeRoots": ["./node_modules/@types", "./typings"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ]
   },
   "include": [
     "src/**/*",
