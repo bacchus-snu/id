@@ -3,7 +3,7 @@
  */
 
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type { JWKS } from 'oidc-provider'
+import type { JWKS, ClientMetadata } from 'oidc-provider'
 
 /**
  * PostgreSQL connection configuration.
@@ -230,6 +230,11 @@ export interface OIDCConfig {
    *
    */
   revocation: boolean
+
+  /**
+   *
+   */
+  clients?: Array<ClientMetadata>
 }
 
 export default interface Config {
