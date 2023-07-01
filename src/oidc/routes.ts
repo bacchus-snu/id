@@ -41,7 +41,16 @@ export default (model: Model, provider: OIDCProvider) => {
     }
   })
 
-  router.post('/interaction/:uid/login', async ctx => {
+  router.get('/api/interaction/:uid', async ctx => {
+    const {
+      prompt,
+      params,
+    } = await provider.interactionDetails(ctx.req, ctx.res)
+    ctx.status = 200
+    ctx.body = { prompt, params }
+  })
+
+  router.post('/api/interaction/:uid/login', async ctx => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res)
     assert.equal(name, 'login')
     const login = loginSchema.parse(ctx.body)
@@ -54,12 +63,15 @@ export default (model: Model, provider: OIDCProvider) => {
       },
     }
 
-    return provider.interactionFinished(ctx.req, ctx.res, result, {
+    const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
     })
+
+    ctx.status = 200
+    ctx.body = { redirectTo }
   })
 
-  router.post('/interaction/:uid/confirm', async ctx => {
+  router.post('/api/interaction/:uid/confirm', async ctx => {
     const interactionDetails = await provider.interactionDetails(ctx.req, ctx.res)
     const {
       prompt: {
@@ -69,11 +81,12 @@ export default (model: Model, provider: OIDCProvider) => {
       params: paramsRaw,
       session: { accountId } = { accountId: '' },
     } = interactionDetails
+    let { grantId } = interactionDetails
+
     const params = paramsSchema.parse(paramsRaw)
     const details = detailsSchema.parse(detailsRaw)
     assert.equal(name, 'consent')
 
-    let { grantId } = interactionDetails
     let grant: InstanceType<typeof provider.Grant>
 
     if (grantId) {
@@ -112,20 +125,26 @@ export default (model: Model, provider: OIDCProvider) => {
     }
 
     const result = { consent }
-    return provider.interactionFinished(ctx.req, ctx.res, result, {
+    const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: true,
     })
+
+    ctx.status = 200
+    ctx.body = { redirectTo }
   })
 
-  router.get('/interaction/:uid/abort', async ctx => {
+  router.get('/api/interaction/:uid/abort', async ctx => {
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction',
     }
 
-    return provider.interactionFinished(ctx.req, ctx.res, result, {
+    const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
     })
+
+    ctx.status = 200
+    ctx.body = { redirectTo }
   })
 
   return router

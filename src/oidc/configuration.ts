@@ -18,6 +18,7 @@ export default function createOIDCConfig(oidcConfig: Config['oidc']): Configurat
     pkce: {
       required: () => false,
     },
+    clients: oidcConfig.clients,
     features: {
       devInteractions: {
         enabled: oidcConfig.devInteractions
@@ -29,6 +30,5 @@ export default function createOIDCConfig(oidcConfig: Config['oidc']): Configurat
         enabled: oidcConfig.revocation
       },
     },
-    clients: oidcConfig.clients,
   }
 }

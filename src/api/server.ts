@@ -48,7 +48,7 @@ const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => 
     }))
     .use(router.routes())
     .use(router.allowedMethods())
-    .use(mount(oidcProvider.app))
+    .use(mount('/api', oidcProvider.app))
 
   return app
 }
