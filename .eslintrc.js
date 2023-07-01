@@ -16,5 +16,6 @@ module.exports = {
     '@typescript-eslint/array-type': ['error', { default: 'generic' }],
     'arrow-parens': ['error', 'as-needed'],
     '@typescript-eslint/naming-convention': 'off',
+    'no-constant-condition' : ['error', { checkLoops: false }],
   },
 }
