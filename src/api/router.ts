@@ -1,17 +1,23 @@
-import * as Router from 'koa-router'
+import Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import oauth10a from '../oauth/koa'
-import { login, loginPAM, loginIssueJWT, logout, checkLogin,
-  loginLegacy, issueJWT } from './handlers/login'
-import { createUser, changePassword, sendChangePasswordEmail,
-  getUserEmails, getUserInfo, checkChangePasswordEmailToken } from './handlers/users'
+import {
+  login, loginPAM, loginIssueJWT, logout, checkLogin,
+  loginLegacy, issueJWT
+} from './handlers/login'
+import {
+  createUser, changePassword, sendChangePasswordEmail,
+  getUserEmails, getUserInfo, checkChangePasswordEmailToken
+} from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups, listMembers, listPending,
-  applyGroup, acceptGroup, rejectGroup, leaveGroup } from './handlers/groups'
+import {
+  listGroups, listMembers, listPending,
+  applyGroup, acceptGroup, rejectGroup, leaveGroup
+} from './handlers/groups'
 import { getRequestToken } from './handlers/oauth'
 import createOIDCRouter from '../oidc/routes'
 
@@ -241,7 +247,7 @@ export function createRouter(model: Model, config: Config): Router {
   router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
 
   /**
-   * 
+   *
    */
   const oidcRouter = createOIDCRouter(model.oidcProvider)
   router.use(oidcRouter.routes())

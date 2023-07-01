@@ -3,11 +3,9 @@ import * as querystring from 'node:querystring'
 import * as crypto from 'node:crypto'
 import { inspect } from 'node:util'
 
-import isEmpty from 'lodash/isEmpty'
 import bodyParser from 'koa-bodyparser'
 import * as Router from 'koa-router'
 
-import { defaults } from 'oidc-provider/lib/helpers/defaults.js' // make your own, you'll need it anyway
 import OIDCProvider, { errors } from 'oidc-provider'
 
 const keys = new Set()

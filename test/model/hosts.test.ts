@@ -1,5 +1,5 @@
 import test from 'ava'
-import * as tweetnacl from 'tweetnacl'
+import tweetnacl from 'tweetnacl'
 import { v4 as uuid } from 'uuid'
 
 import * as fs from 'fs'
@@ -7,7 +7,7 @@ import Model from '../../src/model/model'
 import * as bunyan from 'bunyan'
 import Config from '../../src/config'
 
-const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
+const config: Config = JSON.parse(fs.readFileSync('config.test.json', { encoding: 'utf-8' }))
 
 const log = bunyan.createLogger({
   name: config.instanceName,

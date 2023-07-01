@@ -1,8 +1,6 @@
 import test from 'ava'
 
-import * as moment from 'moment'
-import { Translation } from '../../src/model/translation'
-import { NoSuchEntryError, AuthenticationError } from '../../src/model/errors'
+import moment from 'moment'
 import { v4 as uuid } from 'uuid'
 
 import { createEmailAddress, createUser } from '../_test_utils'
