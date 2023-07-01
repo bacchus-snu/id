@@ -53,6 +53,7 @@
   },
   "oidc": {
     "issuer": "http://localhost:3000",
+    "cookieKey": "ZHarLSnCayTOwuih",
     "jwks": {
       "keys": []
     },

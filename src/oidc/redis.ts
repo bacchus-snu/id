@@ -3,8 +3,6 @@ import Redis from 'ioredis'
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { Adapter, AdapterPayload } from 'oidc-provider'
 
-let client: Redis.Redis
-
 const grantable = new Set([
   'AccessToken',
   'AuthorizationCode',
@@ -33,16 +31,16 @@ function uidKeyFor(uid: string) {
 }
 
 class RedisAdapter implements Adapter {
-  name: string
+  client: Redis.Redis
 
-  constructor(name: string) {
-    this.name = name
+  constructor(public name: string, redisURL: string) {
+    this.client = new Redis(redisURL, { keyPrefix: 'oidc:' })
   }
 
   async upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined | void> {
     const key = this.key(id)
 
-    const multi = client.multi()
+    const multi = this.client.multi()
     if (consumable.has(this.name)) {
       multi['hmset'](key, { payload: JSON.stringify(payload) })
     } else {
@@ -58,7 +56,7 @@ class RedisAdapter implements Adapter {
       multi.rpush(grantKey, key)
       // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM
       // here to trim the list to an appropriate length
-      const ttl = await client.ttl(grantKey)
+      const ttl = await this.client.ttl(grantKey)
       if (expiresIn > ttl) {
         multi.expire(grantKey, expiresIn)
       }
@@ -81,8 +79,8 @@ class RedisAdapter implements Adapter {
 
   async find(id: string): Promise<AdapterPayload | undefined | void> {
     const data = consumable.has(this.name)
-      ? await client.hgetall(this.key(id))
-      : await client.get(this.key(id))
+      ? await this.client.hgetall(this.key(id))
+      : await this.client.get(this.key(id))
 
     if (!data) {
       return undefined
@@ -100,7 +98,7 @@ class RedisAdapter implements Adapter {
   }
 
   async findByUid(uid: string): Promise<AdapterPayload | undefined | void> {
-    const id = await client.get(uidKeyFor(uid))
+    const id = await this.client.get(uidKeyFor(uid))
     if (id == null) {
       return undefined
     }
@@ -108,7 +106,7 @@ class RedisAdapter implements Adapter {
   }
 
   async findByUserCode(userCode: string): Promise<AdapterPayload | undefined | void> {
-    const id = await client.get(userCodeKeyFor(userCode))
+    const id = await this.client.get(userCodeKeyFor(userCode))
     if (id == null) {
       return undefined
     }
@@ -117,30 +115,26 @@ class RedisAdapter implements Adapter {
 
   async destroy(id: string): Promise<undefined | void> {
     const key = this.key(id)
-    await client.del(key)
+    await this.client.del(key)
   }
 
   async revokeByGrantId(grantId: string): Promise<undefined | void> {
-    const multi = client.multi()
-    const tokens = await client.lrange(grantKeyFor(grantId), 0, -1)
+    const multi = this.client.multi()
+    const tokens = await this.client.lrange(grantKeyFor(grantId), 0, -1)
     tokens.forEach(token => multi.del(token))
     multi.del(grantKeyFor(grantId))
     await multi.exec()
   }
 
   async consume(id: string): Promise<undefined | void> {
-    await client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000))
+    await this.client.hset(this.key(id), 'consumed', Math.floor(Date.now() / 1000))
   }
 
   key(id: string): string {
     return `${this.name}:${id}`
   }
-
-  // This is not part of the required or supported API, all initialization should happen before
-  // you pass the adapter to `new Provider`
-  static async connect(redisURL: string): Promise<void> {
-    client = new Redis(redisURL, { keyPrefix: 'oidc:' })
-  }
 }
 
-export default RedisAdapter
+export default function adapterFactory(redisURL: string) {
+  return (name: string) => new RedisAdapter(name, redisURL)
+}

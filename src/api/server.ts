@@ -9,12 +9,12 @@ import mount from 'koa-mount'
 import Model from '../model/model'
 import { createRouter } from './router'
 import Config from '../config'
-import OIDCConfig from '../oidc/configuration'
+import createOIDCConfig from '../oidc/configuration'
 
 const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
   const model = inputModel ?? new Model(config, log)
   const OIDCProvider = (await import('oidc-provider')).default
-  const oidcConfig = new OIDCConfig(config.oidc)
+  const oidcConfig = createOIDCConfig(config.oidc)
   const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig)
 
   const app = new Koa()

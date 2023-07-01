@@ -214,6 +214,11 @@ export interface OIDCConfig {
   /**
    *
    */
+  cookieKey: string
+
+  /**
+   *
+   */
   devInteractions: boolean
 
   /**

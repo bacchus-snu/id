@@ -1,47 +1,21 @@
-import type {
-  AdapterConstructor,
-  AdapterFactory,
-  Configuration,
-  CookiesSetOptions,
-  JWKS,
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-} from 'oidc-provider'
+import type { Configuration } from 'oidc-provider'
 import Config from '../config'
 import RedisAdapter from './redis'
 
-export default class OIDCConfig implements Configuration {
-  adapter?: AdapterConstructor | AdapterFactory | undefined
-  jwks?: JWKS | undefined
-  features?: {
-    devInteractions?: {
-      enabled?: boolean | undefined
-    } | undefined
-    deviceFlow?: {
-      enabled?: boolean | undefined
-    } | undefined
-    revocation?: {
-      enabled?: boolean | undefined
-    } | undefined
+export default function createOIDCConfig(oidcConfig: Config['oidc']): Configuration {
+  let adapter
+  if (oidcConfig.redisURL) {
+    adapter = RedisAdapter(oidcConfig.redisURL)
   }
-  cookies?: {
-    names?: {
-      session?: string | undefined
-      interaction?: string | undefined
-      resume?: string | undefined
-      state?: string | undefined
-    } | undefined
-    long?: CookiesSetOptions | undefined
-    short?: CookiesSetOptions | undefined
-    keys?: Array<string | Buffer> | undefined
-  } | undefined
 
-  constructor(public readonly oidcConfig: Config['oidc']) {
-    if (oidcConfig.redisURL) {
-      RedisAdapter.connect(oidcConfig.redisURL)
-      this.adapter = RedisAdapter
-    }
-    this.jwks = oidcConfig.jwks
-    this.features = {
+  return {
+    adapter,
+    cookies: {
+      keys: [oidcConfig.cookieKey]
+    },
+    jwks: oidcConfig.jwks,
+    features: {
       devInteractions: {
         enabled: oidcConfig.devInteractions
       },
@@ -51,6 +25,6 @@ export default class OIDCConfig implements Configuration {
       revocation: {
         enabled: oidcConfig.revocation
       },
-    }
+    },
   }
 }
