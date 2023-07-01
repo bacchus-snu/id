@@ -3,7 +3,7 @@ import test from 'ava'
 import * as phc from '@phc/format'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError } from '../../src/model/errors'
 import { v4 as uuid } from 'uuid'
-import * as moment from 'moment'
+import moment from 'moment'
 
 import { createUser, createGroup } from '../_test_utils'
 import { model } from '../_setup'
@@ -323,10 +323,12 @@ test('reset resend count of expired password change token', async t => {
 test('legacy mssql password (sha512)', async t => {
   const username = 'good_old_doge'
   const password = 'dogepassword'
-  const legacyPasswordDigest = phc.serialize({id: 'mssql-sha512',
+  const legacyPasswordDigest = phc.serialize({
+    id: 'mssql-sha512',
     salt: Buffer.from('251C01B8', 'hex'),
     hash: Buffer.from('CF413665AC3A350E2F61EF6A8845B729CE771DD70E3FA2808C0F24CE3945A19A43F160087' +
-      '60ED06D7AF5181986AC39563CE1356BA451468BD27F936FF5D1BAA9', 'hex')})
+      '60ED06D7AF5181986AC39563CE1356BA451468BD27F936FF5D1BAA9', 'hex')
+  })
   await model.pgDo(async tr => {
     const result = await tr.query('INSERT INTO users (username, password_digest, name, uid, shell, ' +
       'preferred_language) VALUES ($1, $2, \'OLDoge\', 10, \'/bin/bash\', \'en\') RETURNING idx',

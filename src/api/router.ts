@@ -1,18 +1,27 @@
-import * as Router from 'koa-router'
+import Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
 import oauth10a from '../oauth/koa'
-import { login, loginPAM, loginIssueJWT, logout, checkLogin,
-  loginLegacy, issueJWT } from './handlers/login'
-import { createUser, changePassword, sendChangePasswordEmail,
-  getUserEmails, getUserInfo, checkChangePasswordEmailToken } from './handlers/users'
+import {
+  login, loginPAM, loginIssueJWT, logout, checkLogin,
+  loginLegacy, issueJWT
+} from './handlers/login'
+import {
+  createUser, changePassword, sendChangePasswordEmail,
+  getUserEmails, getUserInfo, checkChangePasswordEmailToken
+} from './handlers/users'
 import { getUserShell, changeUserShell } from './handlers/users'
 import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
 import { getShells } from './handlers/shells'
 import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups, listMembers, listPending,
-  applyGroup, acceptGroup, rejectGroup, leaveGroup } from './handlers/groups'
+import {
+  listGroups, listMembers, listPending,
+  applyGroup, acceptGroup, rejectGroup, leaveGroup
+} from './handlers/groups'
 import { getRequestToken } from './handlers/oauth'
+import createOIDCRouter from '../oidc/routes'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type OIDCProvider from 'oidc-provider'
 
 function createOAuth10aRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -30,7 +39,7 @@ function createOAuth10aRouter(model: Model, config: Config): Router {
   return router
 }
 
-export function createRouter(model: Model, config: Config): Router {
+export function createRouter(model: Model, oidcProvider: OIDCProvider, config: Config): Router {
   const router = new Router()
 
   /**
@@ -238,6 +247,12 @@ export function createRouter(model: Model, config: Config): Router {
    */
   const oauth10aRouter = createOAuth10aRouter(model, config)
   router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
+
+  /**
+   *
+   */
+  const oidcRouter = createOIDCRouter(model, oidcProvider)
+  router.use(oidcRouter.routes())
 
   return router
 }

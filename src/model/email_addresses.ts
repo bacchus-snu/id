@@ -2,7 +2,7 @@ import Model from './model'
 import { NoSuchEntryError, ExpiredTokenError } from './errors'
 import Transaction from './transaction'
 import * as crypto from 'crypto'
-import * as moment from 'moment'
+import moment from 'moment'
 
 export interface EmailAddress {
   local: string
@@ -22,7 +22,7 @@ export default class EmailAddresses {
    */
   public async create(tr: Transaction, local: string, domain: string): Promise<number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) ' +
-    'ON CONFLICT (LOWER(address_local), LOWER(address_domain)) DO UPDATE SET address_local = $1 RETURNING idx'
+      'ON CONFLICT (LOWER(address_local), LOWER(address_domain)) DO UPDATE SET address_local = $1 RETURNING idx'
     const result = await tr.query(query, [local, domain])
     const idx = result.rows[0].idx
     return idx
@@ -58,7 +58,7 @@ export default class EmailAddresses {
   public async generateVerificationToken(tr: Transaction, emailIdx: number): Promise<string> {
     await this.resetResendCountIfExpired(tr, emailIdx)
     const query = 'INSERT INTO email_verification_tokens AS e(email_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1, expires = $3'
+      'ON CONFLICT (email_idx) DO UPDATE SET token = $2, resend_count = e.resend_count + 1, expires = $3'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()
@@ -82,8 +82,8 @@ export default class EmailAddresses {
 
   public async getEmailAddressByToken(tr: Transaction, token: string): Promise<EmailAddress> {
     const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain' +
-    ' FROM email_addresses AS e' +
-    ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx'
+      ' FROM email_addresses AS e' +
+      ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx'
     const result = await tr.query(query, [token])
     if (result.rows.length === 0) {
       throw new NoSuchEntryError()

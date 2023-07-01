@@ -3,7 +3,7 @@ import Transaction from './transaction'
 import { NoSuchEntryError, AuthenticationError, NotActivatedError, ExpiredTokenError, BadParameterError } from './errors'
 import * as argon2 from 'argon2'
 import * as phc from '@phc/format'
-import * as moment from 'moment'
+import moment from 'moment'
 import * as crypto from 'crypto'
 
 // see language enum in schema.sql
@@ -37,7 +37,7 @@ export default class Users {
   }
 
   public async create(tr: Transaction, username: string, password: string,
-      name: string, shell: string, preferredLanguage: Language): Promise<number> {
+    name: string, shell: string, preferredLanguage: Language): Promise<number> {
     const query = 'INSERT INTO users(username, password_digest, name, uid, shell, preferred_language) ' +
       'VALUES ($1, $2, $3, $4, $5, $6) RETURNING idx'
     const passwordDigest = await argon2.hash(password)
@@ -178,7 +178,7 @@ export default class Users {
   public async generatePasswordChangeToken(tr: Transaction, userIdx: number): Promise<string> {
     await this.resetResendCountIfExpired(tr, userIdx)
     const query = 'INSERT INTO password_change_tokens AS p(user_idx, token, expires) VALUES ($1, $2, $3) ' +
-    'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1, expires = $3'
+      'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1, expires = $3'
     const randomBytes = await this.asyncRandomBytes(32)
     const token = randomBytes.toString('hex')
     const expires = moment().add(1, 'day').toDate()

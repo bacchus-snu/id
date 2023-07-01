@@ -1,6 +1,5 @@
 import test from 'ava'
 import * as request from 'supertest'
-import { v4 as uuid } from 'uuid'
 import { app, model, config } from '../_setup'
 import { createUser } from '../_test_utils'
 
@@ -11,9 +10,9 @@ test.serial('fetch passwd entries', async t => {
     const userIdx = await createUser(tr, model)
     const user = await model.users.getByUserIdx(tr, userIdx)
     return `${user.username}:x:${user.uid}:` +
-           `${config.posix.userGroupGid}:${user.name}:` +
-           `${config.posix.homeDirectoryPrefix}/${user.username}:` +
-           `${user.shell}\n`
+      `${config.posix.userGroupGid}:${user.name}:` +
+      `${config.posix.homeDirectoryPrefix}/${user.username}:` +
+      `${user.shell}\n`
   }, ['users'])
 
   let response

@@ -1,18 +1,25 @@
-import * as cors from '@koa/cors'
-import * as Koa from 'koa'
+import cors from '@koa/cors'
+import Koa from 'koa'
 import * as Bunyan from 'bunyan'
-import * as bodyParser from 'koa-bodyparser'
-import * as Session from 'koa-session'
+import bodyParser from 'koa-bodyparser'
+import Session from 'koa-session'
 import * as crypto from 'crypto'
+import mount from 'koa-mount'
 
 import Model from '../model/model'
 import { createRouter } from './router'
 import Config from '../config'
+import createOIDCConfig from '../oidc/configuration'
 
-const createServer = (log: Bunyan, model: Model, config: Config) => {
+const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
+  const model = inputModel ?? new Model(config, log)
+  const OIDCProvider = (await import('oidc-provider')).default
+  const oidcConfig = createOIDCConfig(config.oidc)
+  const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig)
+
   const app = new Koa()
   app.proxy = config.api.proxy
-  const router = createRouter(model, config)
+  const router = createRouter(model, oidcProvider, config)
 
   app.use(bodyParser())
   app.use(Session(config.session, app))
@@ -41,6 +48,7 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
     }))
     .use(router.routes())
     .use(router.allowedMethods())
+    .use(mount(oidcProvider.app))
 
   return app
 }
