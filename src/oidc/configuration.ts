@@ -26,5 +26,6 @@ export default function createOIDCConfig(oidcConfig: Config['oidc']): Configurat
         enabled: oidcConfig.revocation
       },
     },
+    clients: oidcConfig.clients,
   }
 }
