@@ -1,6 +1,5 @@
 // npm i ioredis@^4.0.0
 import * as Redis from 'ioredis'
-import * as lodash from 'lodash'
 import { Adapter, AdapterPayload } from 'oidc-provider'
 
 let client: Redis.Redis
@@ -41,11 +40,13 @@ class RedisAdapter implements Adapter {
 
   async upsert(id: string, payload: AdapterPayload, expiresIn: number): Promise<undefined | void> {
     const key = this.key(id)
-    const store = consumable.has(this.name)
-      ? { payload: JSON.stringify(payload) } : JSON.stringify(payload)
 
     const multi = client.multi()
-    multi[consumable.has(this.name) ? 'hmset' : 'set'](key, store)
+    if (consumable.has(this.name)) {
+      multi['hmset'](key, { payload: JSON.stringify(payload) })
+    } else {
+      multi['set'](key, JSON.stringify(payload))
+    }
 
     if (expiresIn) {
       multi.expire(key, expiresIn)
@@ -82,14 +83,15 @@ class RedisAdapter implements Adapter {
       ? await client.hgetall(this.key(id))
       : await client.get(this.key(id))
 
-    if (lodash.isEmpty(data)) {
+    if (!data) {
       return undefined
     }
 
     if (typeof data === 'string') {
       return JSON.parse(data)
     }
-    const { payload, ...rest } = data!
+
+    const { payload, ...rest } = data
     return {
       ...rest,
       ...JSON.parse(payload),
