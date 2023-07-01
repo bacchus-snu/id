@@ -9,11 +9,17 @@ import mount from 'koa-mount'
 import Model from '../model/model'
 import { createRouter } from './router'
 import Config from '../config'
+import OIDCConfig from '../oidc/configuration'
 
-const createServer = (log: Bunyan, model: Model, config: Config) => {
+const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
+  const model = inputModel ?? new Model(config, log)
+  const OIDCProvider = (await import('oidc-provider')).default
+  const oidcConfig = new OIDCConfig(config.oidc)
+  const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig)
+
   const app = new Koa()
   app.proxy = config.api.proxy
-  const router = createRouter(model, config)
+  const router = createRouter(model, oidcProvider, config)
 
   app.use(bodyParser())
   app.use(Session(config.session, app))
@@ -42,7 +48,7 @@ const createServer = (log: Bunyan, model: Model, config: Config) => {
     }))
     .use(router.routes())
     .use(router.allowedMethods())
-    .use(mount(model.oidcProvider.app))
+    .use(mount(oidcProvider.app))
 
   return app
 }

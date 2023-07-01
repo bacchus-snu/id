@@ -20,6 +20,8 @@ import {
 } from './handlers/groups'
 import { getRequestToken } from './handlers/oauth'
 import createOIDCRouter from '../oidc/routes'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type OIDCProvider from 'oidc-provider'
 
 function createOAuth10aRouter(model: Model, config: Config): Router {
   const router = new Router()
@@ -37,7 +39,7 @@ function createOAuth10aRouter(model: Model, config: Config): Router {
   return router
 }
 
-export function createRouter(model: Model, config: Config): Router {
+export function createRouter(model: Model, oidcProvider: OIDCProvider, config: Config): Router {
   const router = new Router()
 
   /**
@@ -249,7 +251,7 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    *
    */
-  const oidcRouter = createOIDCRouter(model)
+  const oidcRouter = createOIDCRouter(model, oidcProvider)
   router.use(oidcRouter.routes())
 
   return router

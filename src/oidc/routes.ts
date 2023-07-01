@@ -1,7 +1,8 @@
 import { strict as assert } from 'node:assert'
 
 import Router from 'koa-router'
-import { errors } from 'oidc-provider'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type OIDCProvider from 'oidc-provider'
 import * as z from 'zod'
 
 import OIDCAccount from './account'
@@ -20,11 +21,12 @@ const detailsSchema = z.object({
   missingResourceScopes: z.optional(z.record(z.array(z.string()))),
 })
 
-export default (model: Model) => {
-  const provider = model.oidcProvider
+export default (model: Model, provider: OIDCProvider) => {
   const router = new Router()
 
   router.use(async (ctx, next) => {
+    const { errors } = await import('oidc-provider')
+
     ctx.set('cache-control', 'no-store')
     try {
       await next()

@@ -1,6 +1,7 @@
 // npm i ioredis@^4.0.0
 import Redis from 'ioredis'
-import { Adapter, AdapterPayload } from 'oidc-provider'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type { Adapter, AdapterPayload } from 'oidc-provider'
 
 let client: Redis.Redis
 

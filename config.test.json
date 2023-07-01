@@ -50,5 +50,14 @@
     "expirySec": 100,
     "issuer": "bacchus:id",
     "audience": "bacchus:some_service"
+  },
+  "oidc": {
+    "issuer": "http://localhost:3000",
+    "jwks": {
+      "keys": []
+    },
+    "devInteractions": false,
+    "deviceFlow": false,
+    "revocation": false
   }
 }

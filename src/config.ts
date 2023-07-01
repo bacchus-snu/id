@@ -2,7 +2,8 @@
  * Configuration.
  */
 
-import { JWKS } from 'oidc-provider'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type { JWKS } from 'oidc-provider'
 
 /**
  * PostgreSQL connection configuration.
@@ -196,32 +197,32 @@ export interface JWTConfig {
 
 export interface OIDCConfig {
   /**
-   * 
+   *
    */
   issuer: string
 
   /**
-   * 
+   *
    */
   redisURL?: string
 
   /**
-   * 
+   *
    */
   jwks: JWKS
 
   /**
-   * 
+   *
    */
-  devInterations: boolean
+  devInteractions: boolean
 
   /**
-   * 
+   *
    */
   deviceFlow: boolean
 
   /**
-   * 
+   *
    */
   revocation: boolean
 }

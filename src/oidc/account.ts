@@ -1,4 +1,5 @@
-import { Account } from 'oidc-provider'
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type { Account } from 'oidc-provider'
 import Model from '../model/model'
 
 class OIDCAccount implements Account {

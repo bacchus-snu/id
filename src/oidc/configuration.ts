@@ -1,4 +1,11 @@
-import { AdapterConstructor, AdapterFactory, Configuration, CookiesSetOptions, JWKS } from 'oidc-provider'
+import type {
+  AdapterConstructor,
+  AdapterFactory,
+  Configuration,
+  CookiesSetOptions,
+  JWKS,
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+} from 'oidc-provider'
 import Config from '../config'
 import RedisAdapter from './redis'
 
@@ -28,21 +35,21 @@ export default class OIDCConfig implements Configuration {
     keys?: Array<string | Buffer> | undefined
   } | undefined
 
-  constructor(public readonly config: Config) {
-    if (config.oidc.redisURL) {
-      RedisAdapter.connect(config.oidc.redisURL)
+  constructor(public readonly oidcConfig: Config['oidc']) {
+    if (oidcConfig.redisURL) {
+      RedisAdapter.connect(oidcConfig.redisURL)
       this.adapter = RedisAdapter
     }
-    this.jwks = config.oidc.jwks
+    this.jwks = oidcConfig.jwks
     this.features = {
       devInteractions: {
-        enabled: config.oidc.devInterations
+        enabled: oidcConfig.devInteractions
       },
       deviceFlow: {
-        enabled: config.oidc.deviceFlow
+        enabled: oidcConfig.deviceFlow
       },
       revocation: {
-        enabled: config.oidc.revocation
+        enabled: oidcConfig.revocation
       },
     }
   }
