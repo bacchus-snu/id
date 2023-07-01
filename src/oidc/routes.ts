@@ -53,7 +53,7 @@ export default (model: Model, provider: OIDCProvider) => {
   router.post('/api/interaction/:uid/login', async ctx => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res)
     assert.equal(name, 'login')
-    const login = loginSchema.parse(ctx.body)
+    const login = loginSchema.parse(ctx.request.body)
 
     const account = await OIDCAccount.findByLogin(model, login.username, login.password)
 
