@@ -1,24 +1,27 @@
 import { strict as assert } from 'node:assert'
-import * as querystring from 'node:querystring'
-import * as crypto from 'node:crypto'
-import { inspect } from 'node:util'
 
-import bodyParser from 'koa-bodyparser'
-import * as Router from 'koa-router'
+import Router from 'koa-router'
+import { errors } from 'oidc-provider'
+import * as z from 'zod'
 
-import OIDCProvider, { errors } from 'oidc-provider'
+import OIDCAccount from './account'
+import Model from '../model/model'
 
-const keys = new Set()
-const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
-  keys.add(key)
-  if (isEmpty(value)) return acc
-  acc[key] = inspect(value, { depth: null })
-  return acc
-}, {}), '<br/>', ': ', {
-  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value },
+const loginSchema = z.object({
+  username: z.string().nonempty(),
+  password: z.string().nonempty(),
+})
+const paramsSchema = z.object({
+  client_id: z.string(),
+})
+const detailsSchema = z.object({
+  missingOIDCScope: z.optional(z.array(z.string())),
+  missingOIDCClaims: z.optional(z.array(z.string())),
+  missingResourceScopes: z.optional(z.record(z.array(z.string()))),
 })
 
-export default (provider: OIDCProvider) => {
+export default (model: Model) => {
+  const provider = model.oidcProvider
   const router = new Router()
 
   router.use(async (ctx, next) => {
@@ -29,182 +32,99 @@ export default (provider: OIDCProvider) => {
       if (err instanceof errors.SessionNotFound) {
         ctx.status = err.status
         const { message: error, error_description: desc } = err
-        await defaults.renderError(ctx, { error, desc }, err)
+        ctx.body = { error, desc }
       } else {
         throw err
       }
     }
   })
 
-  router.get('/interaction/:uid', async (ctx, next) => {
-    const {
-      uid, prompt, params, session,
-    } = await provider.interactionDetails(ctx.req, ctx.res)
-    const client = await provider.Client.find(params.client_id)
+  router.post('/interaction/:uid/login', async ctx => {
+    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res)
+    assert.equal(name, 'login')
+    const login = loginSchema.parse(ctx.body)
 
-    switch (prompt.name) {
-      case 'login': {
-        return ctx.render('login', {
-          client,
-          uid,
-          details: prompt.details,
-          params,
-          title: 'Sign-in',
-          google: ctx.google,
-          session: session ? debug(session) : undefined,
-          dbg: {
-            params: debug(params),
-            prompt: debug(prompt),
-          },
-        })
-      }
-      case 'consent': {
-        return ctx.render('interaction', {
-          client,
-          uid,
-          details: prompt.details,
-          params,
-          title: 'Authorize',
-          session: session ? debug(session) : undefined,
-          dbg: {
-            params: debug(params),
-            prompt: debug(prompt),
-          },
-        })
-      }
-      default:
-        return next()
-    }
-  });
-
-  const body = bodyParser({
-    text: false, json: false, patchNode: true, patchKoa: true,
-  });
-
-  router.get('/interaction/callback/google', (ctx) => {
-    const nonce = ctx.res.locals.cspNonce;
-    return ctx.render('repost', { layout: false, upstream: 'google', nonce });
-  });
-
-  router.post('/interaction/:uid/login', body, async (ctx) => {
-    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
-    assert.equal(name, 'login');
-
-    const account = await Account.findByLogin(ctx.request.body.login);
+    const account = await OIDCAccount.findByLogin(model, login.username, login.password)
 
     const result = {
       login: {
         accountId: account.accountId,
       },
-    };
+    }
 
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
-    });
-  });
+    })
+  })
 
-  router.post('/interaction/:uid/federated', body, async (ctx) => {
-    const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res);
-    assert.equal(name, 'login');
+  router.post('/interaction/:uid/confirm', async ctx => {
+    const interactionDetails = await provider.interactionDetails(ctx.req, ctx.res)
+    const {
+      prompt: {
+        name,
+        details: detailsRaw,
+      },
+      params: paramsRaw,
+      session: { accountId } = { accountId: '' },
+    } = interactionDetails
+    const params = paramsSchema.parse(paramsRaw)
+    const details = detailsSchema.parse(detailsRaw)
+    assert.equal(name, 'consent')
 
-    const path = `/interaction/${ctx.params.uid}/federated`;
-
-    switch (ctx.request.body.upstream) {
-      case 'google': {
-        const callbackParams = ctx.google.callbackParams(ctx.req);
-
-        // init
-        if (!Object.keys(callbackParams).length) {
-          const state = `${ctx.params.uid}|${crypto.randomBytes(32).toString('hex')}`;
-          const nonce = crypto.randomBytes(32).toString('hex');
-
-          ctx.cookies.set('google.state', state, { path, sameSite: 'strict' });
-          ctx.cookies.set('google.nonce', nonce, { path, sameSite: 'strict' });
-
-          ctx.status = 303;
-          return ctx.redirect(ctx.google.authorizationUrl({
-            state, nonce, scope: 'openid email profile',
-          }));
-        }
-
-        // callback
-        const state = ctx.cookies.get('google.state');
-        ctx.cookies.set('google.state', null, { path });
-        const nonce = ctx.cookies.get('google.nonce');
-        ctx.cookies.set('google.nonce', null, { path });
-
-        const tokenset = await ctx.google.callback(undefined, callbackParams, { state, nonce, response_type: 'id_token' });
-        const account = await Account.findByFederated('google', tokenset.claims());
-
-        const result = {
-          login: {
-            accountId: account.accountId,
-          },
-        };
-        return provider.interactionFinished(ctx.req, ctx.res, result, {
-          mergeWithLastSubmission: false,
-        });
-      }
-      default:
-        return undefined;
-    }
-  });
-
-  router.post('/interaction/:uid/confirm', body, async (ctx) => {
-    const interactionDetails = await provider.interactionDetails(ctx.req, ctx.res);
-    const { prompt: { name, details }, params, session: { accountId } } = interactionDetails;
-    assert.equal(name, 'consent');
-
-    let { grantId } = interactionDetails;
-    let grant;
+    let { grantId } = interactionDetails
+    let grant: InstanceType<typeof provider.Grant>
 
     if (grantId) {
       // we'll be modifying existing grant in existing session
-      grant = await provider.Grant.find(grantId);
+      const tempGrant = await provider.Grant.find(grantId)
+      if (tempGrant == null) {
+        throw new TypeError('')
+      }
+      grant = tempGrant
     } else {
       // we're establishing a new grant
       grant = new provider.Grant({
         accountId,
         clientId: params.client_id,
-      });
+      })
     }
 
     if (details.missingOIDCScope) {
-      grant.addOIDCScope(details.missingOIDCScope.join(' '));
+      grant.addOIDCScope(details.missingOIDCScope.join(' '))
     }
     if (details.missingOIDCClaims) {
-      grant.addOIDCClaims(details.missingOIDCClaims);
+      grant.addOIDCClaims(details.missingOIDCClaims)
     }
     if (details.missingResourceScopes) {
       for (const [indicator, scope] of Object.entries(details.missingResourceScopes)) {
-        grant.addResourceScope(indicator, scope.join(' '));
+        grant.addResourceScope(indicator, scope.join(' '))
       }
     }
 
-    grantId = await grant.save();
+    grantId = await grant.save()
 
-    const consent = {};
+    const consent = { grantId: '' }
     if (!interactionDetails.grantId) {
       // we don't have to pass grantId to consent, we're just modifying existing one
-      consent.grantId = grantId;
+      consent.grantId = grantId
     }
 
-    const result = { consent };
+    const result = { consent }
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: true,
-    });
-  });
+    })
+  })
 
-  router.get('/interaction/:uid/abort', async (ctx) => {
+  router.get('/interaction/:uid/abort', async ctx => {
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction',
-    };
+    }
 
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
-    });
-  });
+    })
+  })
 
-  return router;
-};
+  return router
+}

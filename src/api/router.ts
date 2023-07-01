@@ -249,7 +249,7 @@ export function createRouter(model: Model, config: Config): Router {
   /**
    *
    */
-  const oidcRouter = createOIDCRouter(model.oidcProvider)
+  const oidcRouter = createOIDCRouter(model)
   router.use(oidcRouter.routes())
 
   return router

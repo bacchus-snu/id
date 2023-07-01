@@ -36,7 +36,8 @@
     "oidc-provider": "^8.2.2",
     "pg": "^8.11.1",
     "tweetnacl": "^1.0.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.8",

@@ -2,7 +2,7 @@
 import Redis from 'ioredis'
 import { Adapter, AdapterPayload } from 'oidc-provider'
 
-let client: Redis
+let client: Redis.Redis
 
 const grantable = new Set([
   'AccessToken',

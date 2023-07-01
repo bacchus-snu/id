@@ -203,7 +203,7 @@ export interface OIDCConfig {
   /**
    * 
    */
-  redisURL: string | undefined
+  redisURL?: string
 
   /**
    * 
