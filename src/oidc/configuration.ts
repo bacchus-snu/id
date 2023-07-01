@@ -15,6 +15,9 @@ export default function createOIDCConfig(oidcConfig: Config['oidc']): Configurat
       keys: [oidcConfig.cookieKey]
     },
     jwks: oidcConfig.jwks,
+    pkce: {
+      required: () => false,
+    },
     features: {
       devInteractions: {
         enabled: oidcConfig.devInteractions
