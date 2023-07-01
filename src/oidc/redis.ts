@@ -1,8 +1,8 @@
 // npm i ioredis@^4.0.0
-import * as Redis from 'ioredis'
+import Redis from 'ioredis'
 import { Adapter, AdapterPayload } from 'oidc-provider'
 
-let client: Redis.Redis
+let client: Redis
 
 const grantable = new Set([
   'AccessToken',
