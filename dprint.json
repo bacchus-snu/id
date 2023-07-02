@@ -1,0 +1,15 @@
+{
+  "typescript": {
+    "lineWidth": 100,
+    "useBraces": "always",
+    "quoteStyle": "alwaysSingle",
+    "arrowFunction.useParentheses": "preferNone"
+  },
+  "includes": [
+    "{bootstrap,src,test}/**/*.{ts,tsx,js,jsx,cjs,mjs}",
+    ".eslintrc.js"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.84.4.wasm"
+  ]
+}

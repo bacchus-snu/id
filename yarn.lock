@@ -242,6 +242,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dprint/darwin-arm64@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/darwin-arm64@npm:0.38.0"
+  bin:
+    darwin-arm64: bin.js
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@dprint/darwin-x64@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/darwin-x64@npm:0.38.0"
+  bin:
+    darwin-x64: bin.js
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-arm64-glibc@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/linux-arm64-glibc@npm:0.38.0"
+  bin:
+    linux-arm64-glibc: bin.js
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-x64-glibc@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/linux-x64-glibc@npm:0.38.0"
+  bin:
+    linux-x64-glibc: bin.js
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@dprint/linux-x64-musl@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/linux-x64-musl@npm:0.38.0"
+  bin:
+    linux-x64-musl: bin.js
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@dprint/win32-x64@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@dprint/win32-x64@npm:0.38.0"
+  bin:
+    win32-x64: bin.js
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@eslint-community/eslint-utils@npm:^4.2.0":
   version: 4.4.0
   resolution: "@eslint-community/eslint-utils@npm:4.4.0"
@@ -1288,6 +1342,7 @@ __metadata:
     argon2: ^0.30.3
     ava: ^5.3.1
     bunyan: ^1.8.15
+    dprint: ^0.38.0
     eslint: ^8.43.0
     ioredis: ^4.28.5
     jose: ^4.14.4
@@ -1305,6 +1360,9 @@ __metadata:
     typescript: ^5.1.3
     uuid: ^9.0.0
     zod: ^3.21.4
+  dependenciesMeta:
+    dprint@0.38.0:
+      unplugged: true
   languageName: unknown
   linkType: soft
 
@@ -2000,6 +2058,35 @@ __metadata:
   dependencies:
     esutils: ^2.0.2
   checksum: fd7673ca77fe26cd5cba38d816bc72d641f500f1f9b25b83e8ce28827fe2da7ad583a8da26ab6af85f834138cf8dae9f69b0cd6ab925f52ddab1754db44d99ce
+  languageName: node
+  linkType: hard
+
+"dprint@npm:^0.38.0":
+  version: 0.38.0
+  resolution: "dprint@npm:0.38.0"
+  dependencies:
+    "@dprint/darwin-arm64": 0.38.0
+    "@dprint/darwin-x64": 0.38.0
+    "@dprint/linux-arm64-glibc": 0.38.0
+    "@dprint/linux-x64-glibc": 0.38.0
+    "@dprint/linux-x64-musl": 0.38.0
+    "@dprint/win32-x64": 0.38.0
+  dependenciesMeta:
+    "@dprint/darwin-arm64":
+      optional: true
+    "@dprint/darwin-x64":
+      optional: true
+    "@dprint/linux-arm64-glibc":
+      optional: true
+    "@dprint/linux-x64-glibc":
+      optional: true
+    "@dprint/linux-x64-musl":
+      optional: true
+    "@dprint/win32-x64":
+      optional: true
+  bin:
+    dprint: bin.js
+  checksum: fc69b110e259e1f835af570712bba7ab5b4228f61d422fc6234c67da035cbaa669295afd4f5429ca083626fa75e978b2576618979efc6aaf649c27257d9a781c
   languageName: node
   linkType: hard
 
