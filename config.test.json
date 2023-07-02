@@ -52,7 +52,7 @@
     "audience": "bacchus:some_service"
   },
   "oidc": {
-    "issuer": "http://localhost:3000",
+    "issuer": "http://localhost:3000/o",
     "cookieKey": "ZHarLSnCayTOwuih",
     "jwks": {
       "keys": []
