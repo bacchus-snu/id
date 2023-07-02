@@ -41,7 +41,7 @@ export default (model: Model, provider: OIDCProvider) => {
     }
   })
 
-  router.get('/api/interaction/:uid', async ctx => {
+  router.get('/oauth/:uid/details', async ctx => {
     const {
       prompt,
       params,
@@ -50,7 +50,7 @@ export default (model: Model, provider: OIDCProvider) => {
     ctx.body = { prompt, params }
   })
 
-  router.post('/api/interaction/:uid/login', async ctx => {
+  router.post('/oauth/:uid/action/login', async ctx => {
     const { prompt: { name } } = await provider.interactionDetails(ctx.req, ctx.res)
     assert.equal(name, 'login')
     const login = loginSchema.parse(ctx.request.body)
@@ -71,7 +71,7 @@ export default (model: Model, provider: OIDCProvider) => {
     ctx.body = { redirectTo }
   })
 
-  router.post('/api/interaction/:uid/confirm', async ctx => {
+  router.post('/oauth/:uid/action/confirm', async ctx => {
     const interactionDetails = await provider.interactionDetails(ctx.req, ctx.res)
     const {
       prompt: {
@@ -133,7 +133,7 @@ export default (model: Model, provider: OIDCProvider) => {
     ctx.body = { redirectTo }
   })
 
-  router.get('/api/interaction/:uid/abort', async ctx => {
+  router.get('/oauth/:uid/action/abort', async ctx => {
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction',
