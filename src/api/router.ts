@@ -1,7 +1,6 @@
 import Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
-import oauth10a from '../oauth/koa'
 import {
   login, loginPAM, loginIssueJWT, logout, checkLogin,
   loginLegacy, issueJWT
@@ -18,26 +17,9 @@ import {
   listGroups, listMembers, listPending,
   applyGroup, acceptGroup, rejectGroup, leaveGroup
 } from './handlers/groups'
-import { getRequestToken } from './handlers/oauth'
 import createOIDCRouter from '../oidc/routes'
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type OIDCProvider from 'oidc-provider'
-
-function createOAuth10aRouter(model: Model, config: Config): Router {
-  const router = new Router()
-  router.use(oauth10a({
-    async getConsumerSecret(key: string) {
-      return key.repeat(2)
-    },
-    async getTokenSecret(token: string) {
-      return undefined
-    },
-  }))
-
-  router.get('/request', getRequestToken(model))
-
-  return router
-}
 
 export function createRouter(model: Model, oidcProvider: OIDCProvider, config: Config): Router {
   const router = new Router()
@@ -241,12 +223,6 @@ export function createRouter(model: Model, oidcProvider: OIDCProvider, config: C
    * 401 if not logged in
    */
   router.post('/api/group/:gid/leave', leaveGroup(model))
-
-  /**
-   * Nest OAuth-related endpoints.
-   */
-  const oauth10aRouter = createOAuth10aRouter(model, config)
-  router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
 
   /**
    *
