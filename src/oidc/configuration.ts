@@ -21,7 +21,7 @@ export default function createOIDCConfig(oidcConfig: Config['oidc']): Configurat
     clients: oidcConfig.clients,
     interactions: {
       url: (_ctx, interaction) => {
-        return `/oauth/${interaction.uid}`;
+        return `/oauth/${interaction.uid}`
       },
     },
     features: {
