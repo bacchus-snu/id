@@ -74,7 +74,7 @@ test('host authorization', async t => {
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx)
 
     const permissionIdx = await model.permissions.create(tr, trans, trans)
-    const groupIdx = await model.groups.create(tr, trans, trans)
+    const groupIdx = await model.groups.create(tr, trans, trans, uuid())
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'ko')
     await model.users.addUserMembership(tr, userIdx, groupIdx)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)
@@ -84,7 +84,7 @@ test('host authorization', async t => {
     // should pass
     await model.hosts.authorizeUserByHost(tr, userIdx, host)
 
-    const newGroupIdx = await model.groups.create(tr, trans, trans)
+    const newGroupIdx = await model.groups.create(tr, trans, trans, uuid())
     const newPermissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)

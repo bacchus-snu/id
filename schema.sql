@@ -102,7 +102,8 @@ create table groups (
   name_ko text not null check (name_ko <> ''),
   name_en text not null check (name_en <> ''),
   description_ko text not null check (description_ko <> ''),
-  description_en text not null check (description_en <> '')
+  description_en text not null check (description_en <> ''),
+  identifier text not null unique check (identifier <> '')
 );
 
 -- OR relationship for groups.

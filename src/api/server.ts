@@ -14,7 +14,7 @@ import createOIDCConfig from '../oidc/configuration'
 const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
   const model = inputModel ?? new Model(config, log)
   const OIDCProvider = (await import('oidc-provider')).default
-  const oidcConfig = createOIDCConfig(config.oidc)
+  const oidcConfig = createOIDCConfig(model, config.oidc)
   const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig)
 
   const app = new Koa()

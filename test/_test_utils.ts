@@ -22,7 +22,9 @@ export async function createGroup(tr: Transaction, model: Model): Promise<number
     en: uuid(),
   }
 
-  return await model.groups.create(tr, name, description)
+  const identifier = uuid()
+
+  return await model.groups.create(tr, name, description, identifier)
 }
 
 export async function createGroupRelation(tr: Transaction, model: Model, supergroupIdx: number, subgroupIdx: number) {

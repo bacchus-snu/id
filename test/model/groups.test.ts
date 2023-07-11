@@ -20,7 +20,7 @@ const description: Translation = {
 test('create and delete group', async t => {
   await model.pgDo(async tr => {
 
-    const idx = await model.groups.create(tr, name, description)
+    const idx = await model.groups.create(tr, name, description, uuid())
     const row = await model.groups.getByIdx(tr, idx)
 
     t.deepEqual(row.name, name)
