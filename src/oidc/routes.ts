@@ -55,12 +55,12 @@ export default (model: Model, provider: OIDCProvider) => {
     assert.equal(name, 'login')
     const login = loginSchema.parse(ctx.request.body)
 
-    const account = await OIDCAccount.findByLogin(model, login.username, login.password)
+    const accountId = await model.pgDo(async tr => {
+      return model.users.authenticate(tr, login.username, login.password)
+    })
 
     const result = {
-      login: {
-        accountId: account.accountId,
-      },
+      login: { accountId: String(accountId) },
     }
 
     const redirectTo = await provider.interactionResult(ctx.req, ctx.res, result, {
