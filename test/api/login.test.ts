@@ -63,7 +63,7 @@ test.serial('test PAM login with credential and host', async t => {
     password = uuid()
 
     userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
-    groupIdx = await model.groups.create(tr, trans, trans)
+    groupIdx = await model.groups.create(tr, trans, trans, uuid())
     await model.users.addUserMembership(tr, userIdx, groupIdx)
 
     hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1')
@@ -93,7 +93,7 @@ test.serial('test PAM login with credential and host', async t => {
   t.is(response.status, 200)
 
   await model.pgDo(async tr => {
-    const newGroupIdx = await model.groups.create(tr, trans, trans)
+    const newGroupIdx = await model.groups.create(tr, trans, trans, uuid())
     const newPermissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
@@ -134,7 +134,7 @@ test.serial('test PAM login with credential and pubkey', async t => {
     password = uuid()
 
     userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
-    groupIdx = await model.groups.create(tr, trans, trans)
+    groupIdx = await model.groups.create(tr, trans, trans, uuid())
     await model.users.addUserMembership(tr, userIdx, groupIdx)
 
     hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1', publicKey)
@@ -205,7 +205,7 @@ test.serial('test PAM login with credential and pubkey', async t => {
   }
 
   await model.pgDo(async tr => {
-    const newGroupIdx = await model.groups.create(tr, trans, trans)
+    const newGroupIdx = await model.groups.create(tr, trans, trans, uuid())
     const newPermissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, newGroupIdx, newPermissionIdx)
     await model.hosts.setHostGroupPermission(tr, hostGroupIdx, newPermissionIdx)
@@ -283,7 +283,7 @@ test('test legacy login', async t => {
     password = uuid()
     userIdx = await model.users.create(
       tr, username, password, uuid(), '/bin/bash', 'en')
-    const groupIdx = await model.groups.create(tr, trans, trans)
+    const groupIdx = await model.groups.create(tr, trans, trans, uuid())
     userMembershipIdx = await model.users.addUserMembership(tr, userIdx, groupIdx)
     const permissionIdx = await model.permissions.create(tr, trans, trans)
     await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx)

@@ -9,12 +9,14 @@ export interface Group {
   ownerGroupIdx: number | null
   name: Translation
   description: Translation
+  identifier: string
 }
 
 export interface GroupUserInfo {
   idx: number
   name: Translation
   description: Translation
+  identifier: string
   isMember: boolean
   isDirectMember: boolean
   isPending: boolean
@@ -34,10 +36,10 @@ export default class Groups {
   constructor(private readonly model: Model) {
   }
 
-  public async create(tr: Transaction, name: Translation, description: Translation): Promise<number> {
+  public async create(tr: Transaction, name: Translation, description: Translation, identifier: string): Promise<number> {
     const query = 'INSERT INTO groups(name_ko, name_en, description_ko, ' +
-      'description_en) VALUES ($1, $2, $3, $4) RETURNING idx'
-    const result = await tr.query(query, [name.ko, name.en, description.ko, description.en])
+      'description_en, identifier) VALUES ($1, $2, $3, $4, $5) RETURNING idx'
+    const result = await tr.query(query, [name.ko, name.en, description.ko, description.en, identifier])
     await this.updateGroupReachableCache(tr)
     return result.rows[0].idx
   }
@@ -86,6 +88,7 @@ export default class Groups {
       g.name_en,
       g.description_ko,
       g.description_en,
+      g.identifier,
       (umem.user_idx IS NOT NULL) AS is_member,
       (dir.user_idx IS NOT NULL) AS is_direct_member,
       (pend_umem.user_idx IS NOT NULL) AS is_pending,
@@ -227,6 +230,7 @@ export default class Groups {
         ko: row.description_ko,
         en: row.description_en,
       },
+      identifier: row.identifier,
     }
   }
 
@@ -241,6 +245,7 @@ export default class Groups {
         ko: row.description_ko,
         en: row.description_en,
       },
+      identifier: row.identifier,
       isPending: row.is_pending,
       isMember: row.is_member,
       isDirectMember: row.is_direct_member,
