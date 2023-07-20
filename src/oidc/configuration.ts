@@ -16,7 +16,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
     findAccount: async (ctx, id) => {
       const groups = await model.pgDo(async tr => {
         const groups = await model.groups.getUserGroupList(tr, Number(id))
-        return groups.map(g => g.identifier)
+        return groups.filter(g => g.isMember).map(g => g.identifier)
       })
 
       return new OIDCAccount(id, groups)
