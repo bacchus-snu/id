@@ -45,7 +45,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
       },
     },
     claims: {
-      openid: ['sub', 'groups'],
+      openid: ['sub', 'groups', 'username'],
     },
     features: {
       devInteractions: {
