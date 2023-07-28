@@ -14,13 +14,22 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
   return {
     adapter,
     findAccount: async (ctx, id) => {
-      const groups = await model.pgDo(async tr => {
+
+      const [groups, username] = await model.pgDo(async tr => {
         const groupSet = await model.users.getUserReachableGroups(tr, Number(id))
-        const result = await tr.query('SELECT identifier FROM groups WHERE idx = ANY($1)', [[...groupSet]])
-        return result.rows.map(r => r.identifier)
+        const groupResult = await tr.query('SELECT identifier FROM groups WHERE idx = ANY($1)', [[...groupSet]])
+        const groups = groupResult.rows.map(r => r.identifier)
+
+        const userResult = await model.users.getByUserIdx(tr, Number(id))
+        if (userResult.username == null) {
+          throw new Error('username is null')
+        }
+        const username = userResult.username
+
+        return [groups, username]
       })
 
-      return new OIDCAccount(id, groups)
+      return new OIDCAccount(id, username, groups)
     },
     cookies: {
       keys: [oidcConfig.cookieKey]

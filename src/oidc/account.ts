@@ -4,7 +4,7 @@ import type { Account } from 'oidc-provider'
 class OIDCAccount implements Account {
   [key: string]: unknown
 
-  constructor(public accountId: string, public groups: Array<string>) { }
+  constructor(public accountId: string, public username: string, public groups: Array<string>) { }
 
   /**
    * @param use - can either be "id_token" or "userinfo", depending on
@@ -17,6 +17,7 @@ class OIDCAccount implements Account {
   async claims() {
     return {
       sub: this.accountId,
+      username: this.username,
       groups: this.groups,
     }
   }
