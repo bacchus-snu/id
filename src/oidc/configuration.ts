@@ -2,13 +2,13 @@
 import type { Configuration } from 'oidc-provider'
 import type Model from '../model/model'
 import Config from '../config'
-import RedisAdapter from './redis'
 import OIDCAccount from './account'
+import AdapterFactory from './adapter'
 
 export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc']): Configuration {
   let adapter
   if (oidcConfig.redisURL) {
-    adapter = RedisAdapter(oidcConfig.redisURL)
+    adapter = AdapterFactory(oidcConfig.redisURL, model)
   }
 
   return {
