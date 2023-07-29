@@ -7,7 +7,7 @@ import AdapterFactory from './adapter'
 
 const claims = {
   openid: ['sub', 'groups', 'username'],
-};
+}
 
 export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc']): Configuration {
   let adapter
