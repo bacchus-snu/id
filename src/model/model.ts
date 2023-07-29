@@ -9,6 +9,7 @@ import * as Bunyan from 'bunyan'
 import { ControllableError } from './errors'
 import Config from '../config'
 import Transaction from './transaction'
+import OAuth from './oauth'
 
 const PSQL_SERIALIZATION_FAILURE = '40001'
 const PSQL_DEADLOCK_DETECTED = '40P01'
@@ -22,6 +23,7 @@ export default class Model {
   public readonly permissions: Permissions
   public readonly shells: Shells
   public readonly hosts: Hosts
+  public readonly oauth: OAuth
 
   private readonly pgConfig: pg.PoolConfig
   private readonly pgPool: pg.Pool
@@ -36,6 +38,7 @@ export default class Model {
     this.permissions = new Permissions(this)
     this.shells = new Shells(this)
     this.hosts = new Hosts(this)
+    this.oauth = new OAuth()
   }
 
   /**

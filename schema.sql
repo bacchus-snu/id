@@ -163,3 +163,17 @@ create table hosts (
   host_group integer references host_groups(idx) on delete set null,
   host_pubkey bytea unique check (octet_length(host_pubkey) = 32)
 );
+
+create table oauth_clients (
+  client_id text not null primary key,
+  client_secret text not null,
+  client_name text not null,
+  first_party boolean not null
+);
+
+create table oauth_client_redirect_uris (
+  idx serial primary key,
+  client_id text not null references oauth_clients(client_id) on delete cascade,
+  redirect_uri text not null,
+  unique (client_id, redirect_uri)
+);
