@@ -3,7 +3,7 @@ import Redis from 'ioredis'
 import type { Adapter, AdapterPayload } from 'oidc-provider'
 
 import Model from '../model/model'
-import {NoSuchEntryError} from '../model/errors'
+import { NoSuchEntryError } from '../model/errors'
 
 const grantable = new Set([
   'AccessToken',
@@ -86,20 +86,7 @@ export default function AdapterFactory(redisUrl: string, model: Model) {
     async find(id: string): Promise<AdapterPayload | undefined | void> {
       if (this.name === 'Client') {
         try {
-          return model.pgDo(async tr => {
-            const client = await tr.query('select client_id, client_secret, client_name from oauth_client where client_id = $1', [id])
-            const redirectUri = await tr.query('select redirect_uri from oauth_client_redirect_uris where client_id = $1', [id])
-            if (client.rows.length !== 1) {
-              throw new NoSuchEntryError()
-            }
-
-            return {
-              client_id: client.rows[0].client_id,
-              client_secret: client.rows[0].client_secret,
-              client_name: client.rows[0].client_name,
-              redirect_uris: redirectUri.rows.map(row => row.redirect_uri),
-            }
-          })
+          return model.pgDo(tr => model.oauth.getClientById(tr, id))
         } catch (e) {
           if (e instanceof NoSuchEntryError) {
             return undefined
