@@ -17,12 +17,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
 
-    if (!ctx.session) {
-      ctx.status = 500
-      return
-    }
-
-    const token = body.token || ctx.session.verificationToken
+    const token = body.token
     if (!token) {
       ctx.status = 401
       return
@@ -106,7 +101,6 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return
     }
     ctx.status = 201
-    ctx.session.verificationToken = null
     await next()
   }
 }
@@ -116,11 +110,6 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
     const body: any = ctx.request.body
 
     if (body == null || typeof body !== 'object') {
-      ctx.status = 400
-      return
-    }
-
-    if (!ctx.session) {
       ctx.status = 400
       return
     }
@@ -215,11 +204,6 @@ export function changePassword(model: Model): IMiddleware {
       return
     }
 
-    if (!ctx.session) {
-      ctx.status = 500
-      return
-    }
-
     const { newPassword, token } = body
 
     if (!newPassword || !token) {
@@ -257,12 +241,11 @@ export function changePassword(model: Model): IMiddleware {
 export function getUserShell(model: Model): IMiddleware {
   return async (ctx, next) => {
     // authorize
-    if (!ctx.session || !ctx.session.userIdx) {
+    const userIdx = ctx.state.userIdx
+    if (typeof userIdx !== 'number') {
       ctx.status = 401
       return
     }
-
-    const userIdx = ctx.session.userIdx
 
     let shell = ''
     try {
@@ -285,12 +268,12 @@ export function getUserShell(model: Model): IMiddleware {
 export function changeUserShell(model: Model): IMiddleware {
   return async (ctx, next) => {
     // authorize
-    if (!ctx.session || !ctx.session.userIdx) {
+    const userIdx = ctx.state.userIdx
+    if (typeof userIdx !== 'number') {
       ctx.status = 401
       return
     }
 
-    const userIdx = ctx.session.userIdx
     const body: any = ctx.request.body
 
     if (body == null || typeof body !== 'object') {
@@ -322,32 +305,15 @@ export function changeUserShell(model: Model): IMiddleware {
 export function getUserEmails(model: Model): IMiddleware {
   return async (ctx, next) => {
     // authorize
-    if (!ctx.session || !ctx.session.username) {
+    const userIdx = ctx.state.userIdx
+    if (typeof userIdx !== 'number') {
       ctx.status = 401
-      return
-    }
-
-    const username = ctx.session.username
-
-    let ownerIdx: any
-    try {
-      await model.pgDo(async tr => {
-        const owner = await model.users.getByUsername(tr, username)
-        ownerIdx = owner.idx
-      })
-    } catch (e) {
-      ctx.status = 400
-      return
-    }
-
-    if (!ownerIdx) {
-      ctx.status = 400
       return
     }
 
     let emails
     await model.pgDo(async tr => {
-      emails = await model.emailAddresses.getEmailsByOwnerIdx(tr, ownerIdx)
+      emails = await model.emailAddresses.getEmailsByOwnerIdx(tr, userIdx)
     })
 
     ctx.status = 200
@@ -384,8 +350,8 @@ export function getUserInfo(model: Model, config: Config): IMiddleware {
         ctx.status = 401
         return
       }
-    } else if (ctx.session && ctx.session.userIdx && typeof ctx.session.userIdx === 'number') {
-      userIdx = ctx.session.userIdx
+    } else if (typeof ctx.state.userIdx === 'number') {
+      userIdx = ctx.state.userIdx
     } else {
       ctx.status = 401
       return

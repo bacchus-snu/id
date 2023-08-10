@@ -5,19 +5,12 @@ import { IMiddleware } from 'koa-router'
 
 export function listGroups(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew && ctx.session.username) {
-      let user = null
+    if (typeof ctx.state.userIdx === 'number') {
       let groups = null
 
       try {
         await model.pgDo(async tr => {
-          if (ctx.session !== null) {
-            user = await model.users.getByUsername(tr, ctx.session.username)
-            groups = await model.groups.getUserGroupList(tr, user.idx)
-          } else {
-            ctx.status = 400
-            return
-          }
+          groups = await model.groups.getUserGroupList(tr, ctx.state.userIdx)
         })
       } catch (e) {
         ctx.status = 500
@@ -36,8 +29,7 @@ export function listGroups(model: Model): IMiddleware {
 
 export function listMembers(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid)
       const start = Number(ctx.params.start)
       const count = Number(ctx.params.count)
@@ -49,13 +41,11 @@ export function listMembers(model: Model): IMiddleware {
         }
       }
 
-      let user = null
       let owner = false
       let users: Array<User> = []
       try {
         await model.pgDo(async tr => {
-          user = await model.users.getByUsername(tr, username)
-          owner = await model.groups.checkOwner(tr, gid, user.idx)
+          owner = await model.groups.checkOwner(tr, gid, ctx.state.userIdx)
 
           if (owner) {
             users = await model.users.getAllMembershipUsers(tr, gid, pagination)
@@ -94,17 +84,14 @@ export function listMembers(model: Model): IMiddleware {
 
 export function listPending(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid)
 
-      let user = null
       let owner = false
       let users: Array<User> = []
       try {
         await model.pgDo(async tr => {
-          user = await model.users.getByUsername(tr, username)
-          owner = await model.groups.checkOwner(tr, gid, user.idx)
+          owner = await model.groups.checkOwner(tr, gid, ctx.state.userIdx)
 
           if (owner) {
             users = await model.users.getAllPendingMembershipUsers(tr, gid)
@@ -139,24 +126,23 @@ export function listPending(model: Model): IMiddleware {
 
 export function applyGroup(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
+      const userIdx = ctx.state.userIdx
       const gid = Number(ctx.params.gid)
 
       try {
         await model.pgDo(async tr => {
-          const user = await model.users.getByUsername(tr, username)
           const group = await model.groups.getByIdx(tr, gid)
 
           const check = !group.ownerGroupIdx ||
-            await model.users.hasPendingUserMembership(tr, user.idx, group.idx) ||
-            await model.users.hasUserMembership(tr, user.idx, group.idx)
+            await model.users.hasPendingUserMembership(tr, userIdx, group.idx) ||
+            await model.users.hasUserMembership(tr, userIdx, group.idx)
           if (check) {
             ctx.status = 400
             return
           }
 
-          await model.users.addPendingUserMembership(tr, user.idx, group.idx)
+          await model.users.addPendingUserMembership(tr, userIdx, group.idx)
           ctx.status = 200
         })
       } catch (e) {
@@ -173,8 +159,7 @@ export function applyGroup(model: Model): IMiddleware {
 
 export function acceptGroup(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid)
 
       const body: any = ctx.request.body
@@ -186,10 +171,9 @@ export function acceptGroup(model: Model): IMiddleware {
 
       try {
         await model.pgDo(async tr => {
-          const user = await model.users.getByUsername(tr, username)
           const group = await model.groups.getByIdx(tr, gid)
 
-          const owner = await model.groups.checkOwner(tr, group.idx, user.idx)
+          const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx)
           if (!owner) {
             ctx.status = 401
             return
@@ -217,8 +201,7 @@ export function acceptGroup(model: Model): IMiddleware {
 
 export function rejectGroup(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid)
 
       const body: any = ctx.request.body
@@ -230,10 +213,9 @@ export function rejectGroup(model: Model): IMiddleware {
 
       try {
         await model.pgDo(async tr => {
-          const user = await model.users.getByUsername(tr, username)
           const group = await model.groups.getByIdx(tr, gid)
 
-          const owner = await model.groups.checkOwner(tr, group.idx, user.idx)
+          const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx)
           if (!owner) {
             ctx.status = 401
             return
@@ -261,16 +243,14 @@ export function rejectGroup(model: Model): IMiddleware {
 
 export function leaveGroup(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      const username = ctx.session.username
+    if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid)
 
       try {
         await model.pgDo(async tr => {
-          const user = await model.users.getByUsername(tr, username)
           const group = await model.groups.getByIdx(tr, gid)
 
-          const result = await model.users.rejectUserMemberships(tr, group.idx, [user.idx])
+          const result = await model.users.rejectUserMemberships(tr, group.idx, [ctx.state.userIdx])
           if (result !== 1) {
             ctx.status = 400
             return

@@ -108,13 +108,6 @@ export function checkVerificationEmailToken(model: Model): IMiddleware {
       return
     }
 
-    if (ctx.session) {
-      ctx.session.verificationToken = token
-    } else {
-      ctx.status = 500
-      return
-    }
-
     ctx.status = 200
     ctx.body = result
 

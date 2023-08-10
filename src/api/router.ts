@@ -1,10 +1,8 @@
+import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import Model from '../model/model'
 import Config from '../config'
-import {
-  login, loginPAM, loginIssueJWT, logout, checkLogin,
-  loginLegacy, issueJWT
-} from './handlers/login'
+import { login, loginPAM, logout, checkLogin, loginLegacy } from './handlers/login'
 import {
   createUser, changePassword, sendChangePasswordEmail,
   getUserEmails, getUserInfo, checkChangePasswordEmailToken
@@ -23,6 +21,14 @@ import type OIDCProvider from 'oidc-provider'
 
 export function createRouter(model: Model, oidcProvider: OIDCProvider, config: Config): Router {
   const router = new Router()
+  router.use(bodyParser())
+  router.use(async (ctx, next) => {
+    const oidcCtx = oidcProvider.app.createContext(ctx.req, ctx.res)
+    const session = await oidcProvider.Session.get(oidcCtx)
+    ctx.state.oidcSession = session
+    ctx.state.userIdx = session.accountId ? Number(session.accountId) : undefined
+    return next()
+  })
 
   /**
    * Login API route.
@@ -53,25 +59,7 @@ export function createRouter(model: Model, oidcProvider: OIDCProvider, config: C
    * 200 if already logged in, 401 if not.
    * @returns username username.
    */
-  router.get('/api/check-login', checkLogin())
-
-  /**
-   * Issue JWT token
-   * 200 if success, 401 if not.
-   * @param permissionIdx permission id to be checked
-   * @returns token jwt token.
-   * @returns hasPermission true if user has permission of `permissionIdx`
-   */
-  router.post('/api/issue-jwt', issueJWT(model, config))
-
-  /**
-   * Login and issue JWT token without cookies
-   * 200 if success, 401 if not.
-   * @param permissionIdx permission id to be checked
-   * @returns token jwt token.
-   * @returns hasPermission true if user has permission of `permissionIdx`
-   */
-  router.post('/api/login/jwt', loginIssueJWT(model, config))
+  router.get('/api/check-login', checkLogin(model))
 
   /**
    * Get shell list.

@@ -42,37 +42,6 @@ export interface APIConfig {
 }
 
 /**
- * Session configuration.
- */
-export interface SessionConfig {
-  /**
-   * Session key name.
-   */
-  key: string
-
-  /**
-   * Session max age.
-   */
-  maxAge: number
-
-  /**
-   * Signed or not.
-   */
-  signed: boolean
-
-  /**
-   * Force to set session cookie for every response.
-   * Expiration will be reset on every resposne.
-   */
-  rolling: boolean
-
-  /**
-   * Renew session when session is nearly expired.
-   */
-  renew: boolean
-}
-
-/**
  * Confituration for sending email
  */
 export interface EmailConfig {
@@ -252,11 +221,6 @@ export default interface Config {
    * API server configuration.
    */
   api: APIConfig
-
-  /**
-   * Session configuration.
-   */
-  session: SessionConfig
 
   /**
    * Email configuration.
