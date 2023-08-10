@@ -127,6 +127,7 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
 export function logout(): IMiddleware {
   return async (ctx, next) => {
     await ctx.state.destroySession()
+    ctx.status = 204
     await next()
   }
 }

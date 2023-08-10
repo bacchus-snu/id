@@ -259,7 +259,7 @@ test('test checkLogin', async t => {
   t.is(response.body.username, username)
 
   response = await agent.post('/api/logout').send()
-  t.is(response.status, 200)
+  t.is(response.status, 204)
 
   response = await agent.get('/api/check-login').send()
   t.is(response.status, 401)
