@@ -76,7 +76,19 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
       return undefined
     },
     cookies: {
-      keys: [oidcConfig.cookieKey]
+      keys: [oidcConfig.cookieKey],
+      long: {
+        signed: true,
+        httpOnly: true,
+        overwrite: true,
+        sameSite: 'lax',
+      },
+      short: {
+        signed: true,
+        httpOnly: true,
+        overwrite: true,
+        sameSite: 'lax',
+      },
     },
     jwks: oidcConfig.jwks,
     pkce: {

@@ -17,7 +17,7 @@ const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => 
 
   const app = new Koa()
   app.proxy = config.api.proxy
-  const router = createRouter(model, oidcProvider, config)
+  const router = createRouter(model, oidcProvider, oidcConfig, config)
 
   const key = crypto.randomBytes(256).toString('hex')
   app.keys = [key]

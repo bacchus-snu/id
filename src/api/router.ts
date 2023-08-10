@@ -17,15 +17,30 @@ import {
 } from './handlers/groups'
 import createOIDCRouter from '../oidc/routes'
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type OIDCProvider from 'oidc-provider'
+import type OIDCProvider, { Configuration as OIDCConfiguration } from 'oidc-provider'
 
-export function createRouter(model: Model, oidcProvider: OIDCProvider, config: Config): Router {
+export function createRouter(
+  model: Model,
+  oidcProvider: OIDCProvider,
+  oidcConfiguration: OIDCConfiguration,
+  config: Config,
+): Router {
   const router = new Router()
   router.use(bodyParser())
   router.use(async (ctx, next) => {
     const oidcCtx = oidcProvider.app.createContext(ctx.req, ctx.res)
     const session = await oidcProvider.Session.get(oidcCtx)
-    ctx.state.oidcSession = session
+    ctx.state.setSession = async (userIdx: number) => {
+      session.loginAccount({
+        accountId: String(userIdx),
+      })
+      await session.save(14 * 24 * 60 * 60)
+      oidcCtx.cookies.set('_session', session.jti, oidcConfiguration.cookies?.long)
+    }
+    ctx.state.destroySession = async () => {
+      await session.destroy()
+      oidcCtx.cookies.set('_session')
+    }
     ctx.state.userIdx = session.accountId ? Number(session.accountId) : undefined
     return next()
   })

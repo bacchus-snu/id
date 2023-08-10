@@ -1,6 +1,4 @@
 import { IMiddleware } from 'koa-router'
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type OIDCProvider from 'oidc-provider'
 
 import Config from '../../config'
 import { ControllableError, AuthorizationError, NoSuchEntryError } from '../../model/errors'
@@ -9,7 +7,6 @@ import { SignatureError, verifyPubkeyReq } from '../pubkey'
 
 export function login(model: Model): IMiddleware {
   return async ctx => {
-    const session = ctx.state.oidcSession as InstanceType<OIDCProvider['Session']>
     const body: any = ctx.request.body
 
     if (!body || typeof body !== 'object') {
@@ -21,10 +18,9 @@ export function login(model: Model): IMiddleware {
 
     try {
       const userIdx = await model.pgDo(tr => model.users.authenticate(tr, username, password))
-      session.loginAccount({
-        accountId: String(userIdx),
-      })
+      await ctx.state.setSession(userIdx)
     } catch (e) {
+      console.error(e)
       if (e instanceof ControllableError) {
         ctx.status = 401
       } else {
@@ -130,7 +126,7 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
 
 export function logout(): IMiddleware {
   return async (ctx, next) => {
-    await (ctx.state.oidcSession as InstanceType<OIDCProvider['Session']>).destroy()
+    await ctx.state.destroySession()
     await next()
   }
 }
