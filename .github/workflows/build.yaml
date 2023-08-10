@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'
   pull_request:
     branches:
       - master
@@ -16,7 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      tag: '${{ steps.vars.outputs.image-tag }}'
+      tag: ${{ steps.vars.outputs.image-tag }}
+      application: ${{ steps.vars.outputs.application }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -28,10 +31,21 @@ jobs:
 
       - name: Set variables
         id: vars
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          GIT_SHA: ${{ github.sha }}
         run: |
           date="$(date -u +%Y%m%d)"
-          short_rev="$(git rev-parse --short ${{ github.sha }})"
-          echo "image-tag=${date}-${short_rev}" >> $GITHUB_OUTPUT
+          short_rev="$(git rev-parse --short "$GIT_SHA")"
+          if [[ "$EVENT_NAME" != "push" || "$REF_TYPE" != "tag" ]]; then
+            echo "image-tag=${date}-${short_rev}" >> $GITHUB_OUTPUT
+            echo "application=bacchus-snu/id/dev" >> $GITHUB_OUTPUT
+          else
+            echo "image-tag=${REF_NAME}" >> $GITHUB_OUTPUT
+            echo "application=bacchus-snu/id/prod" >> $GITHUB_OUTPUT
+          fi
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -51,7 +65,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     uses: bacchus-snu/cd-manifests/.github/workflows/deploy-application.yaml@main
     with:
-      application: bacchus-snu/id/dev
+      application: ${{ needs.build.outputs.application }}
       image: '${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}'
       tag: ${{ needs.build.outputs.tag }}
     secrets:
