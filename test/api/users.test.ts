@@ -50,6 +50,7 @@ test('create user step by step', async t => {
 
   // test validation check
   response = await agent.post('/api/user').send({
+    token,
     username: '0abcdefghijk',
     password,
     name,
@@ -60,6 +61,7 @@ test('create user step by step', async t => {
 
   // test validation check
   response = await agent.post('/api/user').send({
+    token,
     username: 'a' + crypto.randomBytes(32).toString('hex'),
     password,
     name,
@@ -69,6 +71,7 @@ test('create user step by step', async t => {
   t.is(response.status, 400)
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password: 'asdf',
     name,
@@ -78,6 +81,7 @@ test('create user step by step', async t => {
   t.is(response.status, 400)
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password,
     name,
@@ -86,6 +90,7 @@ test('create user step by step', async t => {
   t.is(response.status, 400)
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password,
     name,
