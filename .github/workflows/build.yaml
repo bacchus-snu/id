@@ -15,6 +15,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: '${{ steps.vars.outputs.image-tag }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,6 +25,14 @@ jobs:
         with:
           role-to-assume: ${{ vars.ECR_PUSH_ROLE_ARN }}
           aws-region: ap-northeast-2
+
+      - name: Set variables
+        id: vars
+        run: |
+          date="$(date -u +%Y%m%d)"
+          short_rev="$(git rev-parse --short ${{ github.sha }})"
+          echo "image-tag=${date}-${short_rev}" >> $GITHUB_OUTPUT
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -33,6 +43,17 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}:latest
+          tags: ${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}:${{ steps.vars.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  deploy:
+    needs: build
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: bacchus-snu/cd-manifests/.github/workflows/deploy-application.yaml@main
+    with:
+      application: bacchus-snu/id/dev
+      image: '${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}'
+      tag: ${{ needs.build.outputs.tag }}
+    secrets:
+      app-id: '${{ secrets.CD_GITHUB_APP_ID }}'
+      app-private-key: '${{ secrets.CD_GITHUB_APP_SECRET_KEY }}'
