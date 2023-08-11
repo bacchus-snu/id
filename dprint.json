@@ -10,6 +10,6 @@
     ".eslintrc.js"
   ],
   "plugins": [
-    "https://plugins.dprint.dev/typescript-0.84.4.wasm"
+    "https://plugins.dprint.dev/typescript-0.86.1.wasm"
   ]
 }
