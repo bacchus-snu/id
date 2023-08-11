@@ -1,14 +1,12 @@
 import { IMiddleware } from 'koa-router'
-import { SignJWT } from 'jose'
-import { createPrivateKey } from 'crypto'
 
 import Config from '../../config'
-import { ControllableError, AuthorizationError } from '../../model/errors'
+import { ControllableError, AuthorizationError, NoSuchEntryError } from '../../model/errors'
 import Model from '../../model/model'
 import { SignatureError, verifyPubkeyReq } from '../pubkey'
 
 export function login(model: Model): IMiddleware {
-  return async (ctx, next) => {
+  return async ctx => {
     const body: any = ctx.request.body
 
     if (!body || typeof body !== 'object') {
@@ -17,34 +15,17 @@ export function login(model: Model): IMiddleware {
     }
 
     const { username, password } = body
-    let userIdx: number
 
     try {
-      await model.pgDo(async tr => {
-        try {
-          userIdx = await model.users.authenticate(tr, username, password)
-
-          if (ctx.session) {
-            // store information in session store
-            ctx.session.userIdx = userIdx
-            ctx.session.username = username
-          } else {
-            ctx.status = 500
-            throw new Error('session error')
-          }
-
-        } catch (e) {
-          if (e instanceof ControllableError) {
-            ctx.status = 401
-          } else {
-            ctx.status = 500
-          }
-
-          throw e
-        }
-      })
+      const userIdx = await model.pgDo(tr => model.users.authenticate(tr, username, password))
+      await ctx.state.setSession(userIdx)
     } catch (e) {
-      ctx.session = null
+      console.error(e)
+      if (e instanceof ControllableError) {
+        ctx.status = 401
+      } else {
+        ctx.status = 500
+      }
       return
     }
 
@@ -54,7 +35,7 @@ export function login(model: Model): IMiddleware {
 }
 
 export function loginPAM(model: Model): IMiddleware {
-  return async (ctx, next) => {
+  return async ctx => {
     const body: any = ctx.request.body
 
     if (!body || typeof body !== 'object') {
@@ -101,7 +82,7 @@ export function loginPAM(model: Model): IMiddleware {
 }
 
 export function loginLegacy(model: Model, config: Config): IMiddleware {
-  return async (ctx, next) => {
+  return async ctx => {
     const body: any = ctx.request.body
 
     if (!body || typeof body !== 'object') {
@@ -145,17 +126,31 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
 
 export function logout(): IMiddleware {
   return async (ctx, next) => {
-    ctx.session = null
-    ctx.status = 200
+    await ctx.state.destroySession()
+    ctx.status = 204
     await next()
   }
 }
 
-export function checkLogin(): IMiddleware {
+export function checkLogin(model: Model): IMiddleware {
   return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
+    if (typeof ctx.state.userIdx === 'number') {
+      const userIdx = ctx.state.userIdx
+      let user
+      try {
+        user = await model.pgDo(async tr => model.users.getByUserIdx(tr, userIdx))
+      } catch (e) {
+        if (e instanceof NoSuchEntryError) {
+          ctx.status = 401
+        } else {
+          console.error(e)
+          ctx.status = 500
+        }
+        return next()
+      }
+
       const data = {
-        username: ctx.session.username,
+        username: user.username,
       }
       ctx.body = data
       ctx.status = 200
@@ -163,163 +158,5 @@ export function checkLogin(): IMiddleware {
       ctx.status = 401
     }
     await next()
-  }
-}
-
-export function issueJWT(model: Model, config: Config): IMiddleware {
-  return async (ctx, next) => {
-    if (ctx.session && !ctx.session.isNew) {
-      if (!ctx.session.userIdx || !ctx.session.username) {
-        ctx.status = 401
-        return
-      }
-
-      const body: any = ctx.request.body
-      const userIdx = ctx.session.userIdx
-
-      if (!body || typeof body !== 'object') {
-        ctx.status = 400
-        return
-      }
-
-      const { permissionIdx } = body
-      let hasPermission = false
-      if (permissionIdx) {
-        if (typeof permissionIdx !== 'number') {
-          ctx.status = 400
-          return
-        }
-        try {
-          await model.pgDo(async tr => {
-            try {
-              const hp = await model.permissions.checkUserHavePermission(tr, userIdx, permissionIdx)
-              hasPermission = hp
-            } catch (e) {
-              ctx.status = 500
-              throw e
-            }
-          })
-        } catch (e) {
-          return
-        }
-      }
-
-      const payload = {
-        userIdx: ctx.session.userIdx,
-        username: ctx.session.username,
-        permissionIdx: -1,
-      }
-      if (hasPermission) {
-        payload.permissionIdx = permissionIdx
-      }
-      const key = createPrivateKey(config.jwt.privateKey)
-      const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
-      const jwt = await new SignJWT(payload)
-        .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
-        .setIssuedAt()
-        .setIssuer(config.jwt.issuer)
-        .setAudience(config.jwt.audience)
-        .setExpirationTime(expiry)
-        .sign(key)
-
-      let data
-      if (permissionIdx) {
-        data = {
-          token: jwt,
-          hasPermission,
-        }
-      } else {
-        data = {
-          token: jwt,
-        }
-      }
-      ctx.body = data
-      ctx.status = 200
-    } else {
-      ctx.status = 401
-    }
-    await next()
-  }
-}
-
-export function loginIssueJWT(model: Model, config: Config): IMiddleware {
-  return async (ctx, next) => {
-    const body: any = ctx.request.body
-
-    if (!body || typeof body !== 'object') {
-      ctx.status = 400
-      return
-    }
-
-    const { username, password } = body
-    let userIdx = -1
-
-    const { permissionIdx } = body
-    let hasPermission = false
-    if (permissionIdx && typeof permissionIdx !== 'number') {
-      ctx.status = 400
-      return
-    }
-    try {
-      await model.pgDo(async tr => {
-        try {
-          userIdx = await model.users.authenticate(tr, username, password)
-          if (permissionIdx) {
-            hasPermission = await model.permissions.checkUserHavePermission(
-              tr,
-              userIdx,
-              permissionIdx,
-            )
-          }
-        } catch (e) {
-          if (e instanceof ControllableError) {
-            ctx.status = 401
-          } else {
-            ctx.status = 500
-          }
-
-          throw e
-        }
-      })
-    } catch (e) {
-      return
-    }
-
-    if (userIdx === -1) {
-      ctx.status = 500
-      return
-    }
-
-    const payload = {
-      userIdx,
-      username,
-      permissionIdx: -1,
-    }
-    if (hasPermission) {
-      payload.permissionIdx = permissionIdx
-    }
-    const key = createPrivateKey(config.jwt.privateKey)
-    const expiry = Math.floor(new Date().getTime() / 1000) + config.jwt.expirySec
-    const jwt = await new SignJWT(payload)
-      .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
-      .setIssuedAt()
-      .setIssuer(config.jwt.issuer)
-      .setAudience(config.jwt.audience)
-      .setExpirationTime(expiry)
-      .sign(key)
-
-    let data
-    if (permissionIdx) {
-      data = {
-        token: jwt,
-        hasPermission,
-      }
-    } else {
-      data = {
-        token: jwt,
-      }
-    }
-    ctx.body = data
-    ctx.status = 200
   }
 }
