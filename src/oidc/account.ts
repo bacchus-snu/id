@@ -1,10 +1,10 @@
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type { Account } from 'oidc-provider'
+import type { Account } from 'oidc-provider';
 
 class OIDCAccount implements Account {
-  [key: string]: unknown
+  [key: string]: unknown;
 
-  constructor(public accountId: string, public username: string, public groups: Array<string>) { }
+  constructor(public accountId: string, public username: string, public groups: Array<string>) {}
 
   /**
    * @param use - can either be "id_token" or "userinfo", depending on
@@ -19,8 +19,8 @@ class OIDCAccount implements Account {
       sub: this.accountId,
       username: this.username,
       groups: this.groups,
-    }
+    };
   }
 }
 
-export default OIDCAccount
+export default OIDCAccount;

@@ -1,5 +1,4 @@
-const template =
-  `
+const template = `
   <div>
     <meta charset="UTF-8">
     <div>
@@ -14,6 +13,6 @@ const template =
       </p>
     </div>
   </div>
-  `
+  `;
 
-export default template
+export default template;

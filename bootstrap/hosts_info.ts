@@ -1,6 +1,6 @@
 interface HostTemplate {
-  name: string
-  host: string
+  name: string;
+  host: string;
 }
 
 export const HARDWARE_LAB: Array<HostTemplate> = [
@@ -34,7 +34,7 @@ export const HARDWARE_LAB: Array<HostTemplate> = [
   { name: '310-2-28', host: '147.46.78.217' },
   { name: '310-2-29', host: '147.46.78.218' },
   { name: '310-2-30', host: '147.46.78.219' },
-]
+];
 
 export const SOFTWARE_LAB: Array<HostTemplate> = [
   { name: '311-1-A01', host: '147.46.78.33' },
@@ -101,7 +101,7 @@ export const SOFTWARE_LAB: Array<HostTemplate> = [
   { name: '311-1-H06', host: '147.46.78.58' },
   { name: '311-1-H07', host: '147.46.78.53' },
   { name: '311-1-H08', host: '147.46.78.48' },
-]
+];
 
 export const LOUNGE: Array<HostTemplate> = [
   { name: '314-C01', host: '147.46.127.118' },
@@ -118,9 +118,9 @@ export const LOUNGE: Array<HostTemplate> = [
   { name: '314-C12', host: '147.46.127.129' },
   { name: '314-C13', host: '147.46.127.130' },
   { name: '314-C14', host: '147.46.127.131' },
-]
+];
 
 export const PRACTICE_SERVER: Array<HostTemplate> = [
   { name: 'martini', host: '147.46.240.44' },
   { name: 'mimosa', host: '147.46.240.46' },
-]
+];
