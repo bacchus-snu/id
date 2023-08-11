@@ -1,56 +1,56 @@
-import Model from '../../model/model'
-import Config from '../../config'
-import { EmailAddress } from '../../model/email_addresses'
-import { IMiddleware } from 'koa-router'
-import { sendEmail } from '../email'
-import { ResendLimitExeededError, InvalidEmailError, EmailInUseError } from '../../model/errors'
-import emailVerificationTemplate from '../templates/verification_email_template'
+import { IMiddleware } from 'koa-router';
+import Config from '../../config';
+import { EmailAddress } from '../../model/email_addresses';
+import { EmailInUseError, InvalidEmailError, ResendLimitExeededError } from '../../model/errors';
+import Model from '../../model/model';
+import { sendEmail } from '../email';
+import emailVerificationTemplate from '../templates/verification_email_template';
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
-    const body: any = ctx.request.body
+    const body: any = ctx.request.body;
 
     if (body == null || typeof body !== 'object') {
-      ctx.status = 400
-      return
+      ctx.status = 400;
+      return;
     }
 
-    let { emailLocal, emailDomain } = body
-    emailLocal = emailLocal.trim()
-    emailDomain = emailDomain.trim()
+    let { emailLocal, emailDomain } = body;
+    emailLocal = emailLocal.trim();
+    emailDomain = emailDomain.trim();
 
     if (!emailLocal || !emailDomain) {
-      ctx.status = 400
-      return
+      ctx.status = 400;
+      return;
     }
 
     if (emailDomain !== 'snu.ac.kr') {
-      ctx.status = 400
-      return
+      ctx.status = 400;
+      return;
     }
 
-    let emailIdx = -1
-    let token = ''
-    let resendCount = -1
+    let emailIdx = -1;
+    let token = '';
+    let resendCount = -1;
 
     try {
       // create email address and generate token
       await model.pgDo(async tr => {
-        emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
-        const isValidated = await model.emailAddresses.isValidatedEmail(tr, emailIdx)
+        emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+        const isValidated = await model.emailAddresses.isValidatedEmail(tr, emailIdx);
         if (isValidated) {
-          throw new EmailInUseError()
+          throw new EmailInUseError();
         }
-        token = await model.emailAddresses.generateVerificationToken(tr, emailIdx)
-        resendCount = await model.emailAddresses.getResendCount(tr, token)
-      })
+        token = await model.emailAddresses.generateVerificationToken(tr, emailIdx);
+        resendCount = await model.emailAddresses.getResendCount(tr, token);
+      });
     } catch (e) {
       if (e instanceof EmailInUseError) {
-        ctx.status = 409
-        return
+        ctx.status = 409;
+        return;
       }
-      ctx.status = 400
-      return
+      ctx.status = 400;
+      return;
     }
 
     try {
@@ -62,62 +62,55 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
         url: config.email.verificationEmailUrl,
         template: emailVerificationTemplate,
         resendCount,
-      }
-      await sendEmail(option,  model.log, config)
+      };
+      await sendEmail(option, model.log, config);
     } catch (e) {
       if (e instanceof ResendLimitExeededError) {
-        ctx.status = 429
-        return
+        ctx.status = 429;
+        return;
       }
       if (e instanceof InvalidEmailError) {
-        ctx.status = 400
-        return
+        ctx.status = 400;
+        return;
       }
-      model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`)
+      model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`);
     }
 
-    ctx.status = 200
-    await next()
-  }
+    ctx.status = 200;
+    await next();
+  };
 }
 
 export function checkVerificationEmailToken(model: Model): IMiddleware {
   return async (ctx, next) => {
-    const body: any = ctx.request.body
+    const body: any = ctx.request.body;
 
     if (body == null || typeof body !== 'object') {
-      ctx.status = 400
-      return
+      ctx.status = 400;
+      return;
     }
 
-    const { token } = body
-    let emailAddress: EmailAddress
-    let result
+    const { token } = body;
+    let emailAddress: EmailAddress;
+    let result;
 
     try {
       await model.pgDo(async tr => {
-        emailAddress = await model.emailAddresses.getEmailAddressByToken(tr, token)
-        await model.emailAddresses.ensureTokenNotExpired(tr, token)
+        emailAddress = await model.emailAddresses.getEmailAddressByToken(tr, token);
+        await model.emailAddresses.ensureTokenNotExpired(tr, token);
         result = {
           emailLocal: emailAddress.local,
           emailDomain: emailAddress.domain,
-        }
-      })
+        };
+      });
     } catch (e) {
-      ctx.status = 401
-      return
+      ctx.status = 401;
+      return;
     }
 
-    if (ctx.session) {
-      ctx.session.verificationToken = token
-    } else {
-      ctx.status = 500
-      return
-    }
+    ctx.status = 200;
+    ctx.body = result;
 
-    ctx.status = 200
-    ctx.body = result
-
-    await next()
-  }
+    await next();
+  };
 }

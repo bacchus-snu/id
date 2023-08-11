@@ -1,48 +1,52 @@
-import * as cors from '@koa/cors'
-import * as Koa from 'koa'
-import * as Bunyan from 'bunyan'
-import * as bodyParser from 'koa-bodyparser'
-import * as Session from 'koa-session'
-import * as crypto from 'crypto'
+import cors from '@koa/cors';
+import * as Bunyan from 'bunyan';
+import * as crypto from 'crypto';
+import Koa from 'koa';
+import mount from 'koa-mount';
 
-import Model from '../model/model'
-import { createRouter } from './router'
-import Config from '../config'
+import Config from '../config';
+import Model from '../model/model';
+import createOIDCConfig from '../oidc/configuration';
+import { createRouter } from './router';
 
-const createServer = (log: Bunyan, model: Model, config: Config) => {
-  const app = new Koa()
-  app.proxy = config.api.proxy
-  const router = createRouter(model, config)
+const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
+  const model = inputModel ?? new Model(config, log);
+  const OIDCProvider = (await import('oidc-provider')).default;
+  const oidcConfig = createOIDCConfig(model, config.oidc);
+  const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig);
 
-  app.use(bodyParser())
-  app.use(Session(config.session, app))
-  const key = crypto.randomBytes(256).toString('hex')
-  app.keys = [key]
+  const app = new Koa();
+  app.proxy = config.api.proxy;
+  const router = createRouter(model, oidcProvider, oidcConfig, config);
+
+  const key = crypto.randomBytes(256).toString('hex');
+  app.keys = [key];
 
   app.on('error', e => {
-    log.error('API error', e)
-  })
+    log.error('API error', e);
+  });
 
   app
     .use(cors({
       origin(ctx) {
-        const origin = ctx.headers.origin
+        const origin = ctx.headers.origin;
         if (origin == null) {
-          return ''
+          return '';
         }
 
         if (config.api.corsAllowedOrigins.includes(origin)) {
-          return origin
+          return origin;
         }
-        return ''
+        return '';
       },
       allowMethods: 'POST',
       credentials: true,
     }))
     .use(router.routes())
     .use(router.allowedMethods())
+    .use(mount('/o', oidcProvider.app));
 
-  return app
-}
+  return app;
+};
 
-export default createServer
+export default createServer;

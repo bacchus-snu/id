@@ -43,5 +43,26 @@
   },
   "permissions": {
     "snucse": 1
+  },
+  "oidc": {
+    "issuer": "http://localhost:3000/o",
+    "cookieKey": "a secret signing key",
+    "jwks": {
+      "keys": [
+        {
+          "kid": "generate-your-own",
+          "kty": "EC",
+          "crv": "P-384",
+          "alg": "ES384",
+          "x": "fTVY4CFPpz-9Js2qf0VphY0AZZ5Arlv0FXb46f-FYcObx5qKGEM5YesjBXhrH5Jv",
+          "y": "eiHS3n7XXuTmjwlMRjypWlBWKx4JtIwpjG-84tLR-sIex7NXnokS_cA-efBm796i",
+          "d": "gxkV5CWl_LgFU_sEBu0KfAopEHCuIGrPPK9Vv-cQH_JSxIII5JJxx-9I_Bt0W_f9",
+          "key_ops": ["sign"]
+        }
+      ]
+    },
+    "devInteractions": false,
+    "deviceFlow": false,
+    "revocation": false
   }
 }

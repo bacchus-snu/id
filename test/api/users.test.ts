@@ -1,37 +1,40 @@
-import test, { ExecutionContext } from 'ava'
-import * as request from 'supertest'
-import { v4 as uuid } from 'uuid'
-import * as crypto from 'crypto'
-import { app, model, config } from '../_setup'
+import test, { ExecutionContext } from 'ava';
+import * as crypto from 'crypto';
+import * as request from 'supertest';
+import { v4 as uuid } from 'uuid';
+import { app, config, model } from '../_setup';
 
 test('create user step by step', async t => {
-  const agent = request.agent(app)
+  const agent = request.agent(app);
 
-  let response
-  const emailLocal = uuid()
-  const emailDomain = 'snu.ac.kr'
-  const username = 'a' + crypto.randomBytes(4).toString('hex')
-  const password = uuid()
-  const name = uuid()
-  const preferredLanguage = 'en'
+  let response;
+  const emailLocal = uuid();
+  const emailDomain = 'snu.ac.kr';
+  const username = 'a' + crypto.randomBytes(4).toString('hex');
+  const password = uuid();
+  const name = uuid();
+  const preferredLanguage = 'en';
   const studentNumbers = [
     '1111-11111',
     '11111-111',
     '1111-1111',
-  ]
+  ];
 
   response = await agent.post('/api/email/verify').send({
     emailLocal,
     emailDomain,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
-  let token = ''
+  let token = '';
   await model.pgDo(async tr => {
-    const idx = await model.emailAddresses.getIdxByAddress(tr, emailLocal, emailDomain)
-    const result = await tr.query('SELECT token FROM email_verification_tokens WHERE email_idx = $1', [idx])
-    token = result.rows[0].token
-  })
+    const idx = await model.emailAddresses.getIdxByAddress(tr, emailLocal, emailDomain);
+    const result = await tr.query(
+      'SELECT token FROM email_verification_tokens WHERE email_idx = $1',
+      [idx],
+    );
+    token = result.rows[0].token;
+  });
 
   response = await agent.post('/api/user').send({
     username,
@@ -39,326 +42,295 @@ test('create user step by step', async t => {
     name,
     preferredLanguage,
     studentNumbers,
-  })
+  });
   // request without session token will be fail
-  t.is(response.status, 401)
+  t.is(response.status, 401);
 
   response = await agent.post('/api/email/check-token').send({
     token,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
   // test validation check
   response = await agent.post('/api/user').send({
+    token,
     username: '0abcdefghijk',
     password,
     name,
     preferredLanguage,
     studentNumbers,
-  })
-  t.is(response.status, 400)
+  });
+  t.is(response.status, 400);
 
   // test validation check
   response = await agent.post('/api/user').send({
+    token,
     username: 'a' + crypto.randomBytes(32).toString('hex'),
     password,
     name,
     preferredLanguage,
     studentNumbers,
-  })
-  t.is(response.status, 400)
+  });
+  t.is(response.status, 400);
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password: 'asdf',
     name,
     preferredLanguage,
     studentNumbers,
-  })
-  t.is(response.status, 400)
+  });
+  t.is(response.status, 400);
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password,
     name,
     preferredLanguage,
-  })
-  t.is(response.status, 400)
+  });
+  t.is(response.status, 400);
 
   response = await agent.post('/api/user').send({
+    token,
     username,
     password,
     name,
     preferredLanguage,
     studentNumbers,
-  })
-  t.is(response.status, 201)
+  });
+  t.is(response.status, 201);
 
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM users WHERE username = $1', [username])
-  })
-})
+    await tr.query('DELETE FROM users WHERE username = $1', [username]);
+  });
+});
 
 test('get user email addresses', async t => {
-  const username = uuid()
-  const password = uuid()
-  let userIdx
+  const username = uuid();
+  const password = uuid();
+  let userIdx;
 
   await model.pgDo(async tr => {
-    const emailIdx1 = await model.emailAddresses.create(tr, uuid(), uuid())
-    const emailIdx2 = await model.emailAddresses.create(tr, uuid(), uuid())
+    const emailIdx1 = await model.emailAddresses.create(tr, uuid(), uuid());
+    const emailIdx2 = await model.emailAddresses.create(tr, uuid(), uuid());
 
-    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(tr, userIdx, emailIdx1)
-    await model.emailAddresses.validate(tr, userIdx, emailIdx2)
-  }, ['users'])
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
+    await model.emailAddresses.validate(tr, userIdx, emailIdx1);
+    await model.emailAddresses.validate(tr, userIdx, emailIdx2);
+  }, ['users']);
 
-  const agent = request.agent(app)
+  const agent = request.agent(app);
 
-  let response
+  let response;
 
-  response = await agent.get('/api/user/emails').send({})
-  t.is(response.status, 401)
+  response = await agent.get('/api/user/emails').send({});
+  t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
     username,
     password,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
-  response = await agent.get('/api/user/emails').send({})
-  t.is(response.status, 200)
-  t.is(response.body.emails.length, 2)
-
-  await model.pgDo(async tr => {
-    await tr.query('DELETE FROM users WHERE username = $1', [username])
-  })
-})
-
-test('get user info with jwt', async t => {
-  const username = uuid()
-  const name = uuid()
-  const password = uuid()
-  const emailLocal = uuid()
-  const emailDomain = uuid()
-  const studentNumbers = [
-    '1111-11111',
-    '1111-21111',
-    '1111-31111',
-  ]
-  let userIdx: number
+  response = await agent.get('/api/user/emails').send({});
+  t.is(response.status, 200);
+  t.is(response.body.emails.length, 2);
 
   await model.pgDo(async tr => {
-    const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
-
-    userIdx = await model.users.create(tr, username, password, name, '/bin/bash', 'en')
-    await Promise.all(studentNumbers.map(sn => model.users.addStudentNumber(tr, userIdx, sn)))
-    await model.emailAddresses.validate(tr, userIdx, emailIdx)
-  }, ['users'])
-
-  const agent = request.agent(app)
-  let response
-
-  response = await agent.post('/api/login/jwt').send({
-    username,
-    password,
-  })
-  t.is(response.status, 200)
-  const jwt = response.body.token
-
-  response = await agent.get('/api/user/info')
-    .set('authorization', `Bearer ${jwt}`)
-    .send()
-  t.is(response.status, 200)
-  t.is(response.body.username, username)
-  t.is(response.body.name, name)
-  t.deepEqual([...response.body.studentNumbers].sort(), studentNumbers)
-  t.deepEqual(response.body.emailAddresses, [`${emailLocal}@${emailDomain}`])
-
-  await model.pgDo(async tr => {
-    await tr.query('DELETE FROM users WHERE username = $1', [username])
-  })
-})
+    await tr.query('DELETE FROM users WHERE username = $1', [username]);
+  });
+});
 
 test('change password', async t => {
-  const username = uuid()
-  const password = uuid()
-  const emailLocal = uuid()
-  const emailDomain = uuid()
-  let userIdx = -1
+  const username = uuid();
+  const password = uuid();
+  const emailLocal = uuid();
+  const emailDomain = uuid();
+  let userIdx = -1;
 
   await model.pgDo(async tr => {
-    const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
-    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(tr, userIdx, emailIdx)
-  }, ['users'])
+    const emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
+    await model.emailAddresses.validate(tr, userIdx, emailIdx);
+  }, ['users']);
 
-  const agent = request.agent(app)
+  const agent = request.agent(app);
 
-  let response
+  let response;
 
   response = await agent.post('/api/user/send-password-token').send({
     emailLocal,
     emailDomain,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
-  let token
+  let token;
   await model.pgDo(async tr => {
-    const result = await tr.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [userIdx])
-    t.is(result.rows.length, 1)
-    token = result.rows[0].token
-  })
+    const result = await tr.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [
+      userIdx,
+    ]);
+    t.is(result.rows.length, 1);
+    token = result.rows[0].token;
+  });
 
-  const newPassword = uuid()
+  const newPassword = uuid();
   response = await agent.post('/api/user/change-password').send({
     newPassword,
     token: 'doge',
-  })
-  t.is(response.status, 401)
+  });
+  t.is(response.status, 401);
 
   response = await agent.post('/api/user/change-password').send({
     newPassword,
     token,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
   await model.pgDo(async tr => {
-    await model.users.authenticate(tr, username, newPassword)
-  })
+    await model.users.authenticate(tr, username, newPassword);
+  });
 
-  t.pass()
-})
+  t.pass();
+});
 
 test('change shell', async t => {
-  const username = uuid()
-  const password = uuid()
-  const newShell = uuid()
-  let userIdx = -1
+  const username = uuid();
+  const password = uuid();
+  const newShell = uuid();
+  let userIdx = -1;
 
   await model.pgDo(async tr => {
-    const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid())
-    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(tr, userIdx, emailIdx)
-    await model.shells.addShell(tr, newShell)
-  }, ['users'])
+    const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid());
+    userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
+    await model.emailAddresses.validate(tr, userIdx, emailIdx);
+    await model.shells.addShell(tr, newShell);
+  }, ['users']);
 
-  const agent = request.agent(app)
+  const agent = request.agent(app);
 
-  let response
+  let response;
 
-  response = await agent.get('/api/user/shell').send()
-  t.is(response.status, 401)
+  response = await agent.get('/api/user/shell').send();
+  t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
     username,
     password,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
   response = await agent.post('/api/user/shell').send({
     shell: newShell,
-  })
-  t.is(response.status, 200)
+  });
+  t.is(response.status, 200);
 
-  response = await agent.get('/api/user/shell').send({})
-  t.is(response.body.shell, newShell)
-})
+  response = await agent.get('/api/user/shell').send({});
+  t.is(response.body.shell, newShell);
+});
 
 test('verification email resend limit', async t => {
-  const emailLocal = uuid()
-  const emailDomain = 'snu.ac.kr'
-  const resendLimit = config.email.resendLimit
-  let emailIdx = -1
+  const emailLocal = uuid();
+  const emailDomain = 'snu.ac.kr';
+  const resendLimit = config.email.resendLimit;
+  let emailIdx = -1;
 
   await model.pgDo(async tr => {
-    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
-  })
+    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+  });
 
-  const agent = request.agent(app)
-  let response
+  const agent = request.agent(app);
+  let response;
 
   for (let i = 0; i < resendLimit; i++) {
     response = await agent.post('/api/email/verify').send({
       emailLocal,
       emailDomain,
-    })
-    t.is(response.status, 200)
+    });
+    t.is(response.status, 200);
   }
 
   response = await agent.post('/api/email/verify').send({
     emailLocal,
     emailDomain,
-  })
-  t.is(response.status, 429)
-})
+  });
+  t.is(response.status, 429);
+});
 
 test('password change email resend limit', async t => {
-  const emailLocal = uuid()
-  const emailDomain = 'snu.ac.kr'
-  const resendLimit = config.email.resendLimit
-  let emailIdx = -1
+  const emailLocal = uuid();
+  const emailDomain = 'snu.ac.kr';
+  const resendLimit = config.email.resendLimit;
+  let emailIdx = -1;
 
   await model.pgDo(async tr => {
-    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain)
-    const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en')
-    await model.emailAddresses.validate(tr, userIdx, emailIdx)
-  }, ['users'])
+    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en');
+    await model.emailAddresses.validate(tr, userIdx, emailIdx);
+  }, ['users']);
 
-  const agent = request.agent(app)
-  let response
+  const agent = request.agent(app);
+  let response;
 
   for (let i = 0; i < resendLimit; i++) {
     response = await agent.post('/api/user/send-password-token').send({
       emailLocal,
       emailDomain,
-    })
-    t.is(response.status, 200)
+    });
+    t.is(response.status, 200);
   }
 
   response = await agent.post('/api/user/send-password-token').send({
     emailLocal,
     emailDomain,
-  })
-  t.is(response.status, 429)
-})
+  });
+  t.is(response.status, 429);
+});
 
-const NUMBER_OF_USERS_TO_CREATE = 100
+const NUMBER_OF_USERS_TO_CREATE = 100;
 test('multiple user creation', async t => {
-  const promises: Array<Promise<void>> = []
-  const indices: Array<number> = []
-  let count = 0
+  const promises: Array<Promise<void>> = [];
+  const indices: Array<number> = [];
+  let count = 0;
 
   for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
     promises[i] = model.pgDo(async tr => {
-      indices[i] = await model.users.create(tr, i.toString(), 'password' + i, i.toString(), '/bin/bash', 'en')
+      indices[i] = await model.users.create(
+        tr,
+        i.toString(),
+        'password' + i,
+        i.toString(),
+        '/bin/bash',
+        'en',
+      );
     }, ['users']).then(async () => {
-      count++
+      count++;
       if (count === NUMBER_OF_USERS_TO_CREATE) {
-        await verifyResult(t, indices)
-        await cleanUpUsers(t, indices)
+        await verifyResult(t, indices);
+        await cleanUpUsers(t, indices);
       }
     }).catch(reason => {
-      throw reason
-    })
+      throw reason;
+    });
   }
 
-  await Promise.all(promises)
-})
+  await Promise.all(promises);
+});
 
 async function verifyResult(t: ExecutionContext, indcies: Array<number>) {
   for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
     await model.pgDo(async tr => {
-      const user = await model.users.getByUserIdx(tr, indcies[i])
-      t.is(user.name, i.toString())
-    })
+      const user = await model.users.getByUserIdx(tr, indcies[i]);
+      t.is(user.name, i.toString());
+    });
   }
 }
 
 async function cleanUpUsers(t: ExecutionContext, indices: Array<number>) {
   for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
     await model.pgDo(async tr => {
-      await model.users.delete(tr, indices[i])
-    })
+      await model.users.delete(tr, indices[i]);
+    });
   }
 }

@@ -1,37 +1,58 @@
-import * as Router from 'koa-router'
-import Model from '../model/model'
-import Config from '../config'
-import oauth10a from '../oauth/koa'
-import { login, loginPAM, loginIssueJWT, logout, checkLogin,
-  loginLegacy, issueJWT } from './handlers/login'
-import { createUser, changePassword, sendChangePasswordEmail,
-  getUserEmails, getUserInfo, checkChangePasswordEmailToken } from './handlers/users'
-import { getUserShell, changeUserShell } from './handlers/users'
-import { sendVerificationEmail, checkVerificationEmailToken } from './handlers/emails'
-import { getShells } from './handlers/shells'
-import { getPasswd, getGroup } from './handlers/nss'
-import { listGroups, listMembers, listPending,
-  applyGroup, acceptGroup, rejectGroup, leaveGroup } from './handlers/groups'
-import { getRequestToken } from './handlers/oauth'
+import bodyParser from 'koa-bodyparser';
+import Router from 'koa-router';
+import Config from '../config';
+import Model from '../model/model';
+import createOIDCRouter from '../oidc/routes';
+import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails';
+import {
+  acceptGroup,
+  applyGroup,
+  leaveGroup,
+  listGroups,
+  listMembers,
+  listPending,
+  rejectGroup,
+} from './handlers/groups';
+import { checkLogin, login, loginLegacy, loginPAM, logout } from './handlers/login';
+import { getGroup, getPasswd } from './handlers/nss';
+import { getShells } from './handlers/shells';
+import {
+  changePassword,
+  checkChangePasswordEmailToken,
+  createUser,
+  getUserEmails,
+  getUserInfo,
+  sendChangePasswordEmail,
+} from './handlers/users';
+import { changeUserShell, getUserShell } from './handlers/users';
+// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import type OIDCProvider, { Configuration as OIDCConfiguration } from 'oidc-provider';
 
-function createOAuth10aRouter(model: Model, config: Config): Router {
-  const router = new Router()
-  router.use(oauth10a({
-    async getConsumerSecret(key: string) {
-      return key.repeat(2)
-    },
-    async getTokenSecret(token: string) {
-      return undefined
-    },
-  }))
-
-  router.get('/request', getRequestToken(model))
-
-  return router
-}
-
-export function createRouter(model: Model, config: Config): Router {
-  const router = new Router()
+export function createRouter(
+  model: Model,
+  oidcProvider: OIDCProvider,
+  oidcConfiguration: OIDCConfiguration,
+  config: Config,
+): Router {
+  const router = new Router();
+  router.use(bodyParser());
+  router.use(async (ctx, next) => {
+    const oidcCtx = oidcProvider.app.createContext(ctx.req, ctx.res);
+    const session = await oidcProvider.Session.get(oidcCtx);
+    ctx.state.setSession = async (userIdx: number) => {
+      session.loginAccount({
+        accountId: String(userIdx),
+      });
+      await session.save(14 * 24 * 60 * 60);
+      oidcCtx.cookies.set('_session', session.jti, oidcConfiguration.cookies?.long);
+    };
+    ctx.state.destroySession = async () => {
+      await session.destroy();
+      oidcCtx.cookies.set('_session');
+    };
+    ctx.state.userIdx = session.accountId ? Number(session.accountId) : undefined;
+    return next();
+  });
 
   /**
    * Login API route.
@@ -39,62 +60,44 @@ export function createRouter(model: Model, config: Config): Router {
    * @param password password.
    * 200 if success, 401 if not.
    */
-  router.post('/api/login', login(model))
+  router.post('/api/login', login(model));
   /**
    * PAM Login API route.
    * @param username username.
    * @param password password.
    * 200 if success, 401 if not.
    */
-  router.post('/api/login/pam', loginPAM(model))
+  router.post('/api/login/pam', loginPAM(model));
   /**
    * Legacy login API route.
    * CAUTION: response code 200 means failure in sign in.
    */
-  router.post('/Authentication/Login.aspx', loginLegacy(model, config))
+  router.post('/Authentication/Login.aspx', loginLegacy(model, config));
   /**
    * Logout API route.
    * Always set status code to 200, and clear session store.
    */
-  router.post('/api/logout', logout())
+  router.post('/api/logout', logout());
   /**
    * Check login.
    * 200 if already logged in, 401 if not.
    * @returns username username.
    */
-  router.get('/api/check-login', checkLogin())
-
-  /**
-   * Issue JWT token
-   * 200 if success, 401 if not.
-   * @param permissionIdx permission id to be checked
-   * @returns token jwt token.
-   * @returns hasPermission true if user has permission of `permissionIdx`
-   */
-  router.post('/api/issue-jwt', issueJWT(model, config))
-
-  /**
-   * Login and issue JWT token without cookies
-   * 200 if success, 401 if not.
-   * @param permissionIdx permission id to be checked
-   * @returns token jwt token.
-   * @returns hasPermission true if user has permission of `permissionIdx`
-   */
-  router.post('/api/login/jwt', loginIssueJWT(model, config))
+  router.get('/api/check-login', checkLogin(model));
 
   /**
    * Get shell list.
    * 200 if success.
    * @returns shells: Array of string.
    */
-  router.get('/api/shells', getShells(model))
+  router.get('/api/shells', getShells(model));
 
   /**
    * Generate verification token and send sign up link.
    * @param emailLocal email local.
    * @param emailDomain email domain.
    */
-  router.post('/api/email/verify', sendVerificationEmail(model, config))
+  router.post('/api/email/verify', sendVerificationEmail(model, config));
 
   /**
    * Check token and response with according email addresss.
@@ -102,7 +105,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns emailLocal email local.
    * @returns emailDomain email domain.
    */
-  router.post('/api/email/check-token', checkVerificationEmailToken(model))
+  router.post('/api/email/check-token', checkVerificationEmailToken(model));
 
   /**
    * Create user.
@@ -111,27 +114,27 @@ export function createRouter(model: Model, config: Config): Router {
    * @param password password.
    * @param preferredLanguage preferred language.
    */
-  router.post('/api/user', createUser(model, config))
+  router.post('/api/user', createUser(model, config));
 
   /**
    * Change password for user.
    * @param newPassword new password.
    * @param token change password token.
    */
-  router.post('/api/user/change-password', changePassword(model))
+  router.post('/api/user/change-password', changePassword(model));
 
   /**
    * Send password change email.
    * @param emailLocal email local.
    * @param emailDomain email domain.
    */
-  router.post('/api/user/send-password-token', sendChangePasswordEmail(model, config))
+  router.post('/api/user/send-password-token', sendChangePasswordEmail(model, config));
 
   /**
    * Check password change email token.
    * @param token verification token.
    */
-  router.post('/api/user/check-password-token', checkChangePasswordEmailToken(model))
+  router.post('/api/user/check-password-token', checkChangePasswordEmailToken(model));
 
   /**
    * Get user's emails.
@@ -139,7 +142,7 @@ export function createRouter(model: Model, config: Config): Router {
    * @param username username.
    * @returns emails: Array of EmailAddress.
    */
-  router.get('/api/user/emails', getUserEmails(model))
+  router.get('/api/user/emails', getUserEmails(model));
 
   /**
    * Get user info.
@@ -149,20 +152,20 @@ export function createRouter(model: Model, config: Config): Router {
    * @returns name
    * @returns studentNumber
    */
-  router.get('/api/user/info', getUserInfo(model, config))
+  router.get('/api/user/info', getUserInfo(model, config));
 
   /**
    * Get user current shell.
    * 200 if success.
    */
-  router.get('/api/user/shell', getUserShell(model))
+  router.get('/api/user/shell', getUserShell(model));
 
   /**
    * Change user shell.
    * 200 if success.
    * @param shell shell.
    */
-  router.post('/api/user/shell', changeUserShell(model))
+  router.post('/api/user/shell', changeUserShell(model));
 
   /**
    * Get the passwd map
@@ -170,7 +173,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/nss/passwd', getPasswd(model))
+  router.get('/api/nss/passwd', getPasswd(model));
 
   /**
    * Get the group map
@@ -178,28 +181,28 @@ export function createRouter(model: Model, config: Config): Router {
    * 304 if not modified since
    * 401 if not a valid host
    */
-  router.get('/api/nss/group', getGroup(model))
+  router.get('/api/nss/group', getGroup(model));
 
   /**
    * Get get the group list, along with is_member, is_pending, is_owner
    * 200 on success
    * 401 if not logged in
    */
-  router.get('/api/group', listGroups(model))
+  router.get('/api/group', listGroups(model));
 
   /**
    * Get get the group's member list, if requested by an owner.
    * 200 on success
    * 401 if not owner
    */
-  router.get('/api/group/:gid/members', listMembers(model))
+  router.get('/api/group/:gid/members', listMembers(model));
 
   /**
    * Get get the group's pending member list, if requested by an owner.
    * 200 on success
    * 401 if not owner
    */
-  router.get('/api/group/:gid/pending', listPending(model))
+  router.get('/api/group/:gid/pending', listPending(model));
 
   /**
    * Apply to join the group.
@@ -207,7 +210,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 400 if already applied or already a member, or invalid group
    * 401 if not logged in
    */
-  router.post('/api/group/:gid/apply', applyGroup(model))
+  router.post('/api/group/:gid/apply', applyGroup(model));
 
   /**
    * Accent a join request.
@@ -215,7 +218,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 400 if any approval fails
    * 401 if not owner
    */
-  router.post('/api/group/:gid/accept', acceptGroup(model))
+  router.post('/api/group/:gid/accept', acceptGroup(model));
 
   /**
    * Reject a join request, or remove a user.
@@ -223,7 +226,7 @@ export function createRouter(model: Model, config: Config): Router {
    * 400 if any rejection fails
    * 401 if not owner
    */
-  router.post('/api/group/:gid/reject', rejectGroup(model))
+  router.post('/api/group/:gid/reject', rejectGroup(model));
 
   /**
    * Leave a group.
@@ -231,13 +234,11 @@ export function createRouter(model: Model, config: Config): Router {
    * 400 if not in group
    * 401 if not logged in
    */
-  router.post('/api/group/:gid/leave', leaveGroup(model))
+  router.post('/api/group/:gid/leave', leaveGroup(model));
 
-  /**
-   * Nest OAuth-related endpoints.
-   */
-  const oauth10aRouter = createOAuth10aRouter(model, config)
-  router.use('/api/oauth/1.0a', oauth10aRouter.routes(), oauth10aRouter.allowedMethods())
+  /** */
+  const oidcRouter = createOIDCRouter(model, oidcProvider);
+  router.use(oidcRouter.routes());
 
-  return router
+  return router;
 }

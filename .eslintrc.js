@@ -7,45 +7,10 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   rules: {
-    'semi': 'off',
-    '@typescript-eslint/semi': ['error', 'never'],
     'no-sequences': 'error',
-    quotes: ['error', 'single'],
-    'sort-keys': 'off',
-    'sort-imports': 'off',
+    'no-constant-condition': ['error', { checkLoops: false }],
     '@typescript-eslint/array-type': ['error', { default: 'generic' }],
-    'arrow-parens': ['error', 'as-needed'],
-    '@typescript-eslint/naming-convention': [
-      'error',
-      {
-        selector: 'default',
-        filter: {
-          regex: '^oauth_',
-          match: false,
-        },
-        format: ['camelCase'],
-        leadingUnderscore: 'allow',
-        trailingUnderscore: 'allow',
-      },
-      {
-        selector: 'variable',
-        format: ['camelCase', 'UPPER_CASE'],
-        leadingUnderscore: 'allow',
-        trailingUnderscore: 'allow',
-      },
-      {
-        selector: 'typeLike',
-        format: ['PascalCase'],
-      },
-      {
-        selector: 'typeProperty',
-        format: ['camelCase', 'snake_case'],
-      },
-      {
-        selector: 'classProperty',
-        format: ['camelCase', 'UPPER_CASE']
-      }
-    ],
-    'no-constant-condition' : ['error', { checkLoops: false }],
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
-}
+};

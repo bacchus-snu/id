@@ -1,16 +1,21 @@
-import * as fs from 'fs'
-import Config from '../src/config'
-import Model from '../src/model/model'
-import createAPIServer from '../src/api/server'
-import * as bunyan from 'bunyan'
+import test from 'ava';
+import Logger, * as bunyan from 'bunyan';
+import * as fs from 'fs';
+import { Server } from 'node:http';
+import createAPIServer from '../src/api/server';
+import Model from '../src/model/model';
 
-export const config: Config = JSON.parse(fs.readFileSync('config.test.json', {encoding: 'utf-8'}))
-
-export const log = bunyan.createLogger({
-  name: config.instanceName,
-  level: config.logLevel,
-})
-
-export const model = new Model(config, log)
-
-export const app = createAPIServer(log, model, config).listen()
+export let config: any;
+export let log: Logger;
+export let model: Model;
+export let app: Server;
+test.before(async () => {
+  config = JSON.parse(await fs.promises.readFile('config.test.json', { encoding: 'utf-8' }));
+  log = bunyan.createLogger({
+    name: config.instanceName,
+    level: config.logLevel,
+  });
+  model = new Model(config, log);
+  const koa = await createAPIServer(config, log, model);
+  app = koa.listen();
+});
