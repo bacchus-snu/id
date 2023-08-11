@@ -1,4 +1,4 @@
 export interface Translation {
-  ko: string
-  en: string
+  ko: string;
+  en: string;
 }

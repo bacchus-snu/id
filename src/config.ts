@@ -3,17 +3,17 @@
  */
 
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type { JWKS, ClientMetadata } from 'oidc-provider'
+import type { ClientMetadata, JWKS } from 'oidc-provider';
 
 /**
  * PostgreSQL connection configuration.
  */
 export interface PostgreSQLConfig {
-  host: string
-  port: number
-  user: string
-  password: string
-  database: string
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
 }
 
 /**
@@ -23,22 +23,22 @@ export interface APIConfig {
   /**
    * Host to listen on.
    */
-  listenHost: string
+  listenHost: string;
 
   /**
    * Port to listen on.
    */
-  listenPort: number
+  listenPort: number;
 
   /**
    * Trust X-Forwarded-For headers
    */
-  proxy: boolean
+  proxy: boolean;
 
   /**
    * Allowed origins for CORS
    */
-  corsAllowedOrigins: Array<string>
+  corsAllowedOrigins: Array<string>;
 }
 
 /**
@@ -48,42 +48,42 @@ export interface EmailConfig {
   /**
    * SMTP host. e.g. smtp.gmail.com
    */
-  host: string
+  host: string;
 
   /**
    * Username. e.g. no-reply@snucse.org
    */
-  username: string
+  username: string;
 
   /**
    * Password.
    */
-  password: string
+  password: string;
 
   /**
    * Resend limit.
    */
-  resendLimit: number
+  resendLimit: number;
 
   /**
    * Verification email subject.
    */
-  verificationEmailSubject: string
+  verificationEmailSubject: string;
 
   /**
    * Password change email subject.
    */
-  passwordChangeEmailSubject: string
+  passwordChangeEmailSubject: string;
 
   /**
    * URL of id.snucse.org/sign-up
    */
-  verificationEmailUrl: string
+  verificationEmailUrl: string;
 
   /**
    * URL of id.snucse.org/change-password
    */
-  passwordChangeEmailUrl: string
+  passwordChangeEmailUrl: string;
 }
 
 /**
@@ -93,38 +93,38 @@ export interface PosixConfig {
   /**
    * Name of the primary group for the users.
    */
-  userGroupName: string
+  userGroupName: string;
 
   /**
    * Gid of the primary group for the users.
    */
-  userGroupGid: number
+  userGroupGid: number;
 
   /**
    * Name of the group for the sudoers.
    */
-  sudoerGroupName: string
+  sudoerGroupName: string;
 
   /**
    * Gid of the group for the sudoers.
    */
-  sudoerGroupGid: number
+  sudoerGroupGid: number;
 
   /**
    * The default value for shell.
    */
-  defaultShell: string
+  defaultShell: string;
 
   /**
    * Minimum value for uid.
    * Note that this value is ignored when there are any UIDs below this limit.
    */
-  minUid: number
+  minUid: number;
 
   /**
    * Prefix for home directory.
    */
-  homeDirectoryPrefix: string
+  homeDirectoryPrefix: string;
 }
 
 /**
@@ -134,7 +134,7 @@ export interface PermissionConfig {
   /**
    * SNUCSE3 login permission idx.
    */
-  snucse: number
+  snucse: number;
 }
 
 /**
@@ -146,109 +146,93 @@ export interface JWTConfig {
    * Should be PEM formatted pkcs8 type key.
    * Algorithm should be EC(namedCurve = P-256)
    */
-  privateKey: string
+  privateKey: string;
 
   /**
    * Token expiry in second
    */
-  expirySec: number
+  expirySec: number;
 
   /**
    * Issuer (`iss`)
    */
-  issuer: string
+  issuer: string;
 
   /**
    * Audience (`aud`)
    */
-  audience: string
+  audience: string;
 }
 
 export interface OIDCConfig {
-  /**
-   *
-   */
-  issuer: string
+  /** */
+  issuer: string;
 
-  /**
-   *
-   */
-  redisURL?: string
+  /** */
+  redisURL?: string;
 
-  /**
-   *
-   */
-  jwks: JWKS
+  /** */
+  jwks: JWKS;
 
-  /**
-   *
-   */
-  cookieKey: string
+  /** */
+  cookieKey: string;
 
-  /**
-   *
-   */
-  devInteractions: boolean
+  /** */
+  devInteractions: boolean;
 
-  /**
-   *
-   */
-  deviceFlow: boolean
+  /** */
+  deviceFlow: boolean;
 
-  /**
-   *
-   */
-  revocation: boolean
+  /** */
+  revocation: boolean;
 
-  /**
-   *
-   */
-  clients?: Array<ClientMetadata>
+  /** */
+  clients?: Array<ClientMetadata>;
 }
 
 export default interface Config {
   /**
    * Name of this id core instance.
    */
-  instanceName: string
+  instanceName: string;
 
   /**
    * Bunyan logging level.
    */
-  logLevel: number
+  logLevel: number;
 
   /**
    * API server configuration.
    */
-  api: APIConfig
+  api: APIConfig;
 
   /**
    * Email configuration.
    */
-  email: EmailConfig
+  email: EmailConfig;
 
   /**
    * PostgreSQL connection configuration.
    */
-  postgresql: PostgreSQLConfig
+  postgresql: PostgreSQLConfig;
 
   /**
    * POSIX configuration.
    */
-  posix: PosixConfig
+  posix: PosixConfig;
 
   /**
    * Permission configuration.
    */
-  permissions: PermissionConfig
+  permissions: PermissionConfig;
 
   /**
    * JWT configuration.
    */
-  jwt: JWTConfig
+  jwt: JWTConfig;
 
   /**
    * OIDC configuration.
    */
-  oidc: OIDCConfig
+  oidc: OIDCConfig;
 }
