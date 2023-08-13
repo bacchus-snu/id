@@ -1,10 +1,21 @@
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { Account } from 'oidc-provider';
 
+interface Profile {
+  name: string;
+  username: string;
+  student_id: string;
+}
+
 class OIDCAccount implements Account {
   [key: string]: unknown;
 
-  constructor(public accountId: string, public username: string, public groups: Array<string>) {}
+  constructor(
+    public accountId: string,
+    public profile: Profile,
+    public email: string,
+    public groups: Array<string>,
+  ) {}
 
   /**
    * @param use - can either be "id_token" or "userinfo", depending on
@@ -17,7 +28,10 @@ class OIDCAccount implements Account {
   async claims() {
     return {
       sub: this.accountId,
-      username: this.username,
+      name: this.profile.name,
+      username: this.profile.username,
+      student_id: this.profile.student_id,
+      email: this.email,
       groups: this.groups,
     };
   }
