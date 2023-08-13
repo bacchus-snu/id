@@ -59,10 +59,11 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         if (emailResult.length == 0) {
           throw new Error('no email');
         }
-        let email = emailResult[emailResult.length - 1].local;
+        let email = emailResult[emailResult.length - 1].local + '@'
+          + emailResult[emailResult.length - 1].domain;
         for (let i = 0; i < emailResult.length; i++) {
           if (emailResult[i].domain === 'snu.ac.kr') {
-            email = emailResult[i].local;
+            email = emailResult[i].local + '@' + emailResult[i].domain;
             break;
           }
         }
