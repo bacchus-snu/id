@@ -31,7 +31,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         // ~84: YYXX-NNNN, 85 ~ 99: YYXXX-NNN, 00 ~: YYYY-NNNNN
         // get student id, hard-coded by ataching '19' and sorting
         const sidResult = await model.users.getStudentNumbersByUserIdx(tr, Number(id));
-        if (sidResult.length == 0) {
+        if (sidResult.length === 0) {
           throw new Error('no student id');
         }
         if (sidResult.length > 1) {
