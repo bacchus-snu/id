@@ -34,19 +34,13 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         if (sidResult.length === 0) {
           throw new Error('no student id');
         }
-        if (sidResult.length > 1) {
-          for (let i = 0; i < sidResult.length; i++) {
-            if (sidResult[i].length == 9) {
-              sidResult[i] = '19' + sidResult[i];
-            }
-          }
-          sidResult.sort((a, b) => {
-            return a > b ? -1 : 1;
-          });
-          if (sidResult[0].length == 11) {
-            sidResult[0] = sidResult[0].substring(2);
-          }
-        }
+        const primarySid = sidResult
+          .map(sid => ({
+            sid,
+            year: Number(sid.length === 9 ? `19${sid.substring(0, 2)}` : sid.substring(0, 4)),
+          }))
+          .sort((a, b) => b.year - a.year)
+          .map(({ sid }) => sid)[0];
 
         const profile = {
           name: userResult.name,
@@ -56,17 +50,13 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
 
         // get email, hard-coded, 1. snu.ac.kr, 2. last row
         const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
-        if (emailResult.length == 0) {
+        if (emailResult.length === 0) {
           throw new Error('no email');
         }
-        let email = emailResult[emailResult.length - 1].local + '@'
-          + emailResult[emailResult.length - 1].domain;
-        for (let i = 0; i < emailResult.length; i++) {
-          if (emailResult[i].domain === 'snu.ac.kr') {
-            email = emailResult[i].local + '@' + emailResult[i].domain;
-            break;
-          }
-        }
+        const { local: emailLocal, domain: emailDomain } =
+          emailResult.find(({ domain }) => domain === 'snu.ac.kr')
+          ?? emailResult[emailResult.length - 1];
+        const email = `${emailLocal}@${emailDomain}`;
 
         // get groups
         const groupSet = await model.users.getUserReachableGroups(tr, Number(id));
