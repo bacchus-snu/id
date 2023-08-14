@@ -45,7 +45,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         const profile = {
           name: userResult.name,
           username: userResult.username,
-          student_id: sidResult[0],
+          student_id: primarySid,
         };
 
         // get email, hard-coded, 1. snu.ac.kr, 2. last row
@@ -53,8 +53,9 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         if (emailResult.length === 0) {
           throw new Error('no email');
         }
-        const { local: emailLocal, domain: emailDomain } =
-          emailResult.find(({ domain }) => domain === 'snu.ac.kr')
+        const { local: emailLocal, domain: emailDomain } = emailResult.find(({ domain }) =>
+          domain === 'snu.ac.kr'
+        )
           ?? emailResult[emailResult.length - 1];
         const email = `${emailLocal}@${emailDomain}`;
 
