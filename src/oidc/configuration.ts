@@ -6,7 +6,10 @@ import OIDCAccount from './account';
 import AdapterFactory from './adapter';
 
 const claims = {
-  openid: ['sub', 'groups', 'username'],
+  openid: ['sub'],
+  profile: ['name', 'username', 'student_id'],
+  email: ['email'],
+  groups: ['groups'],
 };
 
 export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc']): Configuration {
@@ -18,23 +21,55 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
   return {
     adapter,
     findAccount: async (ctx, id) => {
-      const [groups, username] = await model.pgDo(async tr => {
+      const [profile, email, groups] = await model.pgDo(async tr => {
+        // get name and username
+        const userResult = await model.users.getByUserIdx(tr, Number(id));
+        if (!userResult.name || !userResult.username) {
+          throw new Error('name or username empty');
+        }
+
+        // ~84: YYXX-NNNN, 85 ~ 99: YYXXX-NNN, 00 ~: YYYY-NNNNN
+        // get student id, hard-coded by ataching '19' and sorting
+        const sidResult = await model.users.getStudentNumbersByUserIdx(tr, Number(id));
+        if (sidResult.length === 0) {
+          throw new Error('no student id');
+        }
+        const primarySid = sidResult
+          .map(sid => ({
+            sid,
+            year: Number(sid.length === 9 ? `19${sid.substring(0, 2)}` : sid.substring(0, 4)),
+          }))
+          .sort((a, b) => b.year - a.year)
+          .map(({ sid }) => sid)[0];
+
+        const profile = {
+          name: userResult.name,
+          username: userResult.username,
+          student_id: primarySid,
+        };
+
+        // get email, hard-coded, 1. snu.ac.kr, 2. last row
+        const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
+        if (emailResult.length === 0) {
+          throw new Error('no email');
+        }
+        const { local: emailLocal, domain: emailDomain } = emailResult.find(({ domain }) =>
+          domain === 'snu.ac.kr'
+        )
+          ?? emailResult[emailResult.length - 1];
+        const email = `${emailLocal}@${emailDomain}`;
+
+        // get groups
         const groupSet = await model.users.getUserReachableGroups(tr, Number(id));
         const groupResult = await tr.query('SELECT identifier FROM groups WHERE idx = ANY($1)', [[
           ...groupSet,
         ]]);
         const groups = groupResult.rows.map(r => r.identifier);
 
-        const userResult = await model.users.getByUserIdx(tr, Number(id));
-        if (userResult.username == null) {
-          throw new Error('username is null');
-        }
-        const username = userResult.username;
-
-        return [groups, username];
+        return [profile, email, groups];
       });
 
-      return new OIDCAccount(id, username, groups);
+      return new OIDCAccount(id, profile, email, groups);
     },
     async loadExistingGrant(ctx) {
       if (!ctx.oidc.client || !ctx.oidc.session || !ctx.oidc.result) {
@@ -68,8 +103,13 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
             accountId: ctx.oidc.session.accountId,
           });
 
-          grant.addOIDCScope('openid');
-          grant.addOIDCClaims(claims.openid);
+          grant.addOIDCScope('openid profile email groups');
+          grant.addOIDCClaims([
+            ...claims.openid,
+            ...claims.profile,
+            ...claims.email,
+            ...claims.groups,
+          ]);
           await grant.save();
           return grant;
         }
