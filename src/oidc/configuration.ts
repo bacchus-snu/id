@@ -5,7 +5,6 @@ import type Model from '../model/model';
 import OIDCAccount from './account';
 import AdapterFactory from './adapter';
 
-const scopes = ['openid', 'profile', 'email', 'groups'];
 const claims = {
   openid: ['sub'],
   profile: ['name', 'username', 'student_id'],
@@ -143,7 +142,6 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         return `/oauth/${interaction.uid}`;
       },
     },
-    scopes,
     claims,
     features: {
       devInteractions: {
