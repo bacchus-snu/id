@@ -6,10 +6,9 @@ import OIDCAccount from './account';
 import AdapterFactory from './adapter';
 
 const claims = {
-  openid: ['sub'],
-  profile: ['name', 'username', 'student_id'],
+  openid: ['sub', 'username', 'groups'],
+  profile: ['name', 'student_id'],
   email: ['email'],
-  groups: ['groups'],
 };
 
 export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc']): Configuration {
@@ -21,12 +20,14 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
   return {
     adapter,
     findAccount: async (ctx, id) => {
-      const [profile, email, groups] = await model.pgDo(async tr => {
+      const [username, groups, name, student_id, email] = await model.pgDo(async tr => {
         // get name and username
         const userResult = await model.users.getByUserIdx(tr, Number(id));
         if (!userResult.name || !userResult.username) {
           throw new Error('name or username empty');
         }
+        const username = userResult.username;
+        const name = userResult.name;
 
         // ~84: YYXX-NNNN, 85 ~ 99: YYXXX-NNN, 00 ~: YYYY-NNNNN
         // get student id, hard-coded by ataching '19' and sorting
@@ -41,12 +42,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
           }))
           .sort((a, b) => b.year - a.year)
           .map(({ sid }) => sid)[0];
-
-        const profile = {
-          name: userResult.name,
-          username: userResult.username,
-          student_id: primarySid,
-        };
+        const student_id = primarySid;
 
         // get email, hard-coded, 1. snu.ac.kr, 2. last row
         const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
@@ -66,10 +62,10 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         ]]);
         const groups = groupResult.rows.map(r => r.identifier);
 
-        return [profile, email, groups];
+        return [username, groups, name, student_id, email];
       });
 
-      return new OIDCAccount(id, profile, email, groups);
+      return new OIDCAccount(id, username, groups, name, student_id, email);
     },
     async loadExistingGrant(ctx) {
       if (!ctx.oidc.client || !ctx.oidc.session || !ctx.oidc.result) {
@@ -108,7 +104,6 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
             ...claims.openid,
             ...claims.profile,
             ...claims.email,
-            ...claims.groups,
           ]);
           await grant.save();
           return grant;
