@@ -32,17 +32,13 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
         // ~84: YYXX-NNNN, 85 ~ 99: YYXXX-NNN, 00 ~: YYYY-NNNNN
         // get student id, hard-coded by ataching '19' and sorting
         const sidResult = await model.users.getStudentNumbersByUserIdx(tr, Number(id));
-        if (sidResult.length === 0) {
-          throw new Error('no student id');
-        }
-        const primarySid = sidResult
+        const student_id = sidResult
           .map(sid => ({
             sid,
             year: Number(sid.length === 9 ? `19${sid.substring(0, 2)}` : sid.substring(0, 4)),
           }))
           .sort((a, b) => b.year - a.year)
-          .map(({ sid }) => sid)[0];
-        const student_id = primarySid;
+          .map(({ sid }) => sid)[0] ?? '';
 
         // get email, hard-coded, 1. snu.ac.kr, 2. last row
         const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
