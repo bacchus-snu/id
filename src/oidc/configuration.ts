@@ -144,6 +144,9 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
       revocation: {
         enabled: oidcConfig.revocation,
       },
+      introspection: {
+        enabled: oidcConfig.introspection,
+      },
     },
   };
 }

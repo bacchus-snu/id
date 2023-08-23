@@ -63,6 +63,7 @@
     },
     "devInteractions": false,
     "deviceFlow": false,
-    "revocation": false
+    "revocation": false,
+    "introspection": true
   }
 }

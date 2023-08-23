@@ -187,6 +187,9 @@ export interface OIDCConfig {
   revocation: boolean;
 
   /** */
+  introspection: boolean;
+
+  /** */
   clients?: Array<ClientMetadata>;
 }
 
