@@ -42,7 +42,7 @@
     "database": "id"
   },
   "permissions": {
-    "snucse": 1
+    "snucse": [1]
   },
   "oidc": {
     "issuer": "http://localhost:3000/o",
