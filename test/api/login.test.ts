@@ -300,9 +300,7 @@ test('test legacy login', async t => {
     );
     const groupIdx = await model.groups.create(tr, trans, trans, uuid());
     userMembershipIdx = await model.users.addUserMembership(tr, userIdx, groupIdx);
-    const permissionIdx = await model.permissions.create(tr, trans, trans);
-    await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx);
-    config.permissions.snucse = permissionIdx;
+    config.permissions.snucse = [groupIdx];
   }, ['users', 'group_reachable_cache']);
 
   const agent = request.agent(app);
