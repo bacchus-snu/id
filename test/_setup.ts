@@ -3,9 +3,10 @@ import Logger, * as bunyan from 'bunyan';
 import * as fs from 'fs';
 import { Server } from 'node:http';
 import createAPIServer from '../src/api/server';
+import Config from '../src/config';
 import Model from '../src/model/model';
 
-export let config: any;
+export let config: Config;
 export let log: Logger;
 export let model: Model;
 export let app: Server;

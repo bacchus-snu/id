@@ -43,7 +43,7 @@
     "database": "id"
   },
   "permissions": {
-    "snucse": 1
+    "snucse": [1]
   },
   "jwt": {
     "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgCdjfvbvINjCy20yG\nuoDL0rVf60lJAv6Y/barD5El0Y2hRANCAARWUx7P9gsIAe23mCffvGXylGdb8t40\nXgBYC+Rv2zIVkPtfL6y5TLTn0LTm+9Q2Z/43Yo864CXRUoSVAU9puu3P\n-----END PRIVATE KEY-----\n",

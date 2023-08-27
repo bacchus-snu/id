@@ -105,12 +105,9 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
       await model.pgDo(async tr => {
         try {
           userIdx = await model.users.authenticate(tr, username, password);
-          const requiredPermission = config.permissions.snucse;
-          const havePermission = await model.permissions.checkUserHavePermission(
-            tr,
-            userIdx,
-            requiredPermission,
-          );
+          const permittedGroups = config.permissions.snucse;
+          const userReachableGroups = await model.users.getUserReachableGroups(tr, userIdx);
+          const havePermission = permittedGroups.some(group => userReachableGroups.has(group));
           if (!havePermission) {
             throw new AuthorizationError();
           }

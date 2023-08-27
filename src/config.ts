@@ -132,9 +132,9 @@ export interface PosixConfig {
  */
 export interface PermissionConfig {
   /**
-   * SNUCSE3 login permission idx.
+   * SNUCSE3 login group idxs.
    */
-  snucse: number;
+  snucse: Array<number>;
 }
 
 /**
