@@ -445,8 +445,7 @@ export default class Users {
     tr: Transaction,
     groupIdx: number,
   ): Promise<Array<User>> {
-    const query =
-      'SELECT u.* FROM pending_user_memberships AS pum '
+    const query = 'SELECT u.* FROM pending_user_memberships AS pum '
       + 'INNER JOIN users AS u ON pum.user_idx = u.idx '
       + 'WHERE pum.group_idx = $1 ORDER BY pum.idx';
     const result = await tr.query(query, [groupIdx]);
