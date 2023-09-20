@@ -43,12 +43,15 @@ export function listMembers(model: Model): IMiddleware {
 
       let owner = false;
       let users: Array<User> = [];
+      let studentNumberMap: Map<number, Array<string>>;
       try {
         await model.pgDo(async tr => {
           owner = await model.groups.checkOwner(tr, gid, ctx.state.userIdx);
 
           if (owner) {
             users = await model.users.getAllMembershipUsers(tr, gid, pagination);
+            const indices = users.map(u => u.idx);
+            studentNumberMap = await model.users.getStudentNumbersByUserIdxBulk(tr, indices);
           }
         });
       } catch (e) {
@@ -66,14 +69,12 @@ export function listMembers(model: Model): IMiddleware {
       }
 
       ctx.status = 200;
-      users.forEach((u: any) => {
-        u.uid = u.idx;
-        delete u.idx;
-        delete u.username;
-        delete u.shell;
-        delete u.preferredLanguage;
-      });
-      ctx.body = users;
+      ctx.body = users.map(u => ({
+        uid: u.idx,
+        username: u.username,
+        name: u.name,
+        studentNumbers: studentNumberMap?.get(u.idx) ?? [],
+      }));
     } else {
       ctx.status = 401;
       return;
@@ -89,12 +90,15 @@ export function listPending(model: Model): IMiddleware {
 
       let owner = false;
       let users: Array<User> = [];
+      let studentNumberMap: Map<number, Array<string>>;
       try {
         await model.pgDo(async tr => {
           owner = await model.groups.checkOwner(tr, gid, ctx.state.userIdx);
 
           if (owner) {
             users = await model.users.getAllPendingMembershipUsers(tr, gid);
+            const indices = users.map(u => u.idx);
+            studentNumberMap = await model.users.getStudentNumbersByUserIdxBulk(tr, indices);
           }
         });
       } catch (e) {
@@ -108,14 +112,12 @@ export function listPending(model: Model): IMiddleware {
       }
 
       ctx.status = 200;
-      users.forEach((u: any) => {
-        u.uid = u.idx;
-        delete u.idx;
-        delete u.username;
-        delete u.shell;
-        delete u.preferredLanguage;
-      });
-      ctx.body = users;
+      ctx.body = users.map(u => ({
+        uid: u.idx,
+        username: u.username,
+        name: u.name,
+        studentNumbers: studentNumberMap?.get(u.idx) ?? [],
+      }));
     } else {
       ctx.status = 401;
       return;
