@@ -225,23 +225,6 @@ export default class Groups {
     return result.rows.map(row => row.idx);
   }
 
-  private rowToUser(row: any): User {
-    const user: User = {
-      idx: row.idx,
-      username: row.username,
-      name: row.name,
-      uid: row.uid,
-      shell: row.shell,
-      preferredLanguage: row.preferred_language,
-    };
-
-    if (row.student_number) {
-      user.studentNumber = row.student_number;
-    }
-
-    return user;
-  }
-
   private rowToGroup(row: any): Group {
     return {
       idx: row.idx,

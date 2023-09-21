@@ -22,7 +22,6 @@ export interface User {
   uid: number;
   shell: string;
   preferredLanguage: Language;
-  studentNumber?: string;
 }
 
 export interface UserMembership {
@@ -348,8 +347,8 @@ export default class Users {
     groupIdx: number,
     pagination?: { start: number; count: number },
   ): Promise<Array<User>> {
-    let query = 'SELECT u.*, sn.student_number FROM user_memberships AS um INNER JOIN users AS u '
-      + 'ON um.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
+    let query = 'SELECT u.* FROM user_memberships AS um '
+      + 'INNER JOIN users AS u ON um.user_idx = u.idx '
       + 'WHERE um.group_idx = $1 ORDER BY um.idx';
     const params = [groupIdx];
     if (pagination != null) {
@@ -446,9 +445,8 @@ export default class Users {
     tr: Transaction,
     groupIdx: number,
   ): Promise<Array<User>> {
-    const query =
-      'SELECT u.*, sn.student_number FROM pending_user_memberships AS pum INNER JOIN users AS u '
-      + 'ON pum.user_idx = u.idx INNER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
+    const query = 'SELECT u.* FROM pending_user_memberships AS pum '
+      + 'INNER JOIN users AS u ON pum.user_idx = u.idx '
       + 'WHERE pum.group_idx = $1 ORDER BY pum.idx';
     const result = await tr.query(query, [groupIdx]);
     return result.rows.map(row => this.rowToUser(row));
@@ -491,6 +489,26 @@ export default class Users {
     return result.rows.map(row => row.student_number);
   }
 
+  public async getStudentNumbersByUserIdxBulk(
+    tr: Transaction,
+    userIndices: Array<number>,
+  ): Promise<Map<number, Array<string>>> {
+    const query = 'SELECT u.idx, sn.student_number FROM users u '
+      + 'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
+      + 'WHERE u.idx = ANY($1)';
+    const result = await tr.query(query, [userIndices]);
+    const map = new Map<number, Array<string>>();
+    for (const row of result.rows) {
+      const idx = row.idx;
+      const studentNumber = row.student_number;
+      if (!map.has(idx)) {
+        map.set(idx, []);
+      }
+      map.get(idx)!.push(studentNumber);
+    }
+    return map;
+  }
+
   public async addStudentNumber(
     tr: Transaction,
     userIdx: number,
@@ -503,7 +521,7 @@ export default class Users {
   }
 
   private rowToUser(row: any): User {
-    const user: User = {
+    return {
       idx: row.idx,
       username: row.username,
       name: row.name,
@@ -511,12 +529,6 @@ export default class Users {
       shell: row.shell,
       preferredLanguage: row.preferred_language,
     };
-
-    if (row.student_number) {
-      user.studentNumber = row.student_number;
-    }
-
-    return user;
   }
 
   private rowToUserMembership(row: any): UserMembership {
@@ -525,15 +537,6 @@ export default class Users {
       userIdx: row.user_idx,
       groupIdx: row.group_idx,
       pending: false,
-    };
-  }
-
-  private rowToPendingUserMembership(row: any): UserMembership {
-    return {
-      idx: row.idx,
-      userIdx: row.user_idx,
-      groupIdx: row.group_idx,
-      pending: true,
     };
   }
 
