@@ -22,12 +22,7 @@ jobs:
       application: ${{ steps.vars.outputs.application }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ vars.ECR_PUSH_ROLE_ARN }}
-          aws-region: ap-northeast-2
+        uses: actions/checkout@v4
 
       - name: Set variables
         id: vars
@@ -47,9 +42,6 @@ jobs:
             echo "application=bacchus-snu/id/prod" >> $GITHUB_OUTPUT
           fi
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and push
@@ -57,17 +49,17 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}:${{ steps.vars.outputs.image-tag }}
+          tags: ghcr.io/bacchus-snu/${{ vars.IMAGE_NAME }}:${{ steps.vars.outputs.image-tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-  deploy:
-    needs: build
-    if: ${{ github.event_name != 'pull_request' }}
-    uses: bacchus-snu/cd-manifests/.github/workflows/deploy-application.yaml@main
-    with:
-      application: ${{ needs.build.outputs.application }}
-      image: '${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}'
-      tag: ${{ needs.build.outputs.tag }}
-    secrets:
-      app-id: '${{ secrets.CD_GITHUB_APP_ID }}'
-      app-private-key: '${{ secrets.CD_GITHUB_APP_SECRET_KEY }}'
+  #deploy:
+  #  needs: build
+  #  if: ${{ github.event_name != 'pull_request' }}
+  #  uses: bacchus-snu/cd-manifests/.github/workflows/deploy-application.yaml@main
+  #  with:
+  #    application: ${{ needs.build.outputs.application }}
+  #    image: '${{ vars.ECR_URL }}/${{ vars.IMAGE_NAME }}'
+  #    tag: ${{ needs.build.outputs.tag }}
+  #  secrets:
+  #    app-id: '${{ secrets.CD_GITHUB_APP_ID }}'
+  #    app-private-key: '${{ secrets.CD_GITHUB_APP_SECRET_KEY }}'
