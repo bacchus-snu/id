@@ -44,10 +44,23 @@ export default (model: Model, provider: OIDCProvider) => {
   router.get('/oauth/:uid/details', async ctx => {
     const {
       prompt,
-      params,
+      params: paramsRaw,
     } = await provider.interactionDetails(ctx.req, ctx.res);
+    const params = paramsSchema.parse(paramsRaw);
+    const client = await provider.Client.find(params.client_id);
     ctx.status = 200;
-    ctx.body = { prompt, params };
+    ctx.body = {
+      prompt,
+      params: paramsRaw,
+      client: client && {
+        name: client.clientName,
+        uri: client.clientUri,
+        policyUri: client.policyUri,
+        tosUri: client.tosUri,
+        logoUri: client.logoUri,
+        contacts: client.contacts,
+      },
+    };
   });
 
   router.post('/oauth/:uid/action/login', async ctx => {
