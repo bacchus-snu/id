@@ -8,7 +8,7 @@
     "fmt": "dprint fmt",
     "fmt:check": "dprint check",
     "start": "yarn rebuild-cache && node dist/src/index.js",
-    "test": "yarn lint && yarn fmt:check && yarn build && nyc ava --color --verbose",
+    "test": "yarn lint && yarn fmt:check && yarn build && ava --color --verbose",
     "rebuild-cache": "node dist/bootstrap/rebuild_group_cache.js"
   },
   "repository": {
@@ -25,7 +25,7 @@
     "@phc/format": "^1.0.0",
     "argon2": "^0.31.1",
     "bunyan": "^1.8.15",
-    "ioredis": "^4.28.5",
+    "ioredis": "^5.3.2",
     "jose": "^4.14.6",
     "koa": "^2.14.2",
     "koa-bodyparser": "^4.4.1",
@@ -41,32 +41,24 @@
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.9",
-    "@types/ioredis": "^4.28.10",
     "@types/koa": "^2.13.9",
     "@types/koa-bodyparser": "^4.3.10",
     "@types/koa-mount": "^4.0.3",
     "@types/koa-router": "^7.4.5",
     "@types/koa__cors": "^4.0.1",
-    "@types/lodash": "^4.14.198",
-    "@types/node": "^20.6.2",
-    "@types/nodemailer": "^6.4.10",
+    "@types/node": "^20.7.1",
+    "@types/nodemailer": "^6.4.11",
     "@types/oidc-provider": "^8.4.0",
-    "@types/pg": "^8.10.2",
-    "@types/supertest": "^2.0.12",
+    "@types/pg": "^8.10.3",
+    "@types/supertest": "^2.0.13",
     "@types/uuid": "^9.0.4",
-    "@typescript-eslint/eslint-plugin": "^6.7.2",
-    "@typescript-eslint/parser": "^6.7.2",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
     "ava": "^5.3.1",
     "dprint": "^0.41.0",
-    "eslint": "^8.49.0",
-    "nyc": "^15.1.0",
+    "eslint": "^8.50.0",
     "supertest": "^6.3.3",
     "typescript": "^5.2.2"
   },
-  "packageManager": "yarn@3.6.3",
-  "dependenciesMeta": {
-    "dprint@0.38.0": {
-      "unplugged": true
-    }
-  }
+  "packageManager": "yarn@3.6.3"
 }

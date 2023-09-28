@@ -1,4 +1,3 @@
-// npm i ioredis@^4.0.0
 import Redis from 'ioredis';
 // @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { Adapter, AdapterPayload } from 'oidc-provider';
@@ -31,7 +30,7 @@ function uidKeyFor(uid: string) {
 }
 
 class RedisAdapter implements Adapter {
-  client: Redis.Redis;
+  client: Redis;
 
   constructor(public name: string, redisURL: string) {
     this.client = new Redis(redisURL, { keyPrefix: 'oidc:' });
