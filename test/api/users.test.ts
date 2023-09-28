@@ -44,7 +44,7 @@ test('create user step by step', async t => {
     studentNumbers,
   });
   // request without session token will be fail
-  t.is(response.status, 401);
+  t.is(response.status, 400);
 
   response = await agent.post('/api/email/check-token').send({
     token,

@@ -65,7 +65,7 @@ export function listMembers(model: Model): IMiddleware {
       }
 
       if (!owner) {
-        ctx.status = 401;
+        ctx.status = 403;
         return;
       }
 
@@ -108,7 +108,7 @@ export function listPending(model: Model): IMiddleware {
       }
 
       if (!owner) {
-        ctx.status = 401;
+        ctx.status = 403;
         return;
       }
 
@@ -180,7 +180,7 @@ export function acceptGroup(model: Model): IMiddleware {
 
           const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx);
           if (!owner) {
-            ctx.status = 401;
+            ctx.status = 403;
             return;
           }
 
@@ -224,7 +224,7 @@ export function rejectGroup(model: Model): IMiddleware {
 
           const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx);
           if (!owner) {
-            ctx.status = 401;
+            ctx.status = 403;
             return;
           }
 

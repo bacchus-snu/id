@@ -144,7 +144,7 @@ test('pending listing', async t => {
   t.is(response.status, 200);
 
   response = await agent.get(`/api/group/${groupIdx}/pending`);
-  t.is(response.status, 401);
+  t.is(response.status, 403);
 
   await model.pgDo(async tr => {
     await model.users.addUserMembership(tr, userIdx, groupIdx);
@@ -236,6 +236,13 @@ test('accept group requests', async t => {
   let response;
 
   response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
+  t.is(response.status, 400);
+
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
+  });
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
   t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
@@ -244,18 +251,11 @@ test('accept group requests', async t => {
   });
   t.is(response.status, 200);
 
-  response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
-  t.is(response.status, 401);
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
+  t.is(response.status, 403);
 
   await model.pgDo(async tr => {
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx);
-  });
-
-  response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
-  t.is(response.status, 200);
-
-  await model.pgDo(async tr => {
-    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
   });
 
   response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
@@ -288,6 +288,13 @@ test('reject group requests', async t => {
   let response;
 
   response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
+  t.is(response.status, 400);
+
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
+  });
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);
   t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
@@ -296,18 +303,11 @@ test('reject group requests', async t => {
   });
   t.is(response.status, 200);
 
-  response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
-  t.is(response.status, 401);
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);
+  t.is(response.status, 403);
 
   await model.pgDo(async tr => {
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx);
-  });
-
-  response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
-  t.is(response.status, 200);
-
-  await model.pgDo(async tr => {
-    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
   });
 
   response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);
