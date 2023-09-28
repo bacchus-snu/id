@@ -10,7 +10,5 @@ module.exports = {
     'no-sequences': 'error',
     'no-constant-condition': ['error', { checkLoops: false }],
     '@typescript-eslint/array-type': ['error', { default: 'generic' }],
-    '@typescript-eslint/no-unused-vars': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
   },
 };

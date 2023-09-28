@@ -1,8 +1,16 @@
 import { NoSuchEntryError } from './errors';
-import Model from './model';
 import Transaction from './transaction';
 import { Translation } from './translation';
-import { User } from './users';
+
+interface GroupRow {
+  idx: number;
+  owner_group_idx: number | null;
+  name_ko: string;
+  name_en: string;
+  description_ko: string;
+  description_en: string;
+  identifier: string;
+}
 
 export interface Group {
   idx: number;
@@ -10,6 +18,19 @@ export interface Group {
   name: Translation;
   description: Translation;
   identifier: string;
+}
+
+interface GroupUserInfoRow {
+  idx: number;
+  name_ko: string;
+  name_en: string;
+  description_ko: string;
+  description_en: string;
+  identifier: string;
+  is_pending: boolean;
+  is_member: boolean;
+  is_direct_member: boolean;
+  is_owner: boolean;
 }
 
 export interface GroupUserInfo {
@@ -27,13 +48,18 @@ interface GroupReachable {
   [groupIdx: number]: Array<number>;
 }
 
+interface GroupRelationshipRow {
+  supergroup_idx: number;
+  subgroup_idx: number;
+}
+
 export interface GroupRelationship {
   supergroupIdx: number;
   subgroupIdx: number;
 }
 
 export default class Groups {
-  constructor(private readonly model: Model) {
+  constructor() {
   }
 
   public async create(
@@ -44,7 +70,7 @@ export default class Groups {
   ): Promise<number> {
     const query = 'INSERT INTO groups(name_ko, name_en, description_ko, '
       + 'description_en, identifier) VALUES ($1, $2, $3, $4, $5) RETURNING idx';
-    const result = await tr.query(query, [
+    const result = await tr.query<{ idx: number }>(query, [
       name.ko,
       name.en,
       description.ko,
@@ -57,7 +83,7 @@ export default class Groups {
 
   public async delete(tr: Transaction, groupIdx: number): Promise<number> {
     const query = 'DELETE FROM groups WHERE idx = $1 RETURNING idx';
-    const result = await tr.query(query, [groupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [groupIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -67,13 +93,13 @@ export default class Groups {
 
   public async getGroupReachableArray(tr: Transaction, groupIdx: number): Promise<Array<number>> {
     const query = 'SELECT subgroup_idx FROM group_reachable_cache WHERE supergroup_idx = $1';
-    const result = await tr.query(query, [groupIdx]);
+    const result = await tr.query<{ subgroup_idx: number }>(query, [groupIdx]);
     return result.rows.map(row => row.subgroup_idx);
   }
 
   public async getByIdx(tr: Transaction, idx: number): Promise<Group> {
     const query = 'SELECT * FROM groups WHERE idx = $1';
-    const result = await tr.query(query, [idx]);
+    const result = await tr.query<GroupRow>(query, [idx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -116,14 +142,14 @@ export default class Groups {
     WHERE g.owner_group_idx IS NOT NULL
     ORDER BY g.idx, umem.user_idx
     `;
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<GroupUserInfoRow>(query, [userIdx]);
     return result.rows.map(row => this.rowToGroupUserInfo(row));
   }
 
   public async checkOwner(tr: Transaction, groupIdx: number, userIdx: number): Promise<boolean> {
     const query = 'SELECT EXISTS (SELECT 1 FROM user_memberships mem INNER JOIN groups g '
       + 'ON g.owner_group_idx = mem.group_idx WHERE mem.user_idx = $1 AND g.idx = $2)';
-    const result = await tr.query(query, [userIdx, groupIdx]);
+    const result = await tr.query<{ exists: boolean }>(query, [userIdx, groupIdx]);
     return result.rows[0].exists;
   }
 
@@ -134,14 +160,14 @@ export default class Groups {
   ): Promise<number> {
     const query = 'INSERT INTO group_relations(supergroup_idx, subgroup_idx) '
       + 'VALUES ($1, $2) RETURNING idx';
-    const result = await tr.query(query, [supergroupIdx, subgroupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [supergroupIdx, subgroupIdx]);
     await this.updateGroupReachableCache(tr);
     return result.rows[0].idx;
   }
 
   public async deleteGroupRelation(tr: Transaction, groupRelationIdx: number): Promise<number> {
     const query = 'DELETE FROM group_relations WHERE idx = $1 RETURNING idx';
-    const result = await tr.query(query, [groupRelationIdx]);
+    const result = await tr.query<{ idx: number }>(query, [groupRelationIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -191,7 +217,7 @@ export default class Groups {
 
   private async getAllGroupRelation(tr: Transaction): Promise<Array<GroupRelationship>> {
     const query = 'SELECT supergroup_idx, subgroup_idx FROM group_relations';
-    const result = await tr.query(query);
+    const result = await tr.query<GroupRelationshipRow>(query);
     return result.rows.map(row => this.rowToGroupRelation(row));
   }
 
@@ -220,12 +246,12 @@ export default class Groups {
 
   private async getAllIdx(tr: Transaction): Promise<Array<number>> {
     const query = 'SELECT idx FROM groups';
-    const result = await tr.query(query);
+    const result = await tr.query<{ idx: number }>(query);
 
     return result.rows.map(row => row.idx);
   }
 
-  private rowToGroup(row: any): Group {
+  private rowToGroup(row: GroupRow): Group {
     return {
       idx: row.idx,
       ownerGroupIdx: row.owner_group_idx,
@@ -241,7 +267,7 @@ export default class Groups {
     };
   }
 
-  private rowToGroupUserInfo(row: any): GroupUserInfo {
+  private rowToGroupUserInfo(row: GroupUserInfoRow): GroupUserInfo {
     return {
       idx: row.idx,
       name: {
@@ -260,7 +286,7 @@ export default class Groups {
     };
   }
 
-  private rowToGroupRelation(row: any): GroupRelationship {
+  private rowToGroupRelation(row: GroupRelationshipRow): GroupRelationship {
     return {
       supergroupIdx: row.supergroup_idx,
       subgroupIdx: row.subgroup_idx,

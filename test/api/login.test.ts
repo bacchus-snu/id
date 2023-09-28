@@ -1,7 +1,7 @@
 import test from 'ava';
 import moment from 'moment';
 import * as request from 'supertest';
-import * as tweetnacl from 'tweetnacl';
+import tweetnacl from 'tweetnacl';
 import { v4 as uuid } from 'uuid';
 import { app, config, model } from '../_setup';
 
@@ -41,7 +41,7 @@ test('test login with credential', async t => {
 
   await model.pgDo(async tr => {
     const query = 'SELECT last_login_at FROM users WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<{ last_login_at: string }>(query, [userIdx]);
     const lastLogin = moment(result.rows[0].last_login_at);
     t.true(lastLogin.isBetween(moment().subtract(10, 'seconds'), moment().add(10, 'seconds')));
   });
@@ -238,12 +238,11 @@ test.serial('test PAM login with credential and pubkey', async t => {
 test('test checkLogin', async t => {
   let username = '';
   let password = '';
-  let userIdx = -1;
 
   await model.pgDo(async tr => {
     username = uuid();
     password = uuid();
-    userIdx = await model.users.create(
+    await model.users.create(
       tr,
       username,
       password,

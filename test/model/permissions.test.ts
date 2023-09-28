@@ -1,7 +1,5 @@
 import test from 'ava';
 
-import { v4 as uuid } from 'uuid';
-import { NoSuchEntryError } from '../../src/model/errors';
 import { Translation } from '../../src/model/translation';
 
 import { model } from '../_setup';
@@ -22,15 +20,15 @@ test('create and delete permissions', async t => {
     const permissionIdx = await model.permissions.create(tr, name, description);
 
     const query = 'SELECT * FROM permissions WHERE idx = $1';
-    const result = await tr.query(query, [permissionIdx]);
+    const result = await tr.query<{ [name: string]: unknown }>(query, [permissionIdx]);
 
     t.truthy(result.rows[0]);
-    t.deepEqual(result.rows[0].name_ko, name.ko);
-    t.deepEqual(result.rows[0].name_en, name.en);
-    t.deepEqual(result.rows[0].description_ko, description.ko);
-    t.deepEqual(result.rows[0].description_en, description.en);
+    t.is(result.rows[0].name_ko, name.ko);
+    t.is(result.rows[0].name_en, name.en);
+    t.is(result.rows[0].description_ko, description.ko);
+    t.is(result.rows[0].description_en, description.en);
 
-    const deletedPermissionIdx = await model.permissions.delete(tr, permissionIdx);
+    await model.permissions.delete(tr, permissionIdx);
     const emptyResult = await tr.query(query, [permissionIdx]);
 
     t.is(emptyResult.rows.length, 0);
@@ -43,13 +41,13 @@ test('create and delete permission requirements', async t => {
     const permissionIdx = await createPermission(tr, model);
     const idx = await model.permissions.addPermissionRequirement(tr, groupIdx, permissionIdx);
 
-    const query = 'SELECT * FROM permission_requirements WHERE idx = $1';
-    const result = await tr.query(query, [idx]);
+    const query = 'SELECT group_idx FROM permission_requirements WHERE idx = $1';
+    const result = await tr.query<{ group_idx: number }>(query, [idx]);
 
     t.truthy(result.rows[0]);
     t.is(result.rows[0].group_idx, groupIdx);
 
-    const deletedIdx = await model.permissions.deletePermissionRequirement(tr, idx);
+    await model.permissions.deletePermissionRequirement(tr, idx);
     const emptyResult = await tr.query(query, [idx]);
 
     t.is(emptyResult.rows.length, 0);
@@ -59,8 +57,7 @@ test('create and delete permission requirements', async t => {
 test('check user permission', async t => {
   await model.pgDo(async tr => {
     const g: Array<number> = [];
-    const range: Array<number> = [...Array(5).keys()];
-    for (const _ of range) {
+    for (let idx = 0; idx < 5; idx++) {
       g.push(await createGroup(tr, model));
     }
 

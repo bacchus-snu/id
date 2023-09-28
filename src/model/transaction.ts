@@ -12,7 +12,10 @@ export default class Transaction {
   ) {
   }
 
-  public query(query: string, values?: Array<any>): Promise<pg.QueryResult> {
+  public query<Row extends object>(
+    query: string,
+    values?: Array<unknown>,
+  ): Promise<pg.QueryResult<Row>> {
     this.ensureNotTerminated();
     return this.client.query(query, values);
   }

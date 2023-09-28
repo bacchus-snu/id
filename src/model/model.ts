@@ -33,10 +33,10 @@ export default class Model {
     this.pgPool = new pg.Pool(this.pgConfig);
 
     this.users = new Users(this);
-    this.emailAddresses = new EmailAddresses(this);
-    this.groups = new Groups(this);
+    this.emailAddresses = new EmailAddresses();
+    this.groups = new Groups();
     this.permissions = new Permissions(this);
-    this.shells = new Shells(this);
+    this.shells = new Shells();
     this.hosts = new Hosts(this);
     this.oauth = new OAuth();
   }

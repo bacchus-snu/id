@@ -13,15 +13,15 @@ test('create extra email', async t => {
 
     await model.emailAddresses.validate(tr, userIdx, emailAddressIdx);
 
-    const query = 'SELECT * FROM email_addresses WHERE idx = $1';
-    const result = await tr.query(query, [emailAddressIdx]);
+    const query = 'SELECT owner_idx FROM email_addresses WHERE idx = $1';
+    const result = await tr.query<{ owner_idx: number }>(query, [emailAddressIdx]);
     t.is(result.rows[0].owner_idx, userIdx);
   }, ['users']);
 });
 
 test('generate verification token', async t => {
   await model.pgDo(async tr => {
-    const userIdx = await createUser(tr, model);
+    await createUser(tr, model);
     const emailAddressIdx = await createEmailAddress(tr, model);
     await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx);
 
@@ -33,14 +33,14 @@ test('generate verification token', async t => {
 
 test('get email address by token', async t => {
   await model.pgDo(async tr => {
-    const userIdx = await createUser(tr, model);
+    await createUser(tr, model);
     const emailLocal = uuid();
     const emailDomain = uuid();
     const emailAddressIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
     await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx);
 
-    const tokenResult = await tr.query(
-      'SELECT * FROM email_verification_tokens WHERE email_idx = $1',
+    const tokenResult = await tr.query<{ token: string }>(
+      'SELECT token FROM email_verification_tokens WHERE email_idx = $1',
       [emailAddressIdx],
     );
     const token: string = tokenResult.rows[0].token;
@@ -80,7 +80,7 @@ test('verification token request with identical email idx', async t => {
     const newToken = await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx);
 
     const query = 'SELECT token FROM email_verification_tokens WHERE email_idx = $1';
-    const result = await tr.query(query, [emailAddressIdx]);
+    const result = await tr.query<{ token: string }>(query, [emailAddressIdx]);
     const token = result.rows[0].token;
     t.is(newToken, token);
     t.not(oldToken, token);
@@ -93,7 +93,7 @@ test('token expiration', async t => {
     const emailDomain = uuid();
     const emailAddressIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
     const token = await model.emailAddresses.generateVerificationToken(tr, emailAddressIdx);
-    const expiryResult = await tr.query(
+    const expiryResult = await tr.query<{ expires: string }>(
       'SELECT expires FROM email_verification_tokens WHERE token = $1',
       [token],
     );
@@ -148,7 +148,7 @@ test('reset resend count of expired verification token', async t => {
   await model.pgDo(async tr => {
     const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid());
     let token = await model.emailAddresses.generateVerificationToken(tr, emailIdx);
-    const expiryResult = await tr.query(
+    const expiryResult = await tr.query<{ expires: string }>(
       'SELECT expires FROM email_verification_tokens WHERE token = $1',
       [token],
     );

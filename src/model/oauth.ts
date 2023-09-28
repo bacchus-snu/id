@@ -6,11 +6,13 @@ import Transaction from './transaction';
 
 export default class OAuth {
   public async getClientById(tr: Transaction, id: string): Promise<AllClientMetadata> {
-    const client = await tr.query(
+    const client = await tr.query<
+      { client_id: string; client_secret: string; client_name: string }
+    >(
       'SELECT client_id, client_secret, client_name FROM oauth_clients WHERE client_id = $1',
       [id],
     );
-    const redirectUri = await tr.query(
+    const redirectUri = await tr.query<{ redirect_uri: string }>(
       'SELECT redirect_uri FROM oauth_client_redirect_uris WHERE client_id = $1',
       [id],
     );
@@ -28,9 +30,12 @@ export default class OAuth {
   }
 
   public async isFirstParty(tr: Transaction, id: string): Promise<boolean> {
-    const result = await tr.query('SELECT first_party FROM oauth_clients WHERE client_id = $1', [
-      id,
-    ]);
+    const result = await tr.query<{ first_party: boolean }>(
+      'SELECT first_party FROM oauth_clients WHERE client_id = $1',
+      [
+        id,
+      ],
+    );
     return Boolean(result.rows[0]?.first_party);
   }
 }

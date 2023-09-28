@@ -2,7 +2,7 @@ import test from 'ava';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { GroupUserInfo } from '../../src/model/groups';
-import { app, config, model } from '../_setup';
+import { app, model } from '../_setup';
 import { createGroup, createGroupRelation, createUser } from '../_test_utils';
 
 test('group listing', async t => {
@@ -26,7 +26,7 @@ test('group listing', async t => {
     await model.groups.setOwnerGroup(tr, indirectGroupIdx, noneGroupIdx);
     await model.groups.setOwnerGroup(tr, pendingGroupIdx, noneGroupIdx);
     await model.groups.setOwnerGroup(tr, ownerGroupIdx, memberGroupIdx);
-    await await createGroupRelation(tr, model, memberGroupIdx, indirectGroupIdx);
+    await createGroupRelation(tr, model, memberGroupIdx, indirectGroupIdx);
 
     const userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
     await model.users.addUserMembership(tr, userIdx, memberGroupIdx);
