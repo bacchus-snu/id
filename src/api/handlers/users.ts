@@ -11,7 +11,7 @@ import changePasswordTemplate from '../templates/change_password_email_template'
 
 export function createUser(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({
-    username: z.string().regex(/^[a-z][a-z0-9]+$/).nonempty(),
+    username: z.string().nonempty().max(20).regex(/^[a-z][a-z0-9]+$/),
     name: z.string().nonempty(),
     password: z.string().min(8),
     preferredLanguage: z.enum(['ko', 'en']),
