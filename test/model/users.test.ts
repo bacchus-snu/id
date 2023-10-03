@@ -83,8 +83,10 @@ test('add and delete user membership', async t => {
     const groupIdx = await createGroup(tr, model);
     const userMembershipIdx = await model.users.addUserMembership(tr, userIdx, groupIdx);
 
-    const query = 'SELECT * FROM user_memberships WHERE idx = $1';
-    const result = await tr.query(query, [userMembershipIdx]);
+    const query = 'SELECT user_idx, group_idx FROM user_memberships WHERE idx = $1';
+    const result = await tr.query<{ user_idx: number; group_idx: number }>(query, [
+      userMembershipIdx,
+    ]);
 
     t.truthy(result.rows[0]);
     t.is(result.rows[0].user_idx, userIdx);
@@ -110,8 +112,8 @@ test('get all user memberships', async t => {
     const groupIdx1 = await createGroup(tr, model);
     const groupIdx2 = await createGroup(tr, model);
 
-    const idx1 = await model.users.addUserMembership(tr, userIdx, groupIdx1);
-    const idx2 = await model.users.addUserMembership(tr, userIdx, groupIdx2);
+    await model.users.addUserMembership(tr, userIdx, groupIdx1);
+    await model.users.addUserMembership(tr, userIdx, groupIdx2);
 
     const result = await model.users.getAllUserMemberships(tr, userIdx);
 
@@ -137,8 +139,8 @@ test('get all user membership users', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model);
     const userIdx = await createUser(tr, model);
-    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid());
-    const membership = await model.users.addUserMembership(tr, userIdx, groupIdx);
+    await model.users.addStudentNumber(tr, userIdx, uuid());
+    await model.users.addUserMembership(tr, userIdx, groupIdx);
 
     const allMembership = await model.users.getAllMembershipUsers(tr, groupIdx);
 
@@ -165,8 +167,8 @@ test('get all pending user membership users', async t => {
   await model.pgDo(async tr => {
     const groupIdx = await createGroup(tr, model);
     const userIdx = await createUser(tr, model);
-    const studentNumberIdx = await model.users.addStudentNumber(tr, userIdx, uuid());
-    const membership = await model.users.addPendingUserMembership(tr, userIdx, groupIdx);
+    await model.users.addStudentNumber(tr, userIdx, uuid());
+    await model.users.addPendingUserMembership(tr, userIdx, groupIdx);
 
     const allPendingMembership = await model.users.getAllPendingMembershipUsers(tr, groupIdx);
 
@@ -235,7 +237,7 @@ test('change password', async t => {
   await model.pgDo(async tr => {
     const username = uuid();
     const password = uuid();
-    const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid());
+    await model.emailAddresses.create(tr, uuid(), uuid());
     const userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
 
     const newPassword = uuid();
@@ -250,13 +252,13 @@ test('change password token request with identical email idx', async t => {
   await model.pgDo(async tr => {
     const emailLocal = uuid();
     const emailDomain = uuid();
-    const emailAddressIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    await model.emailAddresses.create(tr, emailLocal, emailDomain);
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en');
     const oldToken = await model.users.generatePasswordChangeToken(tr, userIdx);
     const newToken = await model.users.generatePasswordChangeToken(tr, userIdx);
 
     const query = 'SELECT token FROM password_change_tokens WHERE user_idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<{ token: string }>(query, [userIdx]);
     const token = result.rows[0].token;
     t.is(newToken, token);
     t.not(oldToken, token);
@@ -267,10 +269,10 @@ test('token expiration', async t => {
   await model.pgDo(async tr => {
     const emailLocal = uuid();
     const emailDomain = uuid();
-    const emailAddressIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    await model.emailAddresses.create(tr, emailLocal, emailDomain);
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en');
     const token = await model.users.generatePasswordChangeToken(tr, userIdx);
-    const expiryResult = await tr.query(
+    const expiryResult = await tr.query<{ expires: string }>(
       'SELECT expires FROM password_change_tokens WHERE token = $1',
       [token],
     );
@@ -299,7 +301,7 @@ test('change user shell', async t => {
   await model.pgDo(async tr => {
     const emailLocal = uuid();
     const emailDomain = uuid();
-    const emailAddressIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    await model.emailAddresses.create(tr, emailLocal, emailDomain);
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en');
     const newShell = uuid();
     await model.shells.addShell(tr, newShell);
@@ -312,10 +314,10 @@ test('change user shell', async t => {
 
 test('reset resend count of expired password change token', async t => {
   await model.pgDo(async tr => {
-    const emailIdx = await model.emailAddresses.create(tr, uuid(), uuid());
+    await model.emailAddresses.create(tr, uuid(), uuid());
     const userIdx = await model.users.create(tr, uuid(), uuid(), uuid(), '/bin/bash', 'en');
     let token = await model.users.generatePasswordChangeToken(tr, userIdx);
-    const expiryResult = await tr.query(
+    const expiryResult = await tr.query<{ expires: string }>(
       'SELECT expires FROM password_change_tokens WHERE token = $1',
       [token],
     );
@@ -344,7 +346,7 @@ test('legacy mssql password (sha512)', async t => {
     ),
   });
   await model.pgDo(async tr => {
-    const result = await tr.query(
+    const result = await tr.query<{ idx: number }>(
       'INSERT INTO users (username, password_digest, name, uid, shell, '
         + 'preferred_language) VALUES ($1, $2, \'OLDoge\', 10, \'/bin/bash\', \'en\') RETURNING idx',
       [username, legacyPasswordDigest],
@@ -353,10 +355,12 @@ test('legacy mssql password (sha512)', async t => {
     // doge should be able to login using password stored in old doggy password format
     await model.users.authenticate(tr, username, password);
     // doge should be automatically migrated to brand-new password format
-    const selectResult: string =
-      (await tr.query('SELECT password_digest FROM users WHERE username=$1', [username])).rows[0]
-        .password_digest;
-    t.is(selectResult.split('$')[1], 'argon2id');
+    const selectResult = await tr.query<{ password_digest: string }>(
+      'SELECT password_digest FROM users WHERE username=$1',
+      [username],
+    );
+    const digest = selectResult.rows[0].password_digest;
+    t.is(digest.split('$')[1], 'argon2id');
     // doge should be able to login using password stored in brand-new password format. wow.
     await model.users.authenticate(tr, username, password);
     await model.users.delete(tr, userIdx);

@@ -1,4 +1,5 @@
 import { IMiddleware } from 'koa-router';
+import z from 'zod';
 import { BadParameterError } from '../../model/errors';
 import Model from '../../model/model';
 import { User } from '../../model/users';
@@ -64,7 +65,7 @@ export function listMembers(model: Model): IMiddleware {
       }
 
       if (!owner) {
-        ctx.status = 401;
+        ctx.status = 403;
         return;
       }
 
@@ -107,7 +108,7 @@ export function listPending(model: Model): IMiddleware {
       }
 
       if (!owner) {
-        ctx.status = 401;
+        ctx.status = 403;
         return;
       }
 
@@ -160,16 +161,18 @@ export function applyGroup(model: Model): IMiddleware {
 }
 
 export function acceptGroup(model: Model): IMiddleware {
+  const bodySchema = z.number().array().nonempty();
+
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid);
 
-      const body: any = ctx.request.body;
-      if (body === null || !(body instanceof Array) || !body.every(v => typeof v === 'number')) {
+      const bodyResult = bodySchema.safeParse(ctx.request.body);
+      if (!bodyResult.success) {
         ctx.status = 400;
         return;
       }
-      const users: Array<number> = body;
+      const users = bodyResult.data;
 
       try {
         await model.pgDo(async tr => {
@@ -177,7 +180,7 @@ export function acceptGroup(model: Model): IMiddleware {
 
           const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx);
           if (!owner) {
-            ctx.status = 401;
+            ctx.status = 403;
             return;
           }
 
@@ -202,16 +205,18 @@ export function acceptGroup(model: Model): IMiddleware {
 }
 
 export function rejectGroup(model: Model): IMiddleware {
+  const bodySchema = z.number().array().nonempty();
+
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid);
 
-      const body: any = ctx.request.body;
-      if (body === null || !(body instanceof Array) || !body.every(v => typeof v === 'number')) {
+      const bodyResult = bodySchema.safeParse(ctx.request.body);
+      if (!bodyResult.success) {
         ctx.status = 400;
         return;
       }
-      const users: Array<number> = body;
+      const users = bodyResult.data;
 
       try {
         await model.pgDo(async tr => {
@@ -219,7 +224,7 @@ export function rejectGroup(model: Model): IMiddleware {
 
           const owner = await model.groups.checkOwner(tr, group.idx, ctx.state.userIdx);
           if (!owner) {
-            ctx.status = 401;
+            ctx.status = 403;
             return;
           }
 

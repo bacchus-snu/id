@@ -1,21 +1,30 @@
 import { IMiddleware } from 'koa-router';
 
+import z from 'zod';
 import Config from '../../config';
 import { AuthorizationError, ControllableError, NoSuchEntryError } from '../../model/errors';
 import Model from '../../model/model';
 import { SignatureError, verifyPubkeyReq } from '../pubkey';
 
+const loginBodySchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
+const legacyLoginBodySchema = z.object({
+  member_account: z.string(),
+  member_password: z.string(),
+});
+
 export function login(model: Model): IMiddleware {
   return async ctx => {
-    const body: any = ctx.request.body;
-
-    if (!body || typeof body !== 'object') {
+    const bodyResult = loginBodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { username, password } = body;
-
+    const { username, password } = bodyResult.data;
     try {
       const userIdx = await model.pgDo(tr => model.users.authenticate(tr, username, password));
       await ctx.state.setSession(userIdx);
@@ -36,14 +45,13 @@ export function login(model: Model): IMiddleware {
 
 export function loginPAM(model: Model): IMiddleware {
   return async ctx => {
-    const body: any = ctx.request.body;
-
-    if (!body || typeof body !== 'object') {
+    const bodyResult = loginBodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { username, password } = body;
+    const { username, password } = bodyResult.data;
     try {
       await model.pgDo(async tr => {
         try {
@@ -83,24 +91,14 @@ export function loginPAM(model: Model): IMiddleware {
 
 export function loginLegacy(model: Model, config: Config): IMiddleware {
   return async ctx => {
-    const body: any = ctx.request.body;
-
-    if (!body || typeof body !== 'object') {
+    const bodyResult = legacyLoginBodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const username = body.member_account;
-    const password = body.member_password;
-
-    if (!username || !password) {
-      // 200 means failure
-      ctx.status = 200;
-      return;
-    }
-
+    const { member_account: username, member_password: password } = bodyResult.data;
     let userIdx: number;
-
     try {
       await model.pgDo(async tr => {
         try {
@@ -112,6 +110,7 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
             throw new AuthorizationError();
           }
         } catch (e) {
+          // 200 means failure
           ctx.status = 200;
           throw e;
         }

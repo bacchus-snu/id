@@ -2,7 +2,7 @@ import test from 'ava';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { GroupUserInfo } from '../../src/model/groups';
-import { app, config, model } from '../_setup';
+import { app, model } from '../_setup';
 import { createGroup, createGroupRelation, createUser } from '../_test_utils';
 
 test('group listing', async t => {
@@ -26,7 +26,7 @@ test('group listing', async t => {
     await model.groups.setOwnerGroup(tr, indirectGroupIdx, noneGroupIdx);
     await model.groups.setOwnerGroup(tr, pendingGroupIdx, noneGroupIdx);
     await model.groups.setOwnerGroup(tr, ownerGroupIdx, memberGroupIdx);
-    await await createGroupRelation(tr, model, memberGroupIdx, indirectGroupIdx);
+    await createGroupRelation(tr, model, memberGroupIdx, indirectGroupIdx);
 
     const userIdx = await model.users.create(tr, username, password, uuid(), '/bin/bash', 'en');
     await model.users.addUserMembership(tr, userIdx, memberGroupIdx);
@@ -96,7 +96,7 @@ test('member listing', async t => {
   t.is(response.status, 200);
 
   response = await agent.get(`/api/group/${groupIdx}/members`);
-  t.is(response.status, 401);
+  t.is(response.status, 403);
 
   await model.pgDo(async tr => {
     await model.users.addUserMembership(tr, userIdx, ownerGroupIdx);
@@ -144,7 +144,7 @@ test('pending listing', async t => {
   t.is(response.status, 200);
 
   response = await agent.get(`/api/group/${groupIdx}/pending`);
-  t.is(response.status, 401);
+  t.is(response.status, 403);
 
   await model.pgDo(async tr => {
     await model.users.addUserMembership(tr, userIdx, groupIdx);
@@ -235,7 +235,11 @@ test('accept group requests', async t => {
   const agent = request.agent(app);
   let response;
 
-  response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
+  });
+
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
   t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
@@ -244,18 +248,14 @@ test('accept group requests', async t => {
   });
   t.is(response.status, 200);
 
+  response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
+  t.is(response.status, 403);
+
   response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
-  t.is(response.status, 401);
+  t.is(response.status, 400);
 
   await model.pgDo(async tr => {
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx);
-  });
-
-  response = await agent.post(`/api/group/${groupIdx}/accept`).send([]);
-  t.is(response.status, 200);
-
-  await model.pgDo(async tr => {
-    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
   });
 
   response = await agent.post(`/api/group/${groupIdx}/accept`).send([memberIdx]);
@@ -287,7 +287,11 @@ test('reject group requests', async t => {
   const agent = request.agent(app);
   let response;
 
-  response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
+  await model.pgDo(async tr => {
+    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
+  });
+
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);
   t.is(response.status, 401);
 
   response = await agent.post('/api/login').send({
@@ -296,18 +300,14 @@ test('reject group requests', async t => {
   });
   t.is(response.status, 200);
 
+  response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);
+  t.is(response.status, 403);
+
   response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
-  t.is(response.status, 401);
+  t.is(response.status, 400);
 
   await model.pgDo(async tr => {
     await model.groups.setOwnerGroup(tr, groupIdx, ownerGroupIdx);
-  });
-
-  response = await agent.post(`/api/group/${groupIdx}/reject`).send([]);
-  t.is(response.status, 200);
-
-  await model.pgDo(async tr => {
-    await model.users.addPendingUserMembership(tr, memberIdx, groupIdx);
   });
 
   response = await agent.post(`/api/group/${groupIdx}/reject`).send([memberIdx]);

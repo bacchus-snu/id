@@ -1,6 +1,7 @@
 import { createPublicKey } from 'crypto';
 import { jwtVerify } from 'jose';
 import { IMiddleware } from 'koa-router';
+import z from 'zod';
 import Config from '../../config';
 import { EmailAddress } from '../../model/email_addresses';
 import { InvalidEmailError, ResendLimitExeededError, UserExistsError } from '../../model/errors';
@@ -9,20 +10,23 @@ import { sendEmail } from '../email';
 import changePasswordTemplate from '../templates/change_password_email_template';
 
 export function createUser(model: Model, config: Config): IMiddleware {
-  return async (ctx, next) => {
-    const body: any = ctx.request.body;
+  const bodySchema = z.object({
+    username: z.string().nonempty().max(20).regex(/^[a-z][a-z0-9]+$/),
+    name: z.string().nonempty(),
+    password: z.string().min(8),
+    preferredLanguage: z.enum(['ko', 'en']),
+    studentNumbers: z.string().regex(/^(\d{5}-\d{3}|\d{4}-\d{4,5})$/).array().nonempty(),
+    token: z.string().nonempty(),
+  });
 
-    if (body == null || typeof body !== 'object') {
+  return async (ctx, next) => {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const token = body.token;
-    if (!token) {
-      ctx.status = 401;
-      return;
-    }
-
+    const token = bodyResult.data.token;
     let emailAddress: EmailAddress;
 
     // check verification token
@@ -35,32 +39,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
       return;
     }
 
-    const { username, name, password, preferredLanguage, studentNumbers } = body;
-
-    if (
-      !username || !name || !password || !preferredLanguage
-      || !studentNumbers || studentNumbers.constructor !== Array || studentNumbers.length === 0
-    ) {
-      ctx.status = 400;
-      return;
-    }
-
-    // validates inputs
-    if (!/^[a-z][a-z0-9]+$/.test(username) || username.length > 20) {
-      ctx.status = 400;
-      return;
-    }
-
-    if (password.length < 8) {
-      ctx.status = 400;
-      return;
-    }
-
-    if (!(['ko', 'en'].includes(preferredLanguage))) {
-      ctx.status = 400;
-      return;
-    }
-
+    const { username, name, password, preferredLanguage, studentNumbers } = bodyResult.data;
     try {
       // acquires access exclusive lock on 'users'
       await model.pgDo(async tr => {
@@ -85,22 +64,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
         await model.emailAddresses.validate(tr, userIdx, emailAddressIdx);
         await model.emailAddresses.removeToken(tr, token);
 
-        const validateStudentNumber = (snuid: string) => {
-          const regexList = [
-            /^\d\d\d\d\d-\d\d\d$/,
-            /^\d\d\d\d-\d\d\d\d$/,
-            /^\d\d\d\d-\d\d\d\d\d$/,
-          ];
-          for (const regex of regexList) {
-            if (regex.test(snuid)) {
-              return;
-            }
-          }
-          throw new Error('Invalid student number');
-        };
-
         for (const studentNumber of studentNumbers) {
-          validateStudentNumber(studentNumber);
           await model.users.addStudentNumber(tr, userIdx, studentNumber);
         }
       }, ['users']);
@@ -118,23 +82,19 @@ export function createUser(model: Model, config: Config): IMiddleware {
 }
 
 export function sendChangePasswordEmail(model: Model, config: Config): IMiddleware {
+  const bodySchema = z.object({
+    emailLocal: z.string().trim().nonempty(),
+    emailDomain: z.string().trim().nonempty(),
+  });
+
   return async (ctx, next) => {
-    const body: any = ctx.request.body;
-
-    if (body == null || typeof body !== 'object') {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    let { emailLocal, emailDomain } = body;
-    emailLocal = emailLocal.trim();
-    emailDomain = emailDomain.trim();
-
-    if (!emailLocal || !emailDomain) {
-      ctx.status = 400;
-      return;
-    }
-
+    const { emailLocal, emailDomain } = bodyResult.data;
     let token = '';
     let resendCount = -1;
     try {
@@ -177,15 +137,18 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
 }
 
 export function checkChangePasswordEmailToken(model: Model): IMiddleware {
-  return async (ctx, next) => {
-    const body: any = ctx.request.body;
+  const bodySchema = z.object({
+    token: z.string().nonempty(),
+  });
 
-    if (body == null || typeof body !== 'object') {
+  return async (ctx, next) => {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { token } = body;
+    const { token } = bodyResult.data;
 
     try {
       await model.pgDo(async tr => {
@@ -208,26 +171,19 @@ export function checkChangePasswordEmailToken(model: Model): IMiddleware {
 }
 
 export function changePassword(model: Model): IMiddleware {
+  const bodySchema = z.object({
+    newPassword: z.string().min(8),
+    token: z.string().nonempty(),
+  });
+
   return async (ctx, next) => {
-    const body: any = ctx.request.body;
-
-    if (body == null || typeof body !== 'object') {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { newPassword, token } = body;
-
-    if (!newPassword || !token) {
-      ctx.status = 400;
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      ctx.status = 400;
-      return;
-    }
-
+    const { newPassword, token } = bodyResult.data;
     try {
       // check token validity
       await model.pgDo(async tr => {
@@ -278,6 +234,10 @@ export function getUserShell(model: Model): IMiddleware {
 }
 
 export function changeUserShell(model: Model): IMiddleware {
+  const bodySchema = z.object({
+    shell: z.string().nonempty(),
+  });
+
   return async (ctx, next) => {
     // authorize
     const userIdx = ctx.state.userIdx;
@@ -286,20 +246,13 @@ export function changeUserShell(model: Model): IMiddleware {
       return;
     }
 
-    const body: any = ctx.request.body;
-
-    if (body == null || typeof body !== 'object') {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { shell } = body;
-
-    if (!shell || typeof shell !== 'string') {
-      ctx.status = 400;
-      return;
-    }
-
+    const { shell } = bodyResult.data;
     try {
       await model.pgDo(async tr => {
         await model.users.changeShell(tr, userIdx, shell);

@@ -6,7 +6,6 @@ import type OIDCProvider from 'oidc-provider';
 import * as z from 'zod';
 
 import Model from '../model/model';
-import OIDCAccount from './account';
 
 const loginSchema = z.object({
   username: z.string().nonempty(),

@@ -15,6 +15,15 @@ import Transaction from './transaction';
 // see language enum in schema.sql
 export type Language = 'ko' | 'en';
 
+interface UserRow {
+  idx: number;
+  username: string | null;
+  name: string;
+  uid: number;
+  shell: string;
+  preferred_language: Language;
+}
+
 export interface User {
   idx: number;
   username: string | null;
@@ -22,6 +31,12 @@ export interface User {
   uid: number;
   shell: string;
   preferredLanguage: Language;
+}
+
+interface UserMembershipRow {
+  idx: number;
+  user_idx: number;
+  group_idx: number;
 }
 
 export interface UserMembership {
@@ -54,7 +69,7 @@ export default class Users {
       + 'VALUES ($1, $2, $3, $4, $5, $6) RETURNING idx';
     const passwordDigest = await argon2.hash(password);
     const uid = await this.generateUid(tr);
-    const result = await tr.query(query, [
+    const result = await tr.query<{ idx: number }>(query, [
       username,
       passwordDigest,
       name,
@@ -69,7 +84,7 @@ export default class Users {
 
   public async delete(tr: Transaction, userIdx: number): Promise<number> {
     const query = 'DELETE FROM users WHERE idx = $1 RETURNING idx';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -80,7 +95,7 @@ export default class Users {
 
   public async getAll(tr: Transaction): Promise<Array<User>> {
     const query = 'SELECT idx, username, name, uid, shell FROM users';
-    const result = await tr.query(query);
+    const result = await tr.query<UserRow>(query);
     const users: Array<User> = [];
     result.rows.forEach(row => users.push(this.rowToUser(row)));
     return users;
@@ -88,7 +103,7 @@ export default class Users {
 
   public async getAllSorted(tr: Transaction): Promise<Array<User>> {
     const query = 'SELECT idx, username, name, uid, shell FROM users ORDER BY uid';
-    const result = await tr.query(query);
+    const result = await tr.query<UserRow>(query);
     const users: Array<User> = [];
     result.rows.forEach(row => users.push(this.rowToUser(row)));
     return users;
@@ -114,7 +129,7 @@ export default class Users {
 
   public async getByUsername(tr: Transaction, username: string): Promise<User> {
     const query = 'SELECT idx, username, name, uid, shell FROM users WHERE username = $1';
-    const result = await tr.query(query, [username]);
+    const result = await tr.query<UserRow>(query, [username]);
     if (result.rows.length !== 1) {
       throw new NoSuchEntryError();
     }
@@ -123,7 +138,7 @@ export default class Users {
 
   public async getByUserIdx(tr: Transaction, userIdx: number): Promise<User> {
     const query = 'SELECT idx, username, name, uid, shell FROM users WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<UserRow>(query, [userIdx]);
     if (result.rows.length !== 1) {
       throw new NoSuchEntryError();
     }
@@ -137,7 +152,7 @@ export default class Users {
   ): Promise<number> {
     const query =
       'SELECT owner_idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1) AND address_domain = $2';
-    const result = await tr.query(query, [emailLocal, emailDomain]);
+    const result = await tr.query<{ owner_idx: number }>(query, [emailLocal, emailDomain]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -146,7 +161,10 @@ export default class Users {
 
   public async authenticate(tr: Transaction, username: string, password: string): Promise<number> {
     const query = 'SELECT idx, password_digest, activated FROM users WHERE username = $1';
-    const result = await tr.query(query, [username]);
+    const result = await tr.query<{ idx: number; password_digest: string; activated: boolean }>(
+      query,
+      [username],
+    );
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -178,23 +196,23 @@ export default class Users {
 
   public async updateLastLoginAt(tr: Transaction, userIdx: number): Promise<void> {
     const query = 'UPDATE users SET last_login_at = NOW() WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    await tr.query(query, [userIdx]);
   }
 
   public async activate(tr: Transaction, userIdx: number): Promise<void> {
     const query = 'UPDATE users SET activated = TRUE WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    await tr.query(query, [userIdx]);
   }
 
   public async deactivate(tr: Transaction, userIdx: number): Promise<void> {
     const query = 'UPDATE users SET activated = FALSE WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    await tr.query(query, [userIdx]);
   }
 
   public async generateUid(tr: Transaction): Promise<number> {
     tr.ensureHasAccessExclusiveLock('users');
     const minUid = this.model.config.posix.minUid;
-    const getNewUidResult = await tr.query(
+    const getNewUidResult = await tr.query<{ uid: number }>(
       'SELECT b.uid + 1 AS uid FROM users AS a RIGHT OUTER JOIN '
         + 'users AS b ON a.uid = b.uid + 1 WHERE a.uid IS NULL AND b.uid + 1 >= $1 ORDER BY b.uid LIMIT 1',
       [minUid],
@@ -210,7 +228,7 @@ export default class Users {
     const randomBytes = await this.asyncRandomBytes(32);
     const token = randomBytes.toString('hex');
     const expires = moment().add(1, 'day').toDate();
-    const result = await tr.query(query, [userIdx, token, expires]);
+    await tr.query(query, [userIdx, token, expires]);
     return token;
   }
 
@@ -222,7 +240,7 @@ export default class Users {
 
   public async getResendCount(tr: Transaction, token: string): Promise<number> {
     const query = 'SELECT resend_count FROM password_change_tokens WHERE token = $1';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ resend_count: number }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -231,7 +249,7 @@ export default class Users {
 
   public async removeToken(tr: Transaction, token: string): Promise<number> {
     const query = 'DELETE FROM password_change_tokens WHERE token = $1 RETURNING idx';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ idx: number }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -240,7 +258,7 @@ export default class Users {
 
   public async ensureTokenNotExpired(tr: Transaction, token: string): Promise<void> {
     const query = 'SELECT expires FROM password_change_tokens WHERE token = $1';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ expires: string }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -259,7 +277,7 @@ export default class Users {
   ): Promise<number> {
     const passwordDigest = await argon2.hash(newPassword);
     const query = 'UPDATE users SET password_digest = $1 WHERE idx = $2 RETURNING idx';
-    const result = await tr.query(query, [passwordDigest, userIdx]);
+    const result = await tr.query<{ idx: number }>(query, [passwordDigest, userIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -268,7 +286,7 @@ export default class Users {
 
   public async changeShell(tr: Transaction, userIdx: number, shell: string): Promise<number> {
     const query = 'UPDATE users SET shell = $1 WHERE idx = $2 RETURNING idx';
-    const result = await tr.query(query, [shell, userIdx]);
+    const result = await tr.query<{ idx: number }>(query, [shell, userIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -278,7 +296,7 @@ export default class Users {
 
   public async getShell(tr: Transaction, userIdx: number): Promise<string> {
     const query = 'SELECT shell FROM users WHERE idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<{ shell: string }>(query, [userIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -291,13 +309,13 @@ export default class Users {
     groupIdx: number,
   ): Promise<number> {
     const query = 'INSERT INTO user_memberships(user_idx, group_idx) VALUES ($1, $2) RETURNING idx';
-    const result = await tr.query(query, [userIdx, groupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userIdx, groupIdx]);
     return result.rows[0].idx;
   }
 
   public async deleteUserMembership(tr: Transaction, userMembershipIdx: number): Promise<number> {
     const query = 'DELETE FROM user_memberships WHERE idx = $1 RETURNING idx';
-    const result = await tr.query(query, [userMembershipIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userMembershipIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -326,7 +344,7 @@ export default class Users {
     groupIdx: number,
   ): Promise<number> {
     const query = 'SELECT idx FROM user_memberships WHERE user_idx = $1 AND group_idx = $2';
-    const result = await tr.query(query, [userIdx, groupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userIdx, groupIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -338,7 +356,7 @@ export default class Users {
     userIdx: number,
   ): Promise<Array<UserMembership>> {
     const query = 'SELECT idx, user_idx, group_idx FROM user_memberships WHERE user_idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<UserMembershipRow>(query, [userIdx]);
     return result.rows.map(row => this.rowToUserMembership(row));
   }
 
@@ -358,7 +376,7 @@ export default class Users {
       query += ' LIMIT $2 OFFSET $3';
       params.push(pagination.count, pagination.start);
     }
-    const result = await tr.query(query, params);
+    const result = await tr.query<UserRow>(query, params);
     return result.rows.map(row => this.rowToUser(row));
   }
 
@@ -369,7 +387,7 @@ export default class Users {
   ): Promise<number> {
     const query =
       'INSERT INTO pending_user_memberships (user_idx, group_idx) VALUES ($1, $2) RETURNING idx';
-    const result = await tr.query(query, [userIdx, groupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userIdx, groupIdx]);
     return result.rows[0].idx;
   }
 
@@ -378,7 +396,7 @@ export default class Users {
     userMembershipIdx: number,
   ): Promise<number> {
     const query = 'DELETE FROM pending_user_memberships WHERE idx = $1 RETURNING idx';
-    const result = await tr.query(query, [userMembershipIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userMembershipIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -407,7 +425,7 @@ export default class Users {
     groupIdx: number,
   ): Promise<number> {
     const query = 'SELECT idx FROM pending_user_memberships WHERE user_idx = $1 AND group_idx = $2';
-    const result = await tr.query(query, [userIdx, groupIdx]);
+    const result = await tr.query<{ idx: number }>(query, [userIdx, groupIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -448,7 +466,7 @@ export default class Users {
     const query = 'SELECT u.* FROM pending_user_memberships AS pum '
       + 'INNER JOIN users AS u ON pum.user_idx = u.idx '
       + 'WHERE pum.group_idx = $1 ORDER BY pum.idx';
-    const result = await tr.query(query, [groupIdx]);
+    const result = await tr.query<UserRow>(query, [groupIdx]);
     return result.rows.map(row => this.rowToUser(row));
   }
 
@@ -471,7 +489,7 @@ export default class Users {
 
   public async getUserIdxByPasswordToken(tr: Transaction, token: string): Promise<number> {
     const query = 'SELECT user_idx FROM password_change_tokens WHERE token = $1';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ user_idx: number }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -485,7 +503,7 @@ export default class Users {
     const query = 'SELECT sn.student_number FROM users u '
       + 'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
       + 'WHERE u.idx = $1';
-    const result = await tr.query(query, [userIdx]);
+    const result = await tr.query<{ idx: number; student_number: string }>(query, [userIdx]);
     return result.rows.map(row => row.student_number);
   }
 
@@ -496,7 +514,7 @@ export default class Users {
     const query = 'SELECT u.idx, sn.student_number FROM users u '
       + 'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
       + 'WHERE u.idx = ANY($1)';
-    const result = await tr.query(query, [userIndices]);
+    const result = await tr.query<{ idx: number; student_number: string }>(query, [userIndices]);
     const map = new Map<number, Array<string>>();
     for (const row of result.rows) {
       const idx = row.idx;
@@ -516,11 +534,11 @@ export default class Users {
   ): Promise<number> {
     const query =
       'INSERT INTO student_numbers(student_number, owner_idx) VALUES ($1, $2) RETURNING idx';
-    const result = await tr.query(query, [studentNumber, userIdx]);
+    const result = await tr.query<{ idx: number }>(query, [studentNumber, userIdx]);
     return result.rows[0].idx;
   }
 
-  private rowToUser(row: any): User {
+  private rowToUser(row: UserRow): User {
     return {
       idx: row.idx,
       username: row.username,
@@ -531,7 +549,7 @@ export default class Users {
     };
   }
 
-  private rowToUserMembership(row: any): UserMembership {
+  private rowToUserMembership(row: UserMembershipRow): UserMembership {
     return {
       idx: row.idx,
       userIdx: row.user_idx,

@@ -4,11 +4,9 @@ import { v4 as uuid } from 'uuid';
 import { app, model } from '../_setup';
 
 test('test getShells', async t => {
-  let result;
   const newShell = uuid();
   await model.pgDo(async tr => {
     await model.shells.addShell(tr, newShell);
-    result = await model.shells.getShells(tr);
   });
 
   const agent = request.agent(app);

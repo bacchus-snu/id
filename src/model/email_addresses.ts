@@ -1,8 +1,12 @@
 import * as crypto from 'crypto';
 import moment from 'moment';
 import { ExpiredTokenError, NoSuchEntryError } from './errors';
-import Model from './model';
 import Transaction from './transaction';
+
+interface EmailAddressRow {
+  address_local: string;
+  address_domain: string;
+}
 
 export interface EmailAddress {
   local: string;
@@ -10,7 +14,7 @@ export interface EmailAddress {
 }
 
 export default class EmailAddresses {
-  constructor(private readonly model: Model) {
+  constructor() {
   }
 
   /**
@@ -23,7 +27,7 @@ export default class EmailAddresses {
   public async create(tr: Transaction, local: string, domain: string): Promise<number> {
     const query = 'INSERT INTO email_addresses(address_local, address_domain) VALUES ($1, $2) '
       + 'ON CONFLICT (LOWER(address_local), LOWER(address_domain)) DO UPDATE SET address_local = $1 RETURNING idx';
-    const result = await tr.query(query, [local, domain]);
+    const result = await tr.query<{ idx: number }>(query, [local, domain]);
     const idx = result.rows[0].idx;
     return idx;
   }
@@ -31,7 +35,7 @@ export default class EmailAddresses {
   public async getIdxByAddress(tr: Transaction, local: string, domain: string): Promise<number> {
     const query = 'SELECT idx FROM email_addresses WHERE LOWER(address_local) = LOWER($1)'
       + ' AND LOWER(address_domain) = LOWER($2)';
-    const result = await tr.query(query, [local, domain]);
+    const result = await tr.query<{ idx: number }>(query, [local, domain]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -45,7 +49,7 @@ export default class EmailAddresses {
 
   public async isValidatedEmail(tr: Transaction, emailAddressIdx: number): Promise<boolean> {
     const query = 'SELECT owner_idx FROM email_addresses WHERE idx = $1';
-    const result = await tr.query(query, [emailAddressIdx]);
+    const result = await tr.query<{ owner_idx: number }>(query, [emailAddressIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -63,7 +67,7 @@ export default class EmailAddresses {
     const randomBytes = await this.asyncRandomBytes(32);
     const token = randomBytes.toString('hex');
     const expires = moment().add(1, 'day').toDate();
-    const result = await tr.query(query, [emailIdx, token, expires]);
+    await tr.query(query, [emailIdx, token, expires]);
     return token;
   }
 
@@ -75,7 +79,7 @@ export default class EmailAddresses {
 
   public async getResendCount(tr: Transaction, token: string): Promise<number> {
     const query = 'SELECT resend_count FROM email_verification_tokens WHERE token = $1';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ resend_count: number }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -86,11 +90,11 @@ export default class EmailAddresses {
     const query = 'SELECT e.address_local AS address_local, e.address_domain AS address_domain'
       + ' FROM email_addresses AS e'
       + ' INNER JOIN email_verification_tokens AS v ON v.token = $1 AND v.email_idx = e.idx';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<EmailAddressRow>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
-    const ret: EmailAddress = {
+    const ret = {
       local: result.rows[0].address_local,
       domain: result.rows[0].address_domain,
     };
@@ -99,7 +103,7 @@ export default class EmailAddresses {
 
   public async removeToken(tr: Transaction, token: string): Promise<number> {
     const query = 'DELETE FROM email_verification_tokens WHERE token = $1 RETURNING idx';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ idx: number }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -108,7 +112,7 @@ export default class EmailAddresses {
 
   public async ensureTokenNotExpired(tr: Transaction, token: string): Promise<void> {
     const query = 'SELECT expires FROM email_verification_tokens WHERE token = $1';
-    const result = await tr.query(query, [token]);
+    const result = await tr.query<{ expires: string }>(query, [token]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -125,7 +129,7 @@ export default class EmailAddresses {
     ownerIdx: number,
   ): Promise<Array<EmailAddress>> {
     const query = 'SELECT address_local, address_domain FROM email_addresses WHERE owner_idx = $1';
-    const result = await tr.query(query, [ownerIdx]);
+    const result = await tr.query<EmailAddressRow>(query, [ownerIdx]);
 
     return result.rows.map(row => ({
       local: row.address_local,

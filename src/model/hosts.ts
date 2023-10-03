@@ -2,12 +2,26 @@ import { AuthorizationError, NoSuchEntryError } from './errors';
 import Model from './model';
 import Transaction from './transaction';
 
+interface HostRow {
+  idx: number;
+  name: string;
+  host: string;
+  host_group: number;
+  host_pubkey?: Buffer | null;
+}
+
 export interface Host {
   idx: number;
   name: string;
   host: string;
   hostGroupIdx: number | null;
   hostPubkey?: Buffer;
+}
+
+interface HostGroupRow {
+  idx: number;
+  name: string;
+  required_permission: number | null;
 }
 
 export interface HostGroup {
@@ -27,7 +41,7 @@ export default class Hosts {
     pubkey?: Uint8Array,
   ): Promise<number> {
     const query = 'INSERT INTO hosts(name, host, host_pubkey) VALUES ($1, $2, $3) RETURNING idx';
-    const result = await tr.query(query, [name, host, pubkey]);
+    const result = await tr.query<{ idx: number }>(query, [name, host, pubkey]);
     return result.rows[0].idx;
   }
 
@@ -41,7 +55,7 @@ export default class Hosts {
 
   public async addHostGroup(tr: Transaction, name: string): Promise<number> {
     const query = 'INSERT INTO host_groups(name) VALUES ($1) RETURNING idx';
-    const result = await tr.query(query, [name]);
+    const result = await tr.query<{ idx: number }>(query, [name]);
     return result.rows[0].idx;
   }
 
@@ -82,7 +96,7 @@ export default class Hosts {
     // forbid inet authentication with pubkey registered
     const query = `SELECT idx, name, host, host_group, host_pubkey FROM hosts
       WHERE host(host) = $1 ${unsafeBypassPubkey ? '' : 'AND host_pubkey IS NULL'}`;
-    const result = await tr.query(query, [inet]);
+    const result = await tr.query<HostRow>(query, [inet]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -92,7 +106,7 @@ export default class Hosts {
   public async getHostByPubkey(tr: Transaction, pubkey: Uint8Array): Promise<Host> {
     const query =
       'SELECT idx, name, host, host_group, host_pubkey FROM hosts WHERE host_pubkey = $1';
-    const result = await tr.query(query, [pubkey]);
+    const result = await tr.query<HostRow>(query, [pubkey]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -101,7 +115,7 @@ export default class Hosts {
 
   public async getHostGroupByIdx(tr: Transaction, hostGroupIdx: number): Promise<HostGroup> {
     const query = 'SELECT idx, name, required_permission FROM host_groups WHERE idx = $1';
-    const result = await tr.query(query, [hostGroupIdx]);
+    const result = await tr.query<HostGroupRow>(query, [hostGroupIdx]);
     if (result.rows.length === 0) {
       throw new NoSuchEntryError();
     }
@@ -128,7 +142,7 @@ export default class Hosts {
     }
   }
 
-  private rowToHost(row: any): Host {
+  private rowToHost(row: HostRow): Host {
     return {
       idx: row.idx,
       name: row.name,
@@ -138,7 +152,7 @@ export default class Hosts {
     };
   }
 
-  private rowToHostGroup(row: any): HostGroup {
+  private rowToHostGroup(row: HostGroupRow): HostGroup {
     return {
       idx: row.idx,
       name: row.name,

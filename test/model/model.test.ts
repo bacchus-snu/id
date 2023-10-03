@@ -49,7 +49,7 @@ test('resolve deadlock', async t => {
     await model.pgDo(async tr => {
       for (let table = 1; table <= 2; table++) {
         for (let idx = 1; idx <= 2; idx++) {
-          const result = await tr.query(
+          const result = await tr.query<{ value: number }>(
             'SELECT value FROM dead_lock_test_' + table + ' WHERE idx = ' + idx,
           );
           t.is(result.rowCount, 1);
@@ -97,7 +97,7 @@ test('resolve serialization failure', async t => {
       await tr.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
       transactionStages[0]++;
       await ensureStageReach(1, 1);
-      const queryResult = await tr.query(
+      const queryResult = await tr.query<{ value: number }>(
         'SELECT value from serialization_error_test WHERE idx = 1',
       );
       t.is(queryResult.rowCount, 1);
@@ -114,7 +114,7 @@ test('resolve serialization failure', async t => {
       await tr.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
       transactionStages[1]++;
       await ensureStageReach(0, 1);
-      const queryResult = await tr.query(
+      const queryResult = await tr.query<{ value: number }>(
         'SELECT value from serialization_error_test WHERE idx = 1',
       );
       t.is(queryResult.rowCount, 1);
@@ -129,7 +129,7 @@ test('resolve serialization failure', async t => {
 
     await Promise.all(promises);
     await model.pgDo(async tr => {
-      const queryResult = await tr.query(
+      const queryResult = await tr.query<{ value: number }>(
         'SELECT value from serialization_error_test WHERE idx = 1',
       );
       t.is(queryResult.rowCount, 1);

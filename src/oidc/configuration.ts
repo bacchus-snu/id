@@ -19,7 +19,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
 
   return {
     adapter,
-    findAccount: async (ctx, id) => {
+    findAccount: async (_ctx, id) => {
       const [username, groups, name, student_id, email] = await model.pgDo(async tr => {
         // get name and username
         const userResult = await model.users.getByUserIdx(tr, Number(id));
@@ -53,9 +53,12 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
 
         // get groups
         const groupSet = await model.users.getUserReachableGroups(tr, Number(id));
-        const groupResult = await tr.query('SELECT identifier FROM groups WHERE idx = ANY($1)', [[
-          ...groupSet,
-        ]]);
+        const groupResult = await tr.query<{ identifier: string }>(
+          'SELECT identifier FROM groups WHERE idx = ANY($1)',
+          [[
+            ...groupSet,
+          ]],
+        );
         const groups = groupResult.rows.map(r => r.identifier);
 
         return [username, groups, name, student_id, email];

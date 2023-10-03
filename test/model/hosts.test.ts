@@ -23,7 +23,7 @@ test('add host and host group', async t => {
   await model.pgDo(async tr => {
     const hostIdx = await model.hosts.addHost(tr, name, host);
     const query = 'SELECT idx FROM hosts WHERE host = $1';
-    const result = await tr.query(query, [host]);
+    const result = await tr.query<{ idx: number }>(query, [host]);
     t.is(result.rows[0].idx, hostIdx);
     let byInet = await model.hosts.getHostByInet(tr, host);
     t.is(byInet.idx, hostIdx);
@@ -47,7 +47,7 @@ test('add host with pubkey', async t => {
   await model.pgDo(async tr => {
     const hostIdx = await model.hosts.addHost(tr, name, host, keyPair.publicKey);
     const query = 'SELECT idx FROM hosts WHERE host = $1';
-    const result = await tr.query(query, [host]);
+    const result = await tr.query<{ idx: number }>(query, [host]);
     t.is(result.rows[0].idx, hostIdx);
     let byInet = await model.hosts.getHostByPubkey(tr, keyPair.publicKey);
     t.is(byInet.idx, hostIdx);

@@ -136,8 +136,7 @@ test('get group list about user', async t => {
 test('get reachable group object', async t => {
   await model.pgDo(async tr => {
     const g: Array<number> = [];
-    const range: Array<number> = [...Array(5).keys()];
-    for (const _ of range) {
+    for (let idx = 0; idx < 5; idx++) {
       g.push(await createGroup(tr, model));
     }
 

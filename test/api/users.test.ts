@@ -29,7 +29,7 @@ test('create user step by step', async t => {
   let token = '';
   await model.pgDo(async tr => {
     const idx = await model.emailAddresses.getIdxByAddress(tr, emailLocal, emailDomain);
-    const result = await tr.query(
+    const result = await tr.query<{ token: string }>(
       'SELECT token FROM email_verification_tokens WHERE email_idx = $1',
       [idx],
     );
@@ -44,7 +44,7 @@ test('create user step by step', async t => {
     studentNumbers,
   });
   // request without session token will be fail
-  t.is(response.status, 401);
+  t.is(response.status, 400);
 
   response = await agent.post('/api/email/check-token').send({
     token,
@@ -168,9 +168,12 @@ test('change password', async t => {
 
   let token;
   await model.pgDo(async tr => {
-    const result = await tr.query('SELECT token FROM password_change_tokens WHERE user_idx = $1', [
-      userIdx,
-    ]);
+    const result = await tr.query<{ token: string }>(
+      'SELECT token FROM password_change_tokens WHERE user_idx = $1',
+      [
+        userIdx,
+      ],
+    );
     t.is(result.rows.length, 1);
     token = result.rows[0].token;
   });
@@ -234,10 +237,9 @@ test('verification email resend limit', async t => {
   const emailLocal = uuid();
   const emailDomain = 'snu.ac.kr';
   const resendLimit = config.email.resendLimit;
-  let emailIdx = -1;
 
   await model.pgDo(async tr => {
-    emailIdx = await model.emailAddresses.create(tr, emailLocal, emailDomain);
+    await model.emailAddresses.create(tr, emailLocal, emailDomain);
   });
 
   const agent = request.agent(app);
@@ -327,7 +329,7 @@ async function verifyResult(t: ExecutionContext, indcies: Array<number>) {
   }
 }
 
-async function cleanUpUsers(t: ExecutionContext, indices: Array<number>) {
+async function cleanUpUsers(_t: ExecutionContext, indices: Array<number>) {
   for (let i = 0; i < NUMBER_OF_USERS_TO_CREATE; i++) {
     await model.pgDo(async tr => {
       await model.users.delete(tr, indices[i]);

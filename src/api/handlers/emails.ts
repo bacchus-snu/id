@@ -1,4 +1,5 @@
 import { IMiddleware } from 'koa-router';
+import z from 'zod';
 import Config from '../../config';
 import { EmailAddress } from '../../model/email_addresses';
 import { EmailInUseError, InvalidEmailError, ResendLimitExeededError } from '../../model/errors';
@@ -7,23 +8,19 @@ import { sendEmail } from '../email';
 import emailVerificationTemplate from '../templates/verification_email_template';
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
+  const bodySchema = z.object({
+    emailLocal: z.string().trim().nonempty(),
+    emailDomain: z.string().trim().nonempty(),
+  });
+
   return async (ctx, next) => {
-    const body: any = ctx.request.body;
-
-    if (body == null || typeof body !== 'object') {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    let { emailLocal, emailDomain } = body;
-    emailLocal = emailLocal.trim();
-    emailDomain = emailDomain.trim();
-
-    if (!emailLocal || !emailDomain) {
-      ctx.status = 400;
-      return;
-    }
-
+    const { emailLocal, emailDomain } = bodyResult.data;
     if (emailDomain !== 'snu.ac.kr') {
       ctx.status = 400;
       return;
@@ -82,15 +79,18 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
 }
 
 export function checkVerificationEmailToken(model: Model): IMiddleware {
-  return async (ctx, next) => {
-    const body: any = ctx.request.body;
+  const bodySchema = z.object({
+    token: z.string().nonempty(),
+  });
 
-    if (body == null || typeof body !== 'object') {
+  return async (ctx, next) => {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
       ctx.status = 400;
       return;
     }
 
-    const { token } = body;
+    const { token } = bodyResult.data;
     let emailAddress: EmailAddress;
     let result;
 
