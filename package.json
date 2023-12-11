@@ -21,7 +21,7 @@
     "url": "https://github.com/bacchus-snu/id/issues"
   },
   "dependencies": {
-    "@koa/cors": "^4.0.0",
+    "@koa/cors": "^5.0.0",
     "@phc/format": "^1.0.0",
     "argon2": "^0.31.1",
     "bunyan": "^1.8.15",
