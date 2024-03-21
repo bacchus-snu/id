@@ -1,4 +1,7 @@
-FROM node:18-alpine as builder
+FROM node:20-alpine AS base
+ENV YARN_ENABLE_GLOBAL_CACHE=false
+
+FROM base as builder
 RUN apk add --no-cache python3 make gcc g++
 WORKDIR /app
 
@@ -9,7 +12,7 @@ RUN yarn install --immutable
 COPY . .
 RUN yarn build
 
-FROM node:18-alpine as deps
+FROM base as deps
 RUN apk add --no-cache python3 make gcc g++
 WORKDIR /app
 
@@ -17,7 +20,7 @@ COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 RUN yarn workspaces focus --production
 
-FROM node:18-alpine as runner
+FROM base as runner
 RUN apk add --no-cache tini
 WORKDIR /app
 
