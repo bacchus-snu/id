@@ -20,3 +20,6 @@ test.before(async () => {
   const koa = await createAPIServer(config, log, model);
   app = koa.listen();
 });
+test.after(() => {
+  app.close();
+});
