@@ -500,10 +500,8 @@ export default class Users {
     tr: Transaction,
     userIdx: number,
   ): Promise<Array<string>> {
-    const query = 'SELECT sn.student_number FROM users u '
-      + 'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
-      + 'WHERE u.idx = $1';
-    const result = await tr.query<{ idx: number; student_number: string }>(query, [userIdx]);
+    const query = 'SELECT student_number FROM student_numbers WHERE owner_idx = $1';
+    const result = await tr.query<{ student_number: string }>(query, [userIdx]);
     return result.rows.map(row => row.student_number);
   }
 
@@ -511,9 +509,8 @@ export default class Users {
     tr: Transaction,
     userIndices: Array<number>,
   ): Promise<Map<number, Array<string>>> {
-    const query = 'SELECT u.idx, sn.student_number FROM users u '
-      + 'LEFT OUTER JOIN student_numbers AS sn ON sn.owner_idx = u.idx '
-      + 'WHERE u.idx = ANY($1)';
+    const query = 'SELECT owner_idx as idx, student_number FROM student_numbers '
+      + 'WHERE owner_idx = ANY($1)';
     const result = await tr.query<{ idx: number; student_number: string }>(query, [userIndices]);
     const map = new Map<number, Array<string>>();
     for (const row of result.rows) {

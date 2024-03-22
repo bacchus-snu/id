@@ -109,7 +109,6 @@ test('member listing', async t => {
   let memberUserIdx = 0;
   await model.pgDo(async tr => {
     memberUserIdx = await createUser(tr, model);
-    await model.users.addStudentNumber(tr, memberUserIdx, uuid());
     await model.users.addUserMembership(tr, memberUserIdx, groupIdx);
   }, ['users']);
 
@@ -117,6 +116,16 @@ test('member listing', async t => {
   t.is(response.status, 200);
   t.is(response.body.length, 1);
   t.is(response.body[0].uid, memberUserIdx);
+  t.deepEqual(response.body[0].studentNumbers, []);
+
+  const studentNumber = uuid();
+  await model.pgDo(tr => model.users.addStudentNumber(tr, memberUserIdx, studentNumber));
+
+  response = await agent.get(`/api/group/${groupIdx}/members`);
+  t.is(response.status, 200);
+  t.is(response.body.length, 1);
+  t.is(response.body[0].uid, memberUserIdx);
+  t.deepEqual(response.body[0].studentNumbers, [studentNumber]);
 });
 
 test('pending listing', async t => {
@@ -157,7 +166,6 @@ test('pending listing', async t => {
   let pendingUserIdx = 0;
   await model.pgDo(async tr => {
     pendingUserIdx = await createUser(tr, model);
-    await model.users.addStudentNumber(tr, pendingUserIdx, uuid());
     await model.users.addPendingUserMembership(tr, pendingUserIdx, groupIdx);
   }, ['users']);
 
@@ -165,6 +173,16 @@ test('pending listing', async t => {
   t.is(response.status, 200);
   t.is(response.body.length, 1);
   t.is(response.body[0].uid, pendingUserIdx);
+  t.deepEqual(response.body[0].studentNumbers, []);
+
+  const studentNumber = uuid();
+  await model.pgDo(tr => model.users.addStudentNumber(tr, pendingUserIdx, studentNumber));
+
+  response = await agent.get(`/api/group/${groupIdx}/pending`);
+  t.is(response.status, 200);
+  t.is(response.body.length, 1);
+  t.is(response.body[0].uid, pendingUserIdx);
+  t.deepEqual(response.body[0].studentNumbers, [studentNumber]);
 });
 
 test('apply to group', async t => {
