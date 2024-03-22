@@ -119,7 +119,7 @@ test('member listing', async t => {
   t.deepEqual(response.body[0].studentNumbers, []);
 
   const studentNumber = uuid();
-  await model.pgDo(tr => model.users.addStudentNumber(tr, memberUserIdx, studentNumber), ['users']);
+  await model.pgDo(tr => model.users.addStudentNumber(tr, memberUserIdx, studentNumber));
 
   response = await agent.get(`/api/group/${groupIdx}/members`);
   t.is(response.status, 200);
@@ -176,9 +176,7 @@ test('pending listing', async t => {
   t.deepEqual(response.body[0].studentNumbers, []);
 
   const studentNumber = uuid();
-  await model.pgDo(tr => model.users.addStudentNumber(tr, pendingUserIdx, studentNumber), [
-    'users',
-  ]);
+  await model.pgDo(tr => model.users.addStudentNumber(tr, pendingUserIdx, studentNumber));
 
   response = await agent.get(`/api/group/${groupIdx}/pending`);
   t.is(response.status, 200);
