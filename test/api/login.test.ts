@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import tweetnacl from 'tweetnacl';
 import { v4 as uuid } from 'uuid';
 import { app, config, model } from '../_setup';
+import { createAgentForwardedFor } from '../_test_utils';
 
 test('test login with credential', async t => {
   let username = '';
@@ -47,7 +48,7 @@ test('test login with credential', async t => {
   });
 });
 
-test.serial('test PAM login with credential and host', async t => {
+test('test PAM login with credential and host', async t => {
   let username = '';
   let password = '';
   let userIdx = -1;
@@ -69,8 +70,8 @@ test.serial('test PAM login with credential and host', async t => {
     groupIdx = await model.groups.create(tr, trans, trans, uuid());
     await model.users.addUserMembership(tr, userIdx, groupIdx);
 
-    hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1');
-    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group');
+    hostIdx = await model.hosts.addHost(tr, 'login-test-0', '10.0.1.0');
+    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group 0');
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx);
 
     permissionIdx = await model.permissions.create(tr, trans, trans);
@@ -79,7 +80,7 @@ test.serial('test PAM login with credential and host', async t => {
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['users', 'group_reachable_cache', 'hosts']);
 
-  const agent = request.agent(app);
+  const agent = createAgentForwardedFor(app, '10.0.1.0');
 
   let response;
 
@@ -110,12 +111,12 @@ test.serial('test PAM login with credential and host', async t => {
 
   // Cleanup
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test']);
-    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group']);
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['login-test-0']);
+    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group 0']);
   });
 });
 
-test.serial('test PAM login with credential and pubkey', async t => {
+test('test PAM login with credential and pubkey', async t => {
   let username = '';
   let password = '';
   let userIdx = -1;
@@ -140,8 +141,8 @@ test.serial('test PAM login with credential and pubkey', async t => {
     groupIdx = await model.groups.create(tr, trans, trans, uuid());
     await model.users.addUserMembership(tr, userIdx, groupIdx);
 
-    hostIdx = await model.hosts.addHost(tr, 'test', '127.0.0.1', publicKey);
-    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group');
+    hostIdx = await model.hosts.addHost(tr, 'login-test-1', '10.0.1.1', publicKey);
+    hostGroupIdx = await model.hosts.addHostGroup(tr, 'test group 1');
     await model.hosts.addHostToGroup(tr, hostIdx, hostGroupIdx);
 
     permissionIdx = await model.permissions.create(tr, trans, trans);
@@ -150,7 +151,7 @@ test.serial('test PAM login with credential and pubkey', async t => {
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['users', 'group_reachable_cache', 'hosts']);
 
-  const agent = request.agent(app);
+  const agent = createAgentForwardedFor(app, '10.0.1.1');
 
   let response;
 
@@ -230,8 +231,8 @@ test.serial('test PAM login with credential and pubkey', async t => {
 
   // Cleanup
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test']);
-    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group']);
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['login-test-1']);
+    await tr.query('DELETE FROM host_groups WHERE name = $1', ['test group 1']);
   });
 });
 

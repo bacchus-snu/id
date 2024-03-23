@@ -1,10 +1,9 @@
 import test from 'ava';
-import * as request from 'supertest';
 import { app, config, model } from '../_setup';
-import { createUser } from '../_test_utils';
+import { createAgentForwardedFor, createUser } from '../_test_utils';
 
-test.serial('fetch passwd entries', async t => {
-  const agent = request.agent(app);
+test('fetch passwd entries', async t => {
+  const agent = createAgentForwardedFor(app, '10.0.2.0');
 
   const expect = await model.pgDo(async tr => {
     const userIdx = await createUser(tr, model);
@@ -23,7 +22,7 @@ test.serial('fetch passwd entries', async t => {
 
   // With host
   await model.pgDo(async tr => {
-    await model.hosts.addHost(tr, 'test', '127.0.0.1');
+    await model.hosts.addHost(tr, 'nss-test-0', '10.0.2.0');
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 
@@ -32,13 +31,13 @@ test.serial('fetch passwd entries', async t => {
   t.true(response.text.includes(expect));
 
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test']);
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['nss-test-0']);
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 });
 
-test.serial('fetch group entries', async t => {
-  const agent = request.agent(app);
+test('fetch group entries', async t => {
+  const agent = createAgentForwardedFor(app, '10.0.2.1');
 
   let username = '';
   let expect = '';
@@ -59,7 +58,7 @@ test.serial('fetch group entries', async t => {
 
   // With host
   await model.pgDo(async tr => {
-    await model.hosts.addHost(tr, 'test', '127.0.0.1');
+    await model.hosts.addHost(tr, 'nss-test-1', '10.0.2.1');
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 
@@ -69,16 +68,16 @@ test.serial('fetch group entries', async t => {
   t.true(response.text.split(':')[3].includes(username));
 
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test']);
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['nss-test-1']);
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 });
 
-test.serial('test not-modified posix entries', async t => {
-  const agent = request.agent(app);
+test('test not-modified posix entries', async t => {
+  const agent = createAgentForwardedFor(app, '10.0.2.2');
 
   await model.pgDo(async tr => {
-    await model.hosts.addHost(tr, 'test', '127.0.0.1');
+    await model.hosts.addHost(tr, 'nss-test-2', '10.0.2.2');
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 
@@ -100,7 +99,7 @@ test.serial('test not-modified posix entries', async t => {
   t.is(response.status, 304);
 
   await model.pgDo(async tr => {
-    await tr.query('DELETE FROM hosts WHERE name = $1', ['test']);
+    await tr.query('DELETE FROM hosts WHERE name = $1', ['nss-test-2']);
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['hosts']);
 });
