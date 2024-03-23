@@ -1,3 +1,5 @@
+import { Server } from 'node:http';
+import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import Model from '../src/model/model';
 import Transaction from '../src/model/transaction';
@@ -53,4 +55,13 @@ export function delay(timeInMilliseconds: number) {
   return new Promise(resolve => {
     setTimeout(resolve, timeInMilliseconds);
   });
+}
+
+export function createAgentForwardedFor(
+  app: Server,
+  forwardedFor: string,
+): ReturnType<typeof request.agent> {
+  return request.agent(app)
+    .set('x-forwarded-for', forwardedFor)
+    .set('forwarded', `for=${forwardedFor}`);
 }

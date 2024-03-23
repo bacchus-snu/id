@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import tweetnacl from 'tweetnacl';
 import { v4 as uuid } from 'uuid';
 import { app, config, model } from '../_setup';
+import { createAgentForwardedFor } from '../_test_utils';
 
 test('test login with credential', async t => {
   let username = '';
@@ -79,9 +80,7 @@ test('test PAM login with credential and host', async t => {
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['users', 'group_reachable_cache', 'hosts']);
 
-  const agent = request.agent(app)
-    .set('x-forwarded-for', '10.0.1.0')
-    .set('forwarded', 'for=10.0.1.0');
+  const agent = createAgentForwardedFor(app, '10.0.1.0');
 
   let response;
 
@@ -152,9 +151,7 @@ test('test PAM login with credential and pubkey', async t => {
     tr.ensureHasAccessExclusiveLock('hosts');
   }, ['users', 'group_reachable_cache', 'hosts']);
 
-  const agent = request.agent(app)
-    .set('x-forwarded-for', '10.0.1.1')
-    .set('forwarded', 'for=10.0.1.1');
+  const agent = createAgentForwardedFor(app, '10.0.1.1');
 
   let response;
 

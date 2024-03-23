@@ -1,12 +1,9 @@
 import test from 'ava';
-import * as request from 'supertest';
 import { app, config, model } from '../_setup';
-import { createUser } from '../_test_utils';
+import { createAgentForwardedFor, createUser } from '../_test_utils';
 
 test('fetch passwd entries', async t => {
-  const agent = request.agent(app)
-    .set('x-forwarded-for', '10.0.2.0')
-    .set('forwarded', 'for=10.0.2.0');
+  const agent = createAgentForwardedFor(app, '10.0.2.0');
 
   const expect = await model.pgDo(async tr => {
     const userIdx = await createUser(tr, model);
@@ -40,9 +37,7 @@ test('fetch passwd entries', async t => {
 });
 
 test('fetch group entries', async t => {
-  const agent = request.agent(app)
-    .set('x-forwarded-for', '10.0.2.1')
-    .set('forwarded', 'for=10.0.2.1');
+  const agent = createAgentForwardedFor(app, '10.0.2.1');
 
   let username = '';
   let expect = '';
@@ -79,9 +74,7 @@ test('fetch group entries', async t => {
 });
 
 test('test not-modified posix entries', async t => {
-  const agent = request.agent(app)
-    .set('x-forwarded-for', '10.0.2.2')
-    .set('forwarded', 'for=10.0.2.2');
+  const agent = createAgentForwardedFor(app, '10.0.2.2');
 
   await model.pgDo(async tr => {
     await model.hosts.addHost(tr, 'nss-test-2', '10.0.2.2');
