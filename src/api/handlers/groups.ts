@@ -1,8 +1,8 @@
 import { IMiddleware } from 'koa-router';
 import z from 'zod';
-import { BadParameterError } from '../../model/errors';
-import Model from '../../model/model';
-import { User } from '../../model/users';
+import { BadParameterError } from '../../model/errors.js';
+import Model from '../../model/model.js';
+import { User } from '../../model/users.js';
 
 export function listGroups(model: Model): IMiddleware {
   return async (ctx, next) => {

@@ -1,11 +1,11 @@
 import { strict as assert } from 'node:assert';
 
 import Router from 'koa-router';
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type OIDCProvider from 'oidc-provider';
+import { errors as oidcErrors } from 'oidc-provider';
 import * as z from 'zod';
 
-import Model from '../model/model';
+import Model from '../model/model.js';
 
 const loginSchema = z.object({
   username: z.string().nonempty(),
@@ -24,13 +24,11 @@ export default (model: Model, provider: OIDCProvider) => {
   const router = new Router();
 
   router.use(async (ctx, next) => {
-    const { errors } = await import('oidc-provider');
-
     ctx.set('cache-control', 'no-store');
     try {
       await next();
     } catch (err) {
-      if (err instanceof errors.SessionNotFound) {
+      if (err instanceof oidcErrors.SessionNotFound) {
         ctx.status = err.status;
         const { message: error, error_description: desc } = err;
         ctx.body = { error, desc };

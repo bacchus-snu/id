@@ -3,8 +3,8 @@ import moment from 'moment';
 import * as request from 'supertest';
 import tweetnacl from 'tweetnacl';
 import { v4 as uuid } from 'uuid';
-import { app, config, model } from '../_setup';
-import { createAgentForwardedFor } from '../_test_utils';
+import { app, config, model } from '../_setup.js';
+import { createAgentForwardedFor } from '../_test_utils.js';
 
 test('test login with credential', async t => {
   let username = '';

@@ -20,6 +20,7 @@
   "bugs": {
     "url": "https://github.com/bacchus-snu/id/issues"
   },
+  "type": "module",
   "dependencies": {
     "@koa/cors": "^5.0.0",
     "@phc/format": "^1.0.0",

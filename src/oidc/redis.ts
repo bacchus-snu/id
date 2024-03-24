@@ -1,5 +1,4 @@
-import Redis from 'ioredis';
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import { Redis } from 'ioredis';
 import type { Adapter, AdapterPayload } from 'oidc-provider';
 
 const grantable = new Set([

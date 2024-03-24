@@ -1,9 +1,8 @@
-import Redis from 'ioredis';
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
+import { Redis } from 'ioredis';
 import type { Adapter, AdapterPayload } from 'oidc-provider';
 
-import { NoSuchEntryError } from '../model/errors';
-import Model from '../model/model';
+import { NoSuchEntryError } from '../model/errors.js';
+import Model from '../model/model.js';
 
 const grantable = new Set([
   'AccessToken',

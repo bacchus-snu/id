@@ -1,11 +1,11 @@
 import test from 'ava';
 
-import { NoSuchEntryError } from '../../src/model/errors';
-import { Translation } from '../../src/model/translation';
+import { NoSuchEntryError } from '../../src/model/errors.js';
+import { Translation } from '../../src/model/translation.js';
 
 import { v4 as uuid } from 'uuid';
-import { model } from '../_setup';
-import { createGroup, createGroupRelation, createUser } from '../_test_utils';
+import { model } from '../_setup.js';
+import { createGroup, createGroupRelation, createUser } from '../_test_utils.js';
 
 const name: Translation = {
   ko: '도지',

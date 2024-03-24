@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import moment from 'moment';
-import { ExpiredTokenError, NoSuchEntryError } from './errors';
-import Transaction from './transaction';
+import { ExpiredTokenError, NoSuchEntryError } from './errors.js';
+import Transaction from './transaction.js';
 
 interface EmailAddressRow {
   address_local: string;

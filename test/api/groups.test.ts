@@ -1,9 +1,9 @@
 import test from 'ava';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
-import { GroupUserInfo } from '../../src/model/groups';
-import { app, model } from '../_setup';
-import { createGroup, createGroupRelation, createUser } from '../_test_utils';
+import { GroupUserInfo } from '../../src/model/groups.js';
+import { app, model } from '../_setup.js';
+import { createGroup, createGroupRelation, createUser } from '../_test_utils.js';
 
 test('group listing', async t => {
   const username = uuid();

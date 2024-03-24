@@ -1,5 +1,5 @@
 import { IMiddleware } from 'koa-router';
-import Model from '../../model/model';
+import Model from '../../model/model.js';
 
 export function getShells(model: Model): IMiddleware {
   return async (ctx, next) => {

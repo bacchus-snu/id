@@ -1,20 +1,21 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "target": "es6",
+    "target": "ES2020",
     "lib": [
-      "es2018",
-      "dom"
+      "ES2020",
+      "DOM"
     ],
-    "module": "node16",
-    "moduleResolution": "node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "downlevelIteration": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
+    "importsNotUsedAsValues": "remove",
     "typeRoots": [
       "./node_modules/@types",
       "./typings"

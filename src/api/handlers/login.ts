@@ -1,10 +1,10 @@
 import { IMiddleware } from 'koa-router';
 
 import z from 'zod';
-import Config from '../../config';
-import { AuthorizationError, ControllableError, NoSuchEntryError } from '../../model/errors';
-import Model from '../../model/model';
-import { SignatureError, verifyPubkeyReq } from '../pubkey';
+import Config from '../../config.js';
+import { AuthorizationError, ControllableError, NoSuchEntryError } from '../../model/errors.js';
+import Model from '../../model/model.js';
+import { SignatureError, verifyPubkeyReq } from '../pubkey.js';
 
 const loginBodySchema = z.object({
   username: z.string(),

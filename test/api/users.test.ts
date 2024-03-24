@@ -2,7 +2,7 @@ import test, { ExecutionContext } from 'ava';
 import * as crypto from 'crypto';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
-import { app, config, model } from '../_setup';
+import { app, config, model } from '../_setup.js';
 
 test('create user step by step', async t => {
   const agent = request.agent(app);

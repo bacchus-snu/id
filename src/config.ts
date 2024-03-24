@@ -2,7 +2,6 @@
  * Configuration.
  */
 
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { ClientMetadata, JWKS } from 'oidc-provider';
 
 /**

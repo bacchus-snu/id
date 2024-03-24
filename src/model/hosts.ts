@@ -1,6 +1,6 @@
-import { AuthorizationError, NoSuchEntryError } from './errors';
-import Model from './model';
-import Transaction from './transaction';
+import { AuthorizationError, NoSuchEntryError } from './errors.js';
+import Model from './model.js';
+import Transaction from './transaction.js';
 
 interface HostRow {
   idx: number;

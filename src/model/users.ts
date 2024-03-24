@@ -8,9 +8,9 @@ import {
   ExpiredTokenError,
   NoSuchEntryError,
   NotActivatedError,
-} from './errors';
-import Model from './model';
-import Transaction from './transaction';
+} from './errors.js';
+import Model from './model.js';
+import Transaction from './transaction.js';
 
 // see language enum in schema.sql
 export type Language = 'ko' | 'en';

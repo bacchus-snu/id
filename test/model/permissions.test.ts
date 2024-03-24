@@ -1,9 +1,9 @@
 import test from 'ava';
 
-import { Translation } from '../../src/model/translation';
+import { Translation } from '../../src/model/translation.js';
 
-import { model } from '../_setup';
-import { createGroup, createGroupRelation, createPermission, createUser } from '../_test_utils';
+import { model } from '../_setup.js';
+import { createGroup, createGroupRelation, createPermission, createUser } from '../_test_utils.js';
 
 const name: Translation = {
   ko: '도지',

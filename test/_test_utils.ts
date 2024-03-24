@@ -1,8 +1,8 @@
 import { Server } from 'node:http';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
-import Model from '../src/model/model';
-import Transaction from '../src/model/transaction';
+import Model from '../src/model/model.js';
+import Transaction from '../src/model/transaction.js';
 
 export async function createEmailAddress(tr: Transaction, model: Model): Promise<number> {
   return await model.emailAddresses.create(tr, uuid(), uuid());

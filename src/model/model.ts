@@ -1,15 +1,15 @@
 import * as Bunyan from 'bunyan';
 import * as pg from 'pg';
-import Config from '../config';
-import EmailAddresses from './email_addresses';
-import { ControllableError } from './errors';
-import Groups from './groups';
-import Hosts from './hosts';
-import OAuth from './oauth';
-import Permissions from './permissions';
-import Shells from './shells';
-import Transaction from './transaction';
-import Users from './users';
+import Config from '../config.js';
+import EmailAddresses from './email_addresses.js';
+import { ControllableError } from './errors.js';
+import Groups from './groups.js';
+import Hosts from './hosts.js';
+import OAuth from './oauth.js';
+import Permissions from './permissions.js';
+import Shells from './shells.js';
+import Transaction from './transaction.js';
+import Users from './users.js';
 
 const PSQL_SERIALIZATION_FAILURE = '40001';
 const PSQL_DEADLOCK_DETECTED = '40P01';

@@ -1,7 +1,7 @@
-import { NoSuchEntryError } from './errors';
-import Model from './model';
-import Transaction from './transaction';
-import { Translation } from './translation';
+import { NoSuchEntryError } from './errors.js';
+import Model from './model.js';
+import Transaction from './transaction.js';
+import { Translation } from './translation.js';
 
 export default class Permissions {
   constructor(private readonly model: Model) {

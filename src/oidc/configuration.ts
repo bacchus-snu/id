@@ -1,9 +1,8 @@
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { Configuration } from 'oidc-provider';
-import Config from '../config';
-import type Model from '../model/model';
-import OIDCAccount from './account';
-import AdapterFactory from './adapter';
+import Config from '../config.js';
+import type Model from '../model/model.js';
+import OIDCAccount from './account.js';
+import AdapterFactory from './adapter.js';
 
 const claims = {
   openid: ['sub', 'username', 'groups'],

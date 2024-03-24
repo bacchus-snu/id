@@ -1,9 +1,12 @@
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
-import Config from '../config';
-import Model from '../model/model';
-import createOIDCRouter from '../oidc/routes';
-import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails';
+import type OIDCProvider from 'oidc-provider';
+import type { Configuration as OIDCConfiguration } from 'oidc-provider';
+
+import Config from '../config.js';
+import Model from '../model/model.js';
+import createOIDCRouter from '../oidc/routes.js';
+import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails.js';
 import {
   acceptGroup,
   applyGroup,
@@ -12,10 +15,10 @@ import {
   listMembers,
   listPending,
   rejectGroup,
-} from './handlers/groups';
-import { checkLogin, login, loginLegacy, loginPAM, logout } from './handlers/login';
-import { getGroup, getPasswd } from './handlers/nss';
-import { getShells } from './handlers/shells';
+} from './handlers/groups.js';
+import { checkLogin, login, loginLegacy, loginPAM, logout } from './handlers/login.js';
+import { getGroup, getPasswd } from './handlers/nss.js';
+import { getShells } from './handlers/shells.js';
 import {
   changePassword,
   checkChangePasswordEmailToken,
@@ -23,10 +26,8 @@ import {
   getUserEmails,
   getUserInfo,
   sendChangePasswordEmail,
-} from './handlers/users';
-import { changeUserShell, getUserShell } from './handlers/users';
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
-import type OIDCProvider, { Configuration as OIDCConfiguration } from 'oidc-provider';
+} from './handlers/users.js';
+import { changeUserShell, getUserShell } from './handlers/users.js';
 
 export function createRouter(
   model: Model,
