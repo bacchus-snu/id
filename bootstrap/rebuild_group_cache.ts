@@ -1,6 +1,6 @@
 import * as bunyan from 'bunyan';
 import * as fs from 'fs';
-import Config from '../src/config.js';
+import type Config from '../src/config.js';
 import Model from '../src/model/model.js';
 
 const config: Config = JSON.parse(fs.readFileSync('config.json', { encoding: 'utf-8' }));

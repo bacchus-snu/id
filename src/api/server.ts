@@ -5,7 +5,7 @@ import Koa from 'koa';
 import mount from 'koa-mount';
 import OIDCProvider from 'oidc-provider';
 
-import Config from '../config.js';
+import type Config from '../config.js';
 import Model from '../model/model.js';
 import createOIDCConfig from '../oidc/configuration.js';
 import { createRouter } from './router.js';

@@ -3,7 +3,7 @@ import Router from 'koa-router';
 import type OIDCProvider from 'oidc-provider';
 import type { Configuration as OIDCConfiguration } from 'oidc-provider';
 
-import Config from '../config.js';
+import type Config from '../config.js';
 import Model from '../model/model.js';
 import createOIDCRouter from '../oidc/routes.js';
 import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails.js';

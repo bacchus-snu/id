@@ -1,4 +1,5 @@
-import test, { ExecutionContext } from 'ava';
+import test from 'ava';
+import type { ExecutionContext } from 'ava';
 import * as crypto from 'crypto';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';

@@ -1,6 +1,6 @@
 import * as bunyan from 'bunyan';
 import * as fs from 'fs';
-import Config from '../src/config.js';
+import type Config from '../src/config.js';
 import Model from '../src/model/model.js';
 
 import { HARDWARE_LAB, LOUNGE, PRACTICE_SERVER, SOFTWARE_LAB } from './hosts_info.js';

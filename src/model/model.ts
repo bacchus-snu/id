@@ -1,6 +1,6 @@
 import * as Bunyan from 'bunyan';
 import * as pg from 'pg';
-import Config from '../config.js';
+import type Config from '../config.js';
 import EmailAddresses from './email_addresses.js';
 import { ControllableError } from './errors.js';
 import Groups from './groups.js';

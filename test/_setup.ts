@@ -3,7 +3,7 @@ import Logger, * as bunyan from 'bunyan';
 import * as fs from 'fs';
 import { Server } from 'node:http';
 import createAPIServer from '../src/api/server.js';
-import Config from '../src/config.js';
+import type Config from '../src/config.js';
 import Model from '../src/model/model.js';
 
 export let config: Config;

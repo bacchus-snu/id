@@ -1,7 +1,7 @@
-import { IMiddleware } from 'koa-router';
+import type { IMiddleware } from 'koa-router';
 
 import z from 'zod';
-import Config from '../../config.js';
+import type Config from '../../config.js';
 import { AuthorizationError, ControllableError, NoSuchEntryError } from '../../model/errors.js';
 import Model from '../../model/model.js';
 import { SignatureError, verifyPubkeyReq } from '../pubkey.js';

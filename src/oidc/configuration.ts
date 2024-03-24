@@ -1,5 +1,5 @@
 import type { Configuration } from 'oidc-provider';
-import Config from '../config.js';
+import type Config from '../config.js';
 import type Model from '../model/model.js';
 import OIDCAccount from './account.js';
 import AdapterFactory from './adapter.js';

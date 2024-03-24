@@ -1,4 +1,4 @@
-import { IMiddleware } from 'koa-router';
+import type { IMiddleware } from 'koa-router';
 
 import { NoSuchEntryError } from '../../model/errors.js';
 import Model from '../../model/model.js';

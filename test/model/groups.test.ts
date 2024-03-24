@@ -1,7 +1,7 @@
 import test from 'ava';
 
 import { NoSuchEntryError } from '../../src/model/errors.js';
-import { Translation } from '../../src/model/translation.js';
+import type { Translation } from '../../src/model/translation.js';
 
 import { v4 as uuid } from 'uuid';
 import { model } from '../_setup.js';

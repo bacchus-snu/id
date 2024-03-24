@@ -15,7 +15,7 @@
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "importsNotUsedAsValues": "remove",
+    "verbatimModuleSyntax": true,
     "typeRoots": [
       "./node_modules/@types",
       "./typings"

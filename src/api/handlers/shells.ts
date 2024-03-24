@@ -1,4 +1,4 @@
-import { IMiddleware } from 'koa-router';
+import type { IMiddleware } from 'koa-router';
 import Model from '../../model/model.js';
 
 export function getShells(model: Model): IMiddleware {

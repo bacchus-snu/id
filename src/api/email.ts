@@ -1,6 +1,6 @@
 import * as Bunyan from 'bunyan';
 import * as nodemailer from 'nodemailer';
-import Config from '../config.js';
+import type Config from '../config.js';
 import { InvalidEmailError, ResendLimitExeededError } from '../model/errors.js';
 
 export interface EmailOption {

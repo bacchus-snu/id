@@ -1,5 +1,5 @@
-import { Context } from 'koa';
-import * as tweetnacl from 'tweetnacl';
+import type { Context } from 'koa';
+import tweetnacl from 'tweetnacl';
 
 export class SignatureError extends Error {
   constructor() {

@@ -1,7 +1,7 @@
 import * as bunyan from 'bunyan';
 import * as fs from 'fs';
 import createAPIServer from './api/server.js';
-import Config from './config.js';
+import type Config from './config.js';
 
 const config: Config = JSON.parse(fs.readFileSync('config.json', { encoding: 'utf-8' }));
 

@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { Translation } from '../../src/model/translation.js';
+import type { Translation } from '../../src/model/translation.js';
 
 import { model } from '../_setup.js';
 import { createGroup, createGroupRelation, createPermission, createUser } from '../_test_utils.js';
