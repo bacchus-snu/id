@@ -3,8 +3,8 @@ import test from 'ava';
 import moment from 'moment';
 import { v4 as uuid } from 'uuid';
 
-import { model } from '../_setup';
-import { createEmailAddress, createUser } from '../_test_utils';
+import { model } from '../_setup.js';
+import { createEmailAddress, createUser } from '../_test_utils.js';
 
 test('create extra email', async t => {
   await model.pgDo(async tr => {

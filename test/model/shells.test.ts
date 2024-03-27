@@ -1,6 +1,6 @@
 import test from 'ava';
 import { v4 as uuid } from 'uuid';
-import { model } from '../_setup';
+import { model } from '../_setup.js';
 
 test('get, add, and remove shells', async t => {
   const newShell = uuid();

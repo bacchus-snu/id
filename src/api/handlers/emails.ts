@@ -1,11 +1,11 @@
-import { IMiddleware } from 'koa-router';
+import type { IMiddleware } from 'koa-router';
 import z from 'zod';
-import Config from '../../config';
-import { EmailAddress } from '../../model/email_addresses';
-import { EmailInUseError, InvalidEmailError, ResendLimitExeededError } from '../../model/errors';
-import Model from '../../model/model';
-import { sendEmail } from '../email';
-import emailVerificationTemplate from '../templates/verification_email_template';
+import type Config from '../../config.js';
+import type { EmailAddress } from '../../model/email_addresses.js';
+import { EmailInUseError, InvalidEmailError, ResendLimitExeededError } from '../../model/errors.js';
+import Model from '../../model/model.js';
+import { sendEmail } from '../email.js';
+import emailVerificationTemplate from '../templates/verification_email_template.js';
 
 export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({

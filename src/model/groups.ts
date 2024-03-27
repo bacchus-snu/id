@@ -1,6 +1,6 @@
-import { NoSuchEntryError } from './errors';
-import Transaction from './transaction';
-import { Translation } from './translation';
+import { NoSuchEntryError } from './errors.js';
+import Transaction from './transaction.js';
+import type { Translation } from './translation.js';
 
 interface GroupRow {
   idx: number;

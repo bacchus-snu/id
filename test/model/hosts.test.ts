@@ -4,8 +4,8 @@ import { v4 as uuid } from 'uuid';
 
 import * as bunyan from 'bunyan';
 import * as fs from 'fs';
-import Config from '../../src/config';
-import Model from '../../src/model/model';
+import type Config from '../../src/config.js';
+import Model from '../../src/model/model.js';
 
 const config: Config = JSON.parse(fs.readFileSync('config.test.json', { encoding: 'utf-8' }));
 

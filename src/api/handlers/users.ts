@@ -1,13 +1,13 @@
 import { createPublicKey } from 'crypto';
 import { jwtVerify } from 'jose';
-import { IMiddleware } from 'koa-router';
+import type { IMiddleware } from 'koa-router';
 import z from 'zod';
-import Config from '../../config';
-import { EmailAddress } from '../../model/email_addresses';
-import { InvalidEmailError, ResendLimitExeededError, UserExistsError } from '../../model/errors';
-import Model from '../../model/model';
-import { sendEmail } from '../email';
-import changePasswordTemplate from '../templates/change_password_email_template';
+import type Config from '../../config.js';
+import type { EmailAddress } from '../../model/email_addresses.js';
+import { InvalidEmailError, ResendLimitExeededError, UserExistsError } from '../../model/errors.js';
+import Model from '../../model/model.js';
+import { sendEmail } from '../email.js';
+import changePasswordTemplate from '../templates/change_password_email_template.js';
 
 export function createUser(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({

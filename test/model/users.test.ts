@@ -3,10 +3,14 @@ import test from 'ava';
 import * as phc from '@phc/format';
 import moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { AuthenticationError, NoSuchEntryError, NotActivatedError } from '../../src/model/errors';
+import {
+  AuthenticationError,
+  NoSuchEntryError,
+  NotActivatedError,
+} from '../../src/model/errors.js';
 
-import { model } from '../_setup';
-import { createGroup, createUser } from '../_test_utils';
+import { model } from '../_setup.js';
+import { createGroup, createUser } from '../_test_utils.js';
 
 test('create and delete user', async t => {
   await model.pgDo(async tr => {

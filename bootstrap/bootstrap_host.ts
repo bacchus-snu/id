@@ -1,9 +1,9 @@
 import * as bunyan from 'bunyan';
 import * as fs from 'fs';
-import Config from '../src/config';
-import Model from '../src/model/model';
+import type Config from '../src/config.js';
+import Model from '../src/model/model.js';
 
-import { HARDWARE_LAB, LOUNGE, PRACTICE_SERVER, SOFTWARE_LAB } from './hosts_info';
+import { HARDWARE_LAB, LOUNGE, PRACTICE_SERVER, SOFTWARE_LAB } from './hosts_info.js';
 
 const config: Config = JSON.parse(fs.readFileSync('config.json', { encoding: 'utf-8' }));
 

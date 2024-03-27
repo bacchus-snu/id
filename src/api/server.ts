@@ -3,15 +3,15 @@ import * as Bunyan from 'bunyan';
 import * as crypto from 'crypto';
 import Koa from 'koa';
 import mount from 'koa-mount';
+import OIDCProvider from 'oidc-provider';
 
-import Config from '../config';
-import Model from '../model/model';
-import createOIDCConfig from '../oidc/configuration';
-import { createRouter } from './router';
+import type Config from '../config.js';
+import Model from '../model/model.js';
+import createOIDCConfig from '../oidc/configuration.js';
+import { createRouter } from './router.js';
 
-const createServer = async (config: Config, log: Bunyan, inputModel?: Model) => {
+const createServer = (config: Config, log: Bunyan, inputModel?: Model) => {
   const model = inputModel ?? new Model(config, log);
-  const OIDCProvider = (await import('oidc-provider')).default;
   const oidcConfig = createOIDCConfig(model, config.oidc);
   const oidcProvider = new OIDCProvider(config.oidc.issuer, oidcConfig);
 

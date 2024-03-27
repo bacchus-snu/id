@@ -1,8 +1,7 @@
-// @ts-expect-error: https://github.com/microsoft/TypeScript/issues/49721
 import type { AllClientMetadata } from 'oidc-provider';
 
-import { NoSuchEntryError } from './errors';
-import Transaction from './transaction';
+import { NoSuchEntryError } from './errors.js';
+import Transaction from './transaction.js';
 
 export default class OAuth {
   public async getClientById(tr: Transaction, id: string): Promise<AllClientMetadata> {

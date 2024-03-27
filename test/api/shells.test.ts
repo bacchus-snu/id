@@ -1,7 +1,7 @@
 import test from 'ava';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
-import { app, model } from '../_setup';
+import { app, model } from '../_setup.js';
 
 test('test getShells', async t => {
   const newShell = uuid();

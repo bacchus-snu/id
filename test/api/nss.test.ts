@@ -1,6 +1,6 @@
 import test from 'ava';
-import { app, config, model } from '../_setup';
-import { createAgentForwardedFor, createUser } from '../_test_utils';
+import { app, config, model } from '../_setup.js';
+import { createAgentForwardedFor, createUser } from '../_test_utils.js';
 
 test('fetch passwd entries', async t => {
   const agent = createAgentForwardedFor(app, '10.0.2.0');

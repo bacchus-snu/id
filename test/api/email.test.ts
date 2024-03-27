@@ -2,7 +2,7 @@ import test from 'ava';
 import * as nodemailer from 'nodemailer';
 import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
-import { app, config, model } from '../_setup';
+import { app, config, model } from '../_setup.js';
 
 test.skip('email configuration is correct', async t => {
   const emailOption = {
