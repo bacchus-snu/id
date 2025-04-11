@@ -70,6 +70,11 @@ export interface EmailConfig {
   verificationEmailSubject: string;
 
   /**
+   * Find username email subject.
+   */
+  findUsernameEmailSubject: string;
+
+  /**
    * Password change email subject.
    */
   passwordChangeEmailSubject: string;

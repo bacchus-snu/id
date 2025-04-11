@@ -51,3 +51,54 @@ export async function sendEmail(opt: EmailOption, logger: Bunyan, config: Config
   // should we have to await this promise?
   await transporter.sendMail(messageOption);
 }
+
+export interface EmailOptionForUsername {
+  username: string;
+  address: string;
+  subject: string;
+  template: string;
+  resendCount: number;
+}
+
+export async function sendEmailForUsername(
+  opt: EmailOptionForUsername,
+  logger: Bunyan,
+  config: Config,
+) {
+  if (config === null) {
+    logger.warn('No config, so the verification email will not be sent.');
+    return;
+  }
+
+  const { username, address, subject, template, resendCount } = opt;
+
+  if (!/^[a-zA-Z0-9-_.]+@[a-zA-Z0-9-.]+$/.test(address)) {
+    throw new InvalidEmailError();
+  }
+  if (resendCount >= config.email.resendLimit) {
+    throw new ResendLimitExeededError();
+  }
+
+  const transporterOption = {
+    host: config.email.host,
+    port: 465,
+    secure: true,
+    auth: {
+      user: config.email.username,
+      pass: config.email.password,
+    },
+    logger: logger ? logger : false,
+  };
+
+  const transporter = nodemailer.createTransport(transporterOption);
+
+  const messageOption = {
+    from: config.email.username,
+    to: address,
+    subject,
+    html: template.replace('USERNAME', username),
+  };
+
+  // should we have to await this promise?
+  await transporter.sendMail(messageOption);
+}

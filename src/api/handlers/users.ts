@@ -10,8 +10,9 @@ import {
   ResendLimitExeededError,
 } from '../../model/errors.js';
 import Model from '../../model/model.js';
-import { sendEmail } from '../email.js';
+import { sendEmail, sendEmailForUsername } from '../email.js';
 import changePasswordTemplate from '../templates/change_password_email_template.js';
+import findUsernameTemplate from '../templates/find_username_email_template.js';
 
 /* === ARCHIVED: replaced by Canvas-based signup (canvasSignup in handlers/canvas.ts) ===
 export function createUser(model: Model, config: Config): IMiddleware {
@@ -86,6 +87,59 @@ export function createUser(model: Model, config: Config): IMiddleware {
   };
 }
 === END ARCHIVED === */
+
+export function sendUsernameEmail(model: Model, config: Config): IMiddleware {
+  const bodySchema = z.object({
+    emailLocal: z.string().trim().nonempty(),
+    emailDomain: z.string().trim().nonempty(),
+  });
+  return async (ctx, next) => {
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
+      ctx.status = 400;
+      return;
+    }
+    const { emailLocal, emailDomain } = bodyResult.data;
+    let username = '';
+    let resendCount = -1;
+    try {
+      await model.pgDo(async tr => {
+        const userIdx = await model.users.getUserIdxByEmailAddress(tr, emailLocal, emailDomain);
+        const user = await model.users.getByUserIdx(tr, userIdx);
+        username = user.username ?? '';
+        // password change token is used to limit the number of emails
+        const token = await model.users.generatePasswordChangeToken(tr, userIdx);
+        resendCount = await model.users.getResendCount(tr, token);
+      });
+    } catch (e) {
+      // no such entry, but do nothing and just return 200
+      ctx.status = 200;
+      return;
+    }
+    try {
+      const option = {
+        username: username,
+        address: `${emailLocal}@${emailDomain}`,
+        subject: config.email.findUsernameEmailSubject,
+        template: findUsernameTemplate,
+        resendCount: resendCount,
+      };
+      await sendEmailForUsername(option, model.log, config);
+    } catch (e) {
+      if (e instanceof ResendLimitExeededError) {
+        ctx.status = 429;
+        return;
+      }
+      if (e instanceof InvalidEmailError) {
+        ctx.status = 400;
+        return;
+      }
+      model.log.warn(`sending email to ${emailLocal}@${emailDomain} just failed.`);
+    }
+    ctx.status = 200;
+    await next();
+  };
+}
 
 export function sendChangePasswordEmail(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({
