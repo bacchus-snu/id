@@ -20,6 +20,7 @@ import { checkLogin, login, loginLegacy, loginPAM, logout } from './handlers/log
 import { getGroup, getPasswd } from './handlers/nss.js';
 import { getShells } from './handlers/shells.js';
 import {
+  addStudentNumber,
   changePassword,
   checkChangePasswordEmailToken,
   createUser,
@@ -144,6 +145,16 @@ export function createRouter(
    * @returns emails: Array of EmailAddress.
    */
   router.get('/api/user/emails', getUserEmails(model));
+
+  /**
+   * Add a student number to the user.
+   * 201 if success.
+   * 400 if invalid format.
+   * 401 if not logged in.
+   * 409 if student number already exists.
+   * @param studentNumber student number.
+   */
+  router.post('/api/user/student-numbers', addStudentNumber(model));
 
   /**
    * Get user info.

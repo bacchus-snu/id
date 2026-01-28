@@ -1,0 +1,63 @@
+{
+  "instanceName": "id-core",
+  "logLevel": 30,
+  "api": {
+    "listenHost": "0.0.0.0",
+    "listenPort": "50080",
+    "proxy": true,
+    "corsAllowedOrigins": ["http://localhost:3000"]
+  },
+  "session": {
+    "key": "id-session",
+    "maxAge": 3600000,
+    "signed": true,
+    "sameSite": "Lax",
+    "rolling": false,
+    "renew": true
+  },
+  "email": {
+    "host": "smtp.gmail.com",
+    "username": "ADD_USERNAME_HERE",
+    "password": "ADD_PASSWORD_HERE",
+    "resendLimit": 3,
+    "verificationEmailSubject": "id.snucse.org 이메일 인증",
+    "passwordChangeEmailSubject": "id.snucse.org 비밀번호 변경",
+    "verificationEmailUrl": "http://localhost:3000/sign-up",
+    "passwordChangeEmailUrl": "http://localhost:3000/change-password"
+  },
+  "posix": {
+    "userGroupName": "cseusers",
+    "userGroupGid": 101132,
+    "sudoerGroupName": "csesudoers",
+    "sudoerGroupGid": 100600,
+    "defaultShell": "/bin/bash",
+    "minUid": 100000,
+    "homeDirectoryPrefix": "/csehome"
+  },
+  "postgresql": {
+    "host": "postgres",
+    "port": 5432,
+    "user": "postgres",
+    "password": "foo",
+    "database": "id"
+  },
+  "permissions": {
+    "snucse": [1]
+  },
+  "jwt": {
+    "privateKey": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgCdjfvbvINjCy20yG\nuoDL0rVf60lJAv6Y/barD5El0Y2hRANCAARWUx7P9gsIAe23mCffvGXylGdb8t40\nXgBYC+Rv2zIVkPtfL6y5TLTn0LTm+9Q2Z/43Yo864CXRUoSVAU9puu3P\n-----END PRIVATE KEY-----\n",
+    "expirySec": 3600,
+    "issuer": "bacchus:id",
+    "audience": "bacchus:some_service"
+  },
+  "oidc": {
+    "issuer": "http://localhost:50080/o",
+    "cookieKey": "a-secret-signing-key-change-me",
+    "jwks": {
+      "keys": []
+    },
+    "devInteractions": false,
+    "deviceFlow": false,
+    "revocation": false
+  }
+}

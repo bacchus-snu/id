@@ -287,6 +287,40 @@ export function getUserEmails(model: Model): IMiddleware {
   };
 }
 
+export function addStudentNumber(model: Model): IMiddleware {
+  const bodySchema = z.object({
+    studentNumber: z.string().regex(/^(\d{5}-\d{3}|\d{4}-\d{4,5})$/),
+  });
+
+  return async (ctx, next) => {
+    const userIdx = ctx.state.userIdx;
+    if (typeof userIdx !== 'number') {
+      ctx.status = 401;
+      return;
+    }
+
+    const bodyResult = bodySchema.safeParse(ctx.request.body);
+    if (!bodyResult.success) {
+      ctx.status = 400;
+      return;
+    }
+
+    const { studentNumber } = bodyResult.data;
+    try {
+      await model.pgDo(async tr => {
+        await model.users.addStudentNumber(tr, userIdx, studentNumber);
+      });
+    } catch (e) {
+      // Likely duplicate student number (unique constraint)
+      ctx.status = 409;
+      return;
+    }
+
+    ctx.status = 201;
+    await next();
+  };
+}
+
 export function getUserInfo(model: Model, config: Config): IMiddleware {
   return async (ctx, next) => {
     // authorize
