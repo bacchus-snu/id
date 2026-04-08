@@ -19,7 +19,8 @@ test.skip('email configuration is correct', async t => {
   t.pass();
 });
 
-test('check token api', async t => {
+// ARCHIVED: email verification replaced by Canvas-based signup
+test.skip('check token api', async t => {
   let token = '';
   const local = uuid();
   const domain = uuid();
@@ -51,7 +52,8 @@ test('check token api', async t => {
   t.deepEqual(response.body, { emailLocal: local, emailDomain: domain });
 });
 
-test('test email validation', async t => {
+// ARCHIVED: email verification replaced by Canvas-based signup
+test.skip('test email validation', async t => {
   const agent = request.agent(app);
 
   let response;

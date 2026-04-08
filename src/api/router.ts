@@ -6,7 +6,7 @@ import type { Configuration as OIDCConfiguration } from 'oidc-provider';
 import type Config from '../config.js';
 import Model from '../model/model.js';
 import createOIDCRouter from '../oidc/routes.js';
-import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails.js';
+import { canvasApply, canvasPreview, canvasSignup, canvasSync } from './handlers/canvas.js';
 import {
   acceptGroup,
   applyGroup,
@@ -23,7 +23,8 @@ import {
   addStudentNumber,
   changePassword,
   checkChangePasswordEmailToken,
-  createUser,
+  deleteStudentNumber,
+  deleteUserEmail,
   getUserEmails,
   getUserInfo,
   sendChangePasswordEmail,
@@ -94,29 +95,21 @@ export function createRouter(
    */
   router.get('/api/shells', getShells(model));
 
-  /**
-   * Generate verification token and send sign up link.
-   * @param emailLocal email local.
-   * @param emailDomain email domain.
-   */
+  /* === ARCHIVED: replaced by Canvas-based signup ===
   router.post('/api/email/verify', sendVerificationEmail(model, config));
-
-  /**
-   * Check token and response with according email addresss.
-   * @param token verification token.
-   * @returns emailLocal email local.
-   * @returns emailDomain email domain.
-   */
   router.post('/api/email/check-token', checkVerificationEmailToken(model));
-
-  /**
-   * Create user.
-   * @param username username.
-   * @param name real name.
-   * @param password password.
-   * @param preferredLanguage preferred language.
-   */
   router.post('/api/user', createUser(model, config));
+  === END ARCHIVED === */
+
+  // Canvas integration
+  router.post('/api/canvas/preview', canvasPreview(model, config));
+  router.post('/api/user/canvas-signup', canvasSignup(model, config));
+  router.post('/api/canvas/sync', canvasSync(model, config));
+  router.post('/api/canvas/apply', canvasApply(model));
+
+  // Delete student number / email
+  router.delete('/api/user/student-numbers', deleteStudentNumber(model));
+  router.delete('/api/user/email', deleteUserEmail(model));
 
   /**
    * Change password for user.

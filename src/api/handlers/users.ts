@@ -3,12 +3,12 @@ import { jwtVerify } from 'jose';
 import type { IMiddleware } from 'koa-router';
 import z from 'zod';
 import type Config from '../../config.js';
-import type { EmailAddress } from '../../model/email_addresses.js';
-import { InvalidEmailError, ResendLimitExeededError, UserExistsError } from '../../model/errors.js';
+import { InvalidEmailError, ResendLimitExeededError } from '../../model/errors.js';
 import Model from '../../model/model.js';
 import { sendEmail } from '../email.js';
 import changePasswordTemplate from '../templates/change_password_email_template.js';
 
+/* === ARCHIVED: replaced by Canvas-based signup (canvasSignup in handlers/canvas.ts) ===
 export function createUser(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({
     username: z.string().nonempty().max(20).regex(/^[a-z][a-z0-9]+$/),
@@ -80,6 +80,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
     await next();
   };
 }
+=== END ARCHIVED === */
 
 export function sendChangePasswordEmail(model: Model, config: Config): IMiddleware {
   const bodySchema = z.object({
@@ -379,6 +380,66 @@ export function getUserInfo(model: Model, config: Config): IMiddleware {
       return;
     }
 
+    await next();
+  };
+}
+
+export function deleteStudentNumber(model: Model): IMiddleware {
+  const schema = z.object({ studentNumber: z.string() });
+  return async (ctx, next) => {
+    if (typeof ctx.state.userIdx !== 'number') {
+      ctx.status = 401;
+      return;
+    }
+    const body = schema.safeParse(ctx.request.body);
+    if (!body.success) {
+      ctx.status = 400;
+      return;
+    }
+    try {
+      await model.pgDo(tr =>
+        model.users.deleteStudentNumber(tr, ctx.state.userIdx, body.data.studentNumber)
+      );
+    } catch {
+      ctx.status = 404;
+      return;
+    }
+    ctx.status = 200;
+    await next();
+  };
+}
+
+export function deleteUserEmail(model: Model): IMiddleware {
+  const schema = z.object({ emailLocal: z.string(), emailDomain: z.string() });
+  return async (ctx, next) => {
+    if (typeof ctx.state.userIdx !== 'number') {
+      ctx.status = 401;
+      return;
+    }
+    const body = schema.safeParse(ctx.request.body);
+    if (!body.success) {
+      ctx.status = 400;
+      return;
+    }
+    try {
+      await model.pgDo(tr =>
+        model.emailAddresses.deleteByOwner(
+          tr,
+          ctx.state.userIdx,
+          body.data.emailLocal,
+          body.data.emailDomain,
+        )
+      );
+    } catch (e) {
+      if (e instanceof Error && e.message?.includes('최소 1개')) {
+        ctx.status = 400;
+        ctx.body = { message: e.message };
+      } else {
+        ctx.status = 404;
+      }
+      return;
+    }
+    ctx.status = 200;
     await next();
   };
 }
