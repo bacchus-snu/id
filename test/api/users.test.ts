@@ -5,7 +5,8 @@ import * as request from 'supertest';
 import { v4 as uuid } from 'uuid';
 import { app, config, model } from '../_setup.js';
 
-test('create user step by step', async t => {
+// ARCHIVED: email-based signup replaced by Canvas-based signup
+test.skip('create user step by step', async t => {
   const agent = request.agent(app);
 
   let response;
@@ -234,7 +235,8 @@ test('change shell', async t => {
   t.is(response.body.shell, newShell);
 });
 
-test('verification email resend limit', async t => {
+// ARCHIVED: email-based signup replaced by Canvas-based signup
+test.skip('verification email resend limit', async t => {
   const emailLocal = uuid();
   const emailDomain = 'snu.ac.kr';
   const resendLimit = config.email.resendLimit;
