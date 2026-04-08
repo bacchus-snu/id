@@ -106,6 +106,13 @@ export default class Groups {
     return this.rowToGroup(result.rows[0]);
   }
 
+  public async getByIdentifier(tr: Transaction, identifier: string): Promise<Group | null> {
+    const query = 'SELECT * FROM groups WHERE identifier = $1';
+    const result = await tr.query<GroupRow>(query, [identifier]);
+    if (result.rows.length === 0) { return null; }
+    return this.rowToGroup(result.rows[0]);
+  }
+
   public async setOwnerGroup(
     tr: Transaction,
     groupIdx: number,

@@ -44,6 +44,10 @@
   "permissions": {
     "snucse": [1]
   },
+  "canvas": {
+    "baseUrl": "https://myetl.snu.ac.kr",
+    "xinicsSsoToolId": "81"
+  },
   "oidc": {
     "issuer": "http://localhost:3000/o",
     "cookieKey": "a secret signing key",

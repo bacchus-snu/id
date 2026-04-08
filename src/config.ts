@@ -163,6 +163,11 @@ export interface JWTConfig {
   audience: string;
 }
 
+export interface CanvasConfig {
+  baseUrl: string;
+  xinicsSsoToolId: string;
+}
+
 export interface OIDCConfig {
   /** */
   issuer: string;
@@ -234,4 +239,9 @@ export default interface Config {
    * OIDC configuration.
    */
   oidc: OIDCConfig;
+
+  /**
+   * Canvas LMS configuration.
+   */
+  canvas: CanvasConfig;
 }

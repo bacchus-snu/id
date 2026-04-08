@@ -459,6 +459,16 @@ export default class Users {
     return result1.rows.length + result2.rows.length;
   }
 
+  public async getAllPendingUserMemberships(
+    tr: Transaction,
+    userIdx: number,
+  ): Promise<Array<UserMembership>> {
+    const query =
+      'SELECT idx, user_idx, group_idx FROM pending_user_memberships WHERE user_idx = $1';
+    const result = await tr.query<UserMembershipRow>(query, [userIdx]);
+    return result.rows.map(row => this.rowToUserMembership(row));
+  }
+
   public async getAllPendingMembershipUsers(
     tr: Transaction,
     groupIdx: number,
@@ -533,6 +543,16 @@ export default class Users {
       'INSERT INTO student_numbers(student_number, owner_idx) VALUES ($1, $2) RETURNING idx';
     const result = await tr.query<{ idx: number }>(query, [studentNumber, userIdx]);
     return result.rows[0].idx;
+  }
+
+  public async deleteStudentNumber(
+    tr: Transaction,
+    userIdx: number,
+    studentNumber: string,
+  ): Promise<void> {
+    const query = 'DELETE FROM student_numbers WHERE student_number = $1 AND owner_idx = $2';
+    const result = await tr.query(query, [studentNumber, userIdx]);
+    if (result.rowCount === 0) { throw new NoSuchEntryError(); }
   }
 
   private rowToUser(row: UserRow): User {

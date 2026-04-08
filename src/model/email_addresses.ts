@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import moment from 'moment';
-import { ExpiredTokenError, NoSuchEntryError } from './errors.js';
+import { ControllableError, ExpiredTokenError, NoSuchEntryError } from './errors.js';
 import Transaction from './transaction.js';
 
 interface EmailAddressRow {
@@ -135,6 +135,35 @@ export default class EmailAddresses {
       local: row.address_local,
       domain: row.address_domain,
     }));
+  }
+
+  public async deleteByOwner(
+    tr: Transaction,
+    userIdx: number,
+    addressLocal: string,
+    addressDomain: string,
+  ): Promise<void> {
+    // Enforce minimum 1 email
+    const countResult = await tr.query<{ count: string }>(
+      'SELECT COUNT(*) AS count FROM email_addresses WHERE owner_idx = $1',
+      [userIdx],
+    );
+    if (parseInt(countResult.rows[0].count) <= 1) {
+      throw new ControllableError('이메일은 최소 1개 이상 유지해야 합니다.');
+    }
+    // Delete verification token first (FK constraint)
+    await tr.query(
+      `DELETE FROM email_verification_tokens WHERE email_idx = (
+       SELECT idx FROM email_addresses WHERE owner_idx = $1
+       AND LOWER(address_local) = LOWER($2) AND LOWER(address_domain) = LOWER($3))`,
+      [userIdx, addressLocal, addressDomain],
+    );
+    const result = await tr.query(
+      `DELETE FROM email_addresses WHERE owner_idx = $1
+     AND LOWER(address_local) = LOWER($2) AND LOWER(address_domain) = LOWER($3)`,
+      [userIdx, addressLocal, addressDomain],
+    );
+    if (result.rowCount === 0) { throw new NoSuchEntryError(); }
   }
 
   private asyncRandomBytes(n: number): Promise<Buffer> {
