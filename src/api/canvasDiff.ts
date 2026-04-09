@@ -104,10 +104,12 @@ export function computeCanvasDiff(
   const profilesExisting = canvasProfiles.filter(p => currentSNSet.has(p.studentNumber));
   const profilesToAdd = canvasProfiles.filter(p => !currentSNSet.has(p.studentNumber));
 
-  const canvasEmails = canvas.emails.map(addr => {
-    const [local, domain] = addr.split('@');
-    return { local, domain };
-  });
+  const canvasEmails = canvas.emails
+    .map(addr => {
+      const [local, domain] = addr.split('@');
+      return { local, domain };
+    })
+    .filter(e => e.local && e.domain);
   const currentEmailKeys = new Set(
     currentEmails.map(e => `${e.local.toLowerCase()}@${e.domain.toLowerCase()}`),
   );

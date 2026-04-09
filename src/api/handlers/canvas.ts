@@ -1,5 +1,5 @@
 import type { IMiddleware } from 'koa-router';
-import { z } from 'zod';
+import z from 'zod';
 import type Config from '../../config.js';
 import { UserExistsError } from '../../model/errors.js';
 import Model from '../../model/model.js';
@@ -43,16 +43,11 @@ export function canvasPreview(model: Model, config: Config): IMiddleware {
       }
       const studentNumberConflicts: Array<string> = [];
       for (const p of canvasData.xinicsProfiles) {
-        try {
-          await tr.query('SELECT 1 FROM student_numbers WHERE student_number = $1', [
-            p.studentNumber,
-          ]);
-          const result = await tr.query<{ owner_idx: number }>(
-            'SELECT owner_idx FROM student_numbers WHERE student_number = $1',
-            [p.studentNumber],
-          );
-          if (result.rows.length > 0) { studentNumberConflicts.push(p.studentNumber); }
-        } catch { /* 없음 */ }
+        const result = await tr.query<{ owner_idx: number }>(
+          'SELECT owner_idx FROM student_numbers WHERE student_number = $1',
+          [p.studentNumber],
+        );
+        if (result.rows.length > 0) { studentNumberConflicts.push(p.studentNumber); }
       }
       return { emails: emailConflicts, studentNumbers: studentNumberConflicts };
     });
@@ -152,7 +147,7 @@ export function canvasSignup(model: Model, config: Config): IMiddleware {
         );
         for (const email of canvasData.emails) {
           const [local, domain] = email.split('@');
-          if (!domain) { continue; }
+          if (!domain || !domain.endsWith('snu.ac.kr')) { continue; }
           const emailIdx = await model.emailAddresses.create(tr, local, domain);
           await model.emailAddresses.validate(tr, userIdx, emailIdx);
         }
@@ -214,14 +209,12 @@ export function canvasSync(model: Model, config: Config): IMiddleware {
     }
     const userIdx = ctx.state.userIdx;
 
-    // 이름 + 이메일 일치 검증 (identity verification)
+    // 이메일 일치 검증 (동일 인물 확인)
     const identity = await model.pgDo(async tr => {
-      const user = await model.users.getByUserIdx(tr, userIdx);
       const emails = await model.emailAddresses.getEmailsByOwnerIdx(tr, userIdx);
-      return { name: user.name, emails };
+      return { emails };
     });
 
-    const canvasName = canvasData.profile.name.replace(/\(.*\)/, '').trim();
     const canvasEmailSet = new Set(canvasData.emails.map(e => e.toLowerCase()));
     const userEmailSet = new Set(
       identity.emails.map(e => `${e.local}@${e.domain}`.toLowerCase()),
@@ -233,18 +226,6 @@ export function canvasSync(model: Model, config: Config): IMiddleware {
       ctx.status = 403;
       ctx.body = {
         message: 'Canvas 계정의 이메일이 현재 계정의 이메일과 일치하지 않습니다.',
-        mismatch: { type: 'email' },
-      };
-      return;
-    }
-
-    // 이름 일치 확인
-    if (identity.name !== canvasName) {
-      ctx.status = 403;
-      ctx.body = {
-        message:
-          `Canvas 계정의 이름(${canvasName})이 현재 계정의 이름(${identity.name})과 일치하지 않습니다.`,
-        mismatch: { type: 'name', canvas: canvasName, current: identity.name },
       };
       return;
     }
@@ -304,7 +285,12 @@ export function canvasApply(model: Model): IMiddleware {
             } catch { /* dup */ }
             break;
           case 'add_group': {
-            const group = await model.groups.getByIdx(tr, action.groupIdx);
+            let group;
+            try {
+              group = await model.groups.getByIdx(tr, action.groupIdx);
+            } catch {
+              break; /* 존재하지 않는 그룹 */
+            }
             const id = group.identifier;
             if (id !== 'undergraduate' && id !== 'graduate' && !id.startsWith('course-')) {
               break;

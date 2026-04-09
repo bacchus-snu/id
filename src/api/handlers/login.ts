@@ -151,6 +151,7 @@ export function checkLogin(model: Model): IMiddleware {
 
       const data = {
         username: user.username,
+        name: user.name,
       };
       ctx.body = data;
       ctx.status = 200;
