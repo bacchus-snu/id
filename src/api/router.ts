@@ -28,6 +28,7 @@ import {
   getUserEmails,
   getUserInfo,
   sendChangePasswordEmail,
+  sendUsernameEmail,
 } from './handlers/users.js';
 import { changeUserShell, getUserShell } from './handlers/users.js';
 
@@ -124,6 +125,13 @@ export function createRouter(
    * @param emailDomain email domain.
    */
   router.post('/api/user/send-password-token', sendChangePasswordEmail(model, config));
+
+  /**
+   * Send username email.
+   * @param emailLocal email local.
+   * @param emailDomain email domain.
+   */
+  router.post('/api/user/send-username', sendUsernameEmail(model, config));
 
   /**
    * Check password change email token.

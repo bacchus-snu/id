@@ -270,6 +270,36 @@ export default class Users {
     }
   }
 
+  public async generateFindUsernameToken(tr: Transaction, userIdx: number): Promise<string> {
+    await this.resetFindUsernameResendCountIfExpired(tr, userIdx);
+    const query =
+      'INSERT INTO find_username_tokens AS p(user_idx, token, expires) VALUES ($1, $2, $3) '
+      + 'ON CONFLICT (user_idx) DO UPDATE SET token = $2, resend_count = p.resend_count + 1, expires = $3';
+    const randomBytes = await this.asyncRandomBytes(32);
+    const token = randomBytes.toString('hex');
+    const expires = moment().add(1, 'day').toDate();
+    await tr.query(query, [userIdx, token, expires]);
+    return token;
+  }
+
+  public async resetFindUsernameResendCountIfExpired(
+    tr: Transaction,
+    userIdx: number,
+  ): Promise<void> {
+    const query =
+      'UPDATE find_username_tokens SET resend_count = 0 WHERE user_idx = $1 AND expires <= now()';
+    await tr.query(query, [userIdx]);
+  }
+
+  public async getFindUsernameResendCount(tr: Transaction, token: string): Promise<number> {
+    const query = 'SELECT resend_count FROM find_username_tokens WHERE token = $1';
+    const result = await tr.query<{ resend_count: number }>(query, [token]);
+    if (result.rows.length === 0) {
+      throw new NoSuchEntryError();
+    }
+    return result.rows[0].resend_count;
+  }
+
   public async changePassword(
     tr: Transaction,
     userIdx: number,
