@@ -9,7 +9,8 @@ const template = `
     </div>
     <div width="50%" align="center">
       <p>
-        가입하신 유저명은 <b>USERNAME</b> 입니다.
+        가입하신 유저명은 <b>USERNAME</b> 입니다.<br>
+        Your username is <b>USERNAME</b>.
       </p>
     </div>
   </div>

@@ -3,6 +3,7 @@ drop table if exists users cascade;
 drop table if exists email_addresses cascade;
 drop table if exists email_verification_tokens cascade;
 drop table if exists password_change_tokens cascade;
+drop table if exists find_username_tokens cascade;
 drop table if exists student_numbers cascade;
 drop table if exists reserved_usernames cascade;
 drop table if exists groups cascade;
@@ -75,6 +76,15 @@ create table email_verification_tokens (
 
 -- Password change token.
 create table password_change_tokens (
+  idx serial primary key,
+  user_idx integer unique not null references users(idx) on delete cascade,
+  token text unique not null check (token <> ''),
+  expires timestamp with time zone not null,
+  resend_count integer not null default 0
+);
+
+-- Find username token.
+create table find_username_tokens (
   idx serial primary key,
   user_idx integer unique not null references users(idx) on delete cascade,
   token text unique not null check (token <> ''),

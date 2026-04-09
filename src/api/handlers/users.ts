@@ -107,9 +107,8 @@ export function sendUsernameEmail(model: Model, config: Config): IMiddleware {
         const userIdx = await model.users.getUserIdxByEmailAddress(tr, emailLocal, emailDomain);
         const user = await model.users.getByUserIdx(tr, userIdx);
         username = user.username ?? '';
-        // password change token is used to limit the number of emails
-        const token = await model.users.generatePasswordChangeToken(tr, userIdx);
-        resendCount = await model.users.getResendCount(tr, token);
+        const token = await model.users.generateFindUsernameToken(tr, userIdx);
+        resendCount = await model.users.getFindUsernameResendCount(tr, token);
       });
     } catch (e) {
       // no such entry, but do nothing and just return 200
