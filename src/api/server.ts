@@ -39,7 +39,7 @@ const createServer = (config: Config, log: Bunyan, inputModel?: Model) => {
         }
         return '';
       },
-      allowMethods: 'POST',
+      allowMethods: ['GET', 'POST', 'DELETE'],
       credentials: true,
     }))
     .use(router.routes())

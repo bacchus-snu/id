@@ -3,7 +3,12 @@ import { jwtVerify } from 'jose';
 import type { IMiddleware } from 'koa-router';
 import z from 'zod';
 import type Config from '../../config.js';
-import { InvalidEmailError, ResendLimitExeededError } from '../../model/errors.js';
+import {
+  ControllableError,
+  InvalidEmailError,
+  NoSuchEntryError,
+  ResendLimitExeededError,
+} from '../../model/errors.js';
 import Model from '../../model/model.js';
 import { sendEmail } from '../email.js';
 import changePasswordTemplate from '../templates/change_password_email_template.js';
@@ -400,9 +405,12 @@ export function deleteStudentNumber(model: Model): IMiddleware {
       await model.pgDo(tr =>
         model.users.deleteStudentNumber(tr, ctx.state.userIdx, body.data.studentNumber)
       );
-    } catch {
-      ctx.status = 404;
-      return;
+    } catch (e) {
+      if (e instanceof NoSuchEntryError) {
+        ctx.status = 404;
+        return;
+      }
+      throw e;
     }
     ctx.status = 200;
     await next();
@@ -431,13 +439,12 @@ export function deleteUserEmail(model: Model): IMiddleware {
         )
       );
     } catch (e) {
-      if (e instanceof Error && e.message?.includes('최소 1개')) {
-        ctx.status = 400;
+      if (e instanceof ControllableError) {
+        ctx.status = e instanceof NoSuchEntryError ? 404 : 400;
         ctx.body = { message: e.message };
-      } else {
-        ctx.status = 404;
+        return;
       }
-      return;
+      throw e;
     }
     ctx.status = 200;
     await next();
