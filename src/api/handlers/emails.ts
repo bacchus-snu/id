@@ -1,11 +1,9 @@
 import type { IMiddleware } from 'koa-router';
-import type Config from '../../config.js';
-import type Model from '../../model/model.js';
-
-/* === ARCHIVED: replaced by Canvas-based signup ===
 import z from 'zod';
+import type Config from '../../config.js';
 import type { EmailAddress } from '../../model/email_addresses.js';
 import { EmailInUseError, InvalidEmailError, ResendLimitExeededError } from '../../model/errors.js';
+import type Model from '../../model/model.js';
 import { sendEmail } from '../email.js';
 import emailVerificationTemplate from '../templates/verification_email_template.js';
 
@@ -114,22 +112,5 @@ export function checkVerificationEmailToken(model: Model): IMiddleware {
     ctx.body = result;
 
     await next();
-  };
-}
-=== END ARCHIVED === */
-
-// Stub exports to prevent import errors during transition
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function sendVerificationEmail(_model: Model, _config: Config): IMiddleware {
-  return async ctx => {
-    ctx.status = 410;
-    ctx.body = { message: 'Use Canvas-based signup instead.' };
-  };
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function checkVerificationEmailToken(_model: Model): IMiddleware {
-  return async ctx => {
-    ctx.status = 410;
-    ctx.body = { message: 'Use Canvas-based signup instead.' };
   };
 }
