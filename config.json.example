@@ -45,9 +45,13 @@
   "permissions": {
     "snucse": [1]
   },
-  "canvas": {
-    "baseUrl": "https://myetl.snu.ac.kr",
-    "xinicsSsoToolId": "81"
+  "google": {
+    "clientId": "INSERT_GOOGLE_CLIENT_ID",
+    "clientSecret": "INSERT_GOOGLE_CLIENT_SECRET",
+    "redirectUri": "https://id.snucse.org/api/google/callback",
+    "frontendUrl": "https://id.snucse.org",
+    "targetDepartments": ["컴퓨터공학부"],
+    "targetGroupIdentifier": "major"
   },
   "oidc": {
     "issuer": "http://localhost:3000/o",

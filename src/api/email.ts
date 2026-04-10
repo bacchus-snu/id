@@ -96,7 +96,7 @@ export async function sendEmailForUsername(
     from: config.email.username,
     to: address,
     subject,
-    html: template.replace('USERNAME', username),
+    html: template.replace(/USERNAME/g, username),
   };
 
   // should we have to await this promise?

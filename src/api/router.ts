@@ -6,7 +6,8 @@ import type { Configuration as OIDCConfiguration } from 'oidc-provider';
 import type Config from '../config.js';
 import Model from '../model/model.js';
 import createOIDCRouter from '../oidc/routes.js';
-import { canvasApply, canvasPreview, canvasSignup, canvasSync } from './handlers/canvas.js';
+import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails.js';
+import { googleAuth, googleCallback } from './handlers/google.js';
 import {
   acceptGroup,
   applyGroup,
@@ -23,6 +24,7 @@ import {
   addStudentNumber,
   changePassword,
   checkChangePasswordEmailToken,
+  createUser,
   deleteStudentNumber,
   deleteUserEmail,
   getUserEmails,
@@ -96,17 +98,13 @@ export function createRouter(
    */
   router.get('/api/shells', getShells(model));
 
-  /* === ARCHIVED: replaced by Canvas-based signup ===
   router.post('/api/email/verify', sendVerificationEmail(model, config));
   router.post('/api/email/check-token', checkVerificationEmailToken(model));
   router.post('/api/user', createUser(model, config));
-  === END ARCHIVED === */
 
-  // Canvas integration
-  router.post('/api/canvas/preview', canvasPreview(model, config));
-  router.post('/api/user/canvas-signup', canvasSignup(model, config));
-  router.post('/api/canvas/sync', canvasSync(model, config));
-  router.post('/api/canvas/apply', canvasApply(model));
+  // Google OAuth2 for department verification
+  router.get('/api/google/auth', googleAuth(config));
+  router.get('/api/google/callback', googleCallback(model, config));
 
   // Delete student number / email
   router.delete('/api/user/student-numbers', deleteStudentNumber(model));

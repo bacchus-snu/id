@@ -50,6 +50,14 @@
     "issuer": "bacchus:id",
     "audience": "bacchus:some_service"
   },
+  "google": {
+    "clientId": "INSERT_GOOGLE_CLIENT_ID",
+    "clientSecret": "INSERT_GOOGLE_CLIENT_SECRET",
+    "redirectUri": "https://id.snucse.org/api/google/callback",
+    "frontendUrl": "https://id.snucse.org",
+    "targetDepartments": ["컴퓨터공학부"],
+    "targetGroupIdentifier": "major"
+  },
   "oidc": {
     "issuer": "http://localhost:50080/o",
     "cookieKey": "a-secret-signing-key-change-me",

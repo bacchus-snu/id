@@ -168,9 +168,13 @@ export interface JWTConfig {
   audience: string;
 }
 
-export interface CanvasConfig {
-  baseUrl: string;
-  xinicsSsoToolId: string;
+export interface GoogleOAuthConfig {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  frontendUrl: string;
+  targetDepartments: Array<string>;
+  targetGroupIdentifier: string;
 }
 
 export interface OIDCConfig {
@@ -246,7 +250,7 @@ export default interface Config {
   oidc: OIDCConfig;
 
   /**
-   * Canvas LMS configuration.
+   * Google OAuth2 configuration for department verification.
    */
-  canvas: CanvasConfig;
+  google: GoogleOAuthConfig;
 }
