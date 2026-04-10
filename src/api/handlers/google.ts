@@ -68,7 +68,7 @@ export function googleCallback(model: Model, config: Config): IMiddleware {
     // Validate state (CSRF protection)
     const storedState = ctx.cookies.get(STATE_COOKIE, { signed: true });
     const receivedState = ctx.query.state as string | undefined;
-    ctx.cookies.set(STATE_COOKIE); // clear cookie
+    ctx.cookies.set(STATE_COOKIE, null, { signed: true, maxAge: 0, overwrite: true }); // clear cookie
 
     if (!storedState || !receivedState || storedState !== receivedState) {
       ctx.redirect(frontendRedirect(config, '/?google=error&reason=invalid_state'));
@@ -134,7 +134,7 @@ export function googleCallback(model: Model, config: Config): IMiddleware {
 
     // Verify snu.ac.kr domain
     const atIdx = googleEmail.indexOf('@');
-    if (atIdx < 0 || googleEmail.substring(atIdx + 1) !== 'snu.ac.kr') {
+    if (atIdx < 0 || googleEmail.substring(atIdx + 1).toLowerCase() !== 'snu.ac.kr') {
       ctx.redirect(frontendRedirect(config, '/?google=error&reason=email_not_snu'));
       return;
     }

@@ -51,6 +51,14 @@
     "issuer": "bacchus:id",
     "audience": "bacchus:some_service"
   },
+  "google": {
+    "clientId": "test-client-id",
+    "clientSecret": "test-client-secret",
+    "redirectUri": "http://localhost:50080/api/google/callback",
+    "frontendUrl": "http://localhost:3000",
+    "targetDepartments": ["컴퓨터공학부"],
+    "targetGroupIdentifier": "major"
+  },
   "oidc": {
     "issuer": "http://localhost:3000/o",
     "cookieKey": "ZHarLSnCayTOwuih",
