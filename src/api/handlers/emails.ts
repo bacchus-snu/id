@@ -1,4 +1,4 @@
-import type { IMiddleware } from 'koa-router';
+import type { RouterMiddleware } from '@koa/router';
 import z from 'zod';
 import type Config from '../../config.js';
 import type { EmailAddress } from '../../model/email_addresses.js';
@@ -7,7 +7,7 @@ import type Model from '../../model/model.js';
 import { sendEmail } from '../email.js';
 import emailVerificationTemplate from '../templates/verification_email_template.js';
 
-export function sendVerificationEmail(model: Model, config: Config): IMiddleware {
+export function sendVerificationEmail(model: Model, config: Config): RouterMiddleware {
   const bodySchema = z.object({
     emailLocal: z.string().trim().nonempty(),
     emailDomain: z.string().trim().nonempty(),
@@ -78,7 +78,7 @@ export function sendVerificationEmail(model: Model, config: Config): IMiddleware
   };
 }
 
-export function checkVerificationEmailToken(model: Model): IMiddleware {
+export function checkVerificationEmailToken(model: Model): RouterMiddleware {
   const bodySchema = z.object({
     token: z.string().nonempty(),
   });

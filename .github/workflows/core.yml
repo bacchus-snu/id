@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:18.16-bookworm
+    container: node:24-bookworm
     services:
       postgres:
         image: postgres:15.3-alpine
@@ -22,7 +22,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare database
         env:
           PGPASSFILE: /tmp/pgpass
@@ -33,7 +33,7 @@ jobs:
           psql -h postgres -U postgres -w -c 'create database id;'
           psql -h postgres -U postgres -w id < ./schema.sql
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .yarn/cache
           key: ${{ runner.os }}-build.1-core-${{ hashFiles('yarn.lock') }}

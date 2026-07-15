@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 
-import Router from 'koa-router';
+import Router from '@koa/router';
 import type OIDCProvider from 'oidc-provider';
 import { errors as oidcErrors } from 'oidc-provider';
 import * as z from 'zod';

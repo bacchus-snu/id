@@ -1,9 +1,9 @@
-import type { IMiddleware } from 'koa-router';
+import type { RouterMiddleware } from '@koa/router';
 
 import { NoSuchEntryError } from '../../model/errors.js';
 import Model from '../../model/model.js';
 
-export function getPasswd(model: Model): IMiddleware {
+export function getPasswd(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     try {
       await model.pgDo(async tr => {
@@ -41,7 +41,7 @@ export function getPasswd(model: Model): IMiddleware {
   };
 }
 
-export function getGroup(model: Model): IMiddleware {
+export function getGroup(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     try {
       await model.pgDo(async tr => {

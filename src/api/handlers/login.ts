@@ -1,4 +1,4 @@
-import type { IMiddleware } from 'koa-router';
+import type { RouterMiddleware } from '@koa/router';
 
 import z from 'zod';
 import type Config from '../../config.js';
@@ -16,7 +16,7 @@ const legacyLoginBodySchema = z.object({
   member_password: z.string(),
 });
 
-export function login(model: Model): IMiddleware {
+export function login(model: Model): RouterMiddleware {
   return async ctx => {
     const bodyResult = loginBodySchema.safeParse(ctx.request.body);
     if (!bodyResult.success) {
@@ -43,7 +43,7 @@ export function login(model: Model): IMiddleware {
   };
 }
 
-export function loginPAM(model: Model): IMiddleware {
+export function loginPAM(model: Model): RouterMiddleware {
   return async ctx => {
     const bodyResult = loginBodySchema.safeParse(ctx.request.body);
     if (!bodyResult.success) {
@@ -89,7 +89,7 @@ export function loginPAM(model: Model): IMiddleware {
   };
 }
 
-export function loginLegacy(model: Model, config: Config): IMiddleware {
+export function loginLegacy(model: Model, config: Config): RouterMiddleware {
   return async ctx => {
     const bodyResult = legacyLoginBodySchema.safeParse(ctx.request.body);
     if (!bodyResult.success) {
@@ -124,7 +124,7 @@ export function loginLegacy(model: Model, config: Config): IMiddleware {
   };
 }
 
-export function logout(): IMiddleware {
+export function logout(): RouterMiddleware {
   return async (ctx, next) => {
     await ctx.state.destroySession();
     ctx.status = 204;
@@ -132,7 +132,7 @@ export function logout(): IMiddleware {
   };
 }
 
-export function checkLogin(model: Model): IMiddleware {
+export function checkLogin(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const userIdx = ctx.state.userIdx;

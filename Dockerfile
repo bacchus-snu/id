@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 ENV YARN_ENABLE_GLOBAL_CACHE=false
 
 FROM base as builder

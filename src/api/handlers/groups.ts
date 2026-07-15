@@ -1,10 +1,10 @@
-import type { IMiddleware } from 'koa-router';
+import type { RouterMiddleware } from '@koa/router';
 import z from 'zod';
 import { BadParameterError } from '../../model/errors.js';
 import Model from '../../model/model.js';
 import type { User } from '../../model/users.js';
 
-export function listGroups(model: Model): IMiddleware {
+export function listGroups(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       let groups = null;
@@ -28,7 +28,7 @@ export function listGroups(model: Model): IMiddleware {
   };
 }
 
-export function listMembers(model: Model): IMiddleware {
+export function listMembers(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid);
@@ -84,7 +84,7 @@ export function listMembers(model: Model): IMiddleware {
   };
 }
 
-export function listPending(model: Model): IMiddleware {
+export function listPending(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid);
@@ -127,7 +127,7 @@ export function listPending(model: Model): IMiddleware {
   };
 }
 
-export function applyGroup(model: Model): IMiddleware {
+export function applyGroup(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const userIdx = ctx.state.userIdx;
@@ -160,7 +160,7 @@ export function applyGroup(model: Model): IMiddleware {
   };
 }
 
-export function acceptGroup(model: Model): IMiddleware {
+export function acceptGroup(model: Model): RouterMiddleware {
   const bodySchema = z.number().array().nonempty();
 
   return async (ctx, next) => {
@@ -204,7 +204,7 @@ export function acceptGroup(model: Model): IMiddleware {
   };
 }
 
-export function rejectGroup(model: Model): IMiddleware {
+export function rejectGroup(model: Model): RouterMiddleware {
   const bodySchema = z.number().array().nonempty();
 
   return async (ctx, next) => {
@@ -248,7 +248,7 @@ export function rejectGroup(model: Model): IMiddleware {
   };
 }
 
-export function leaveGroup(model: Model): IMiddleware {
+export function leaveGroup(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx === 'number') {
       const gid = Number(ctx.params.gid);
