@@ -21,6 +21,9 @@
     "url": "https://github.com/bacchus-snu/id/issues"
   },
   "type": "module",
+  "resolutions": {
+    "minimatch@npm:9.0.3": "npm:9.0.7"
+  },
   "dependencies": {
     "@koa/cors": "^5.0.0",
     "@phc/format": "^1.0.0",
