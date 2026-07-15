@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: node:18.16-bookworm
+    container: node:20-bookworm
     services:
       postgres:
         image: postgres:15.3-alpine
