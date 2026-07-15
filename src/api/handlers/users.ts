@@ -1,6 +1,6 @@
+import type { RouterMiddleware } from '@koa/router';
 import { createPublicKey } from 'crypto';
 import { jwtVerify } from 'jose';
-import type { IMiddleware } from 'koa-router';
 import z from 'zod';
 import type Config from '../../config.js';
 import type { EmailAddress } from '../../model/email_addresses.js';
@@ -16,7 +16,7 @@ import { sendEmail, sendEmailForUsername } from '../email.js';
 import changePasswordTemplate from '../templates/change_password_email_template.js';
 import findUsernameTemplate from '../templates/find_username_email_template.js';
 
-export function createUser(model: Model, config: Config): IMiddleware {
+export function createUser(model: Model, config: Config): RouterMiddleware {
   const bodySchema = z.object({
     username: z.string().nonempty().max(20).regex(/^[a-z][a-z0-9]+$/),
     name: z.string().nonempty(),
@@ -88,7 +88,7 @@ export function createUser(model: Model, config: Config): IMiddleware {
   };
 }
 
-export function sendUsernameEmail(model: Model, config: Config): IMiddleware {
+export function sendUsernameEmail(model: Model, config: Config): RouterMiddleware {
   const bodySchema = z.object({
     emailLocal: z.string().trim().nonempty(),
     emailDomain: z.string().trim().nonempty(),
@@ -140,7 +140,7 @@ export function sendUsernameEmail(model: Model, config: Config): IMiddleware {
   };
 }
 
-export function sendChangePasswordEmail(model: Model, config: Config): IMiddleware {
+export function sendChangePasswordEmail(model: Model, config: Config): RouterMiddleware {
   const bodySchema = z.object({
     emailLocal: z.string().trim().nonempty(),
     emailDomain: z.string().trim().nonempty(),
@@ -195,7 +195,7 @@ export function sendChangePasswordEmail(model: Model, config: Config): IMiddlewa
   };
 }
 
-export function checkChangePasswordEmailToken(model: Model): IMiddleware {
+export function checkChangePasswordEmailToken(model: Model): RouterMiddleware {
   const bodySchema = z.object({
     token: z.string().nonempty(),
   });
@@ -229,7 +229,7 @@ export function checkChangePasswordEmailToken(model: Model): IMiddleware {
   };
 }
 
-export function changePassword(model: Model): IMiddleware {
+export function changePassword(model: Model): RouterMiddleware {
   const bodySchema = z.object({
     newPassword: z.string().min(8),
     token: z.string().nonempty(),
@@ -265,7 +265,7 @@ export function changePassword(model: Model): IMiddleware {
   };
 }
 
-export function getUserShell(model: Model): IMiddleware {
+export function getUserShell(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     // authorize
     const userIdx = ctx.state.userIdx;
@@ -292,7 +292,7 @@ export function getUserShell(model: Model): IMiddleware {
   };
 }
 
-export function changeUserShell(model: Model): IMiddleware {
+export function changeUserShell(model: Model): RouterMiddleware {
   const bodySchema = z.object({
     shell: z.string().nonempty(),
   });
@@ -326,7 +326,7 @@ export function changeUserShell(model: Model): IMiddleware {
   };
 }
 
-export function getUserEmails(model: Model): IMiddleware {
+export function getUserEmails(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     // authorize
     const userIdx = ctx.state.userIdx;
@@ -346,7 +346,7 @@ export function getUserEmails(model: Model): IMiddleware {
   };
 }
 
-export function addStudentNumber(model: Model): IMiddleware {
+export function addStudentNumber(model: Model): RouterMiddleware {
   const bodySchema = z.object({
     studentNumber: z.string().regex(/^(\d{5}-\d{3}|\d{4}-\d{4,5})$/),
   });
@@ -380,7 +380,7 @@ export function addStudentNumber(model: Model): IMiddleware {
   };
 }
 
-export function getUserInfo(model: Model, config: Config): IMiddleware {
+export function getUserInfo(model: Model, config: Config): RouterMiddleware {
   return async (ctx, next) => {
     // authorize
     let userIdx: number;
@@ -442,7 +442,7 @@ export function getUserInfo(model: Model, config: Config): IMiddleware {
   };
 }
 
-export function deleteStudentNumber(model: Model): IMiddleware {
+export function deleteStudentNumber(model: Model): RouterMiddleware {
   const schema = z.object({ studentNumber: z.string() });
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx !== 'number') {
@@ -470,7 +470,7 @@ export function deleteStudentNumber(model: Model): IMiddleware {
   };
 }
 
-export function deleteUserEmail(model: Model): IMiddleware {
+export function deleteUserEmail(model: Model): RouterMiddleware {
   const schema = z.object({ emailLocal: z.string(), emailDomain: z.string() });
   return async (ctx, next) => {
     if (typeof ctx.state.userIdx !== 'number') {
