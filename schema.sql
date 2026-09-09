@@ -131,6 +131,20 @@ create table group_reachable_cache (
   unique (supergroup_idx, subgroup_idx)
 );
 
+-- Notices and service promotions shown by the frontend. An announcement may
+-- promote a group, which the frontend then lists first.
+create table announcements (
+  idx serial primary key,
+  title_ko text not null check (title_ko <> ''),
+  title_en text not null check (title_en <> ''),
+  body_ko text not null check (body_ko <> ''),
+  body_en text not null check (body_en <> ''),
+  url text,
+  group_idx integer references groups(idx) on delete set null,
+  starts_at timestamp with time zone not null default now(),
+  ends_at timestamp with time zone
+);
+
 create table user_memberships (
   idx serial primary key,
   user_idx integer not null references users(idx) on delete cascade,
