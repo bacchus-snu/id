@@ -55,6 +55,7 @@
   },
   "oidc": {
     "issuer": "http://localhost:3000/o",
+    "usernameEmailClients": ["cloudstack", "warpgate"],
     "cookieKey": "a secret signing key",
     "jwks": {
       "keys": [
