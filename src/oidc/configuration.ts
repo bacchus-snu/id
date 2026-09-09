@@ -66,12 +66,14 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
       return new OIDCAccount(id, username, groups, name, student_id, email);
     },
     async loadExistingGrant(ctx) {
-      if (!ctx.oidc.client || !ctx.oidc.session || !ctx.oidc.result) {
+      if (!ctx.oidc.client || !ctx.oidc.session) {
         return undefined;
       }
 
+      // without an interaction result (a request served from the session alone),
+      // the grant recorded on the session still applies
       const clientId = ctx.oidc.client.clientId;
-      const grantId = ctx.oidc.result.consent?.grantId
+      const grantId = ctx.oidc.result?.consent?.grantId
         || ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId);
 
       if (grantId) {
