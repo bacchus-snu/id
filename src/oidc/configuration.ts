@@ -18,10 +18,7 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
 
   return {
     adapter,
-    findAccount: async (ctx, id, token) => {
-      const clientId = ctx.oidc?.client?.clientId ?? token?.clientId;
-      const usernameEmail = clientId !== undefined
-        && (oidcConfig.usernameEmailClients ?? []).includes(clientId);
+    findAccount: async (_ctx, id) => {
       const [username, groups, name, student_id, email] = await model.pgDo(async tr => {
         // get name and username
         const userResult = await model.users.getByUserIdx(tr, Number(id));
@@ -42,21 +39,16 @@ export default function createOIDCConfig(model: Model, oidcConfig: Config['oidc'
           .sort((a, b) => b.year - a.year)
           .map(({ sid }) => sid)[0] ?? '';
 
-        let email: string;
-        if (usernameEmail) {
-          email = `${username}@${new URL(oidcConfig.issuer).hostname}`;
-        } else {
-          // get email, hard-coded, 1. snu.ac.kr, 2. last row
-          const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
-          if (emailResult.length === 0) {
-            throw new Error('no email');
-          }
-          const { local: emailLocal, domain: emailDomain } = emailResult.find(({ domain }) =>
-            domain === 'snu.ac.kr'
-          )
-            ?? emailResult[emailResult.length - 1];
-          email = `${emailLocal}@${emailDomain}`;
+        // get email, hard-coded, 1. snu.ac.kr, 2. last row
+        const emailResult = await model.emailAddresses.getEmailsByOwnerIdx(tr, Number(id));
+        if (emailResult.length === 0) {
+          throw new Error('no email');
         }
+        const { local: emailLocal, domain: emailDomain } = emailResult.find(({ domain }) =>
+          domain === 'snu.ac.kr'
+        )
+          ?? emailResult[emailResult.length - 1];
+        const email = `${emailLocal}@${emailDomain}`;
 
         // get groups
         const groupSet = await model.users.getUserReachableGroups(tr, Number(id));
