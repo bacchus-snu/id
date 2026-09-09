@@ -181,6 +181,14 @@ export interface OIDCConfig {
   /** */
   issuer: string;
 
+  /**
+   * Clients that identify users by SNUCSE ID username. They receive
+   * `<username>@<issuer host>` in the email claim instead of the user's own
+   * addresses, because they match logins on that claim alone and the user's
+   * addresses are neither unique nor stable.
+   */
+  usernameEmailClients?: Array<string>;
+
   /** */
   redisURL?: string;
 
