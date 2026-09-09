@@ -1,6 +1,7 @@
 import * as Bunyan from 'bunyan';
 import pg from 'pg';
 import type Config from '../config.js';
+import Announcements from './announcements.js';
 import EmailAddresses from './email_addresses.js';
 import { ControllableError } from './errors.js';
 import Groups from './groups.js';
@@ -24,6 +25,7 @@ export default class Model {
   public readonly shells: Shells;
   public readonly hosts: Hosts;
   public readonly oauth: OAuth;
+  public readonly announcements: Announcements;
 
   private readonly pgConfig: pg.PoolConfig;
   private readonly pgPool: pg.Pool;
@@ -39,6 +41,7 @@ export default class Model {
     this.shells = new Shells();
     this.hosts = new Hosts(this);
     this.oauth = new OAuth();
+    this.announcements = new Announcements();
   }
 
   /**
