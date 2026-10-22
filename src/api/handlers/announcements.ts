@@ -1,7 +1,7 @@
-import type { IMiddleware } from 'koa-router';
+import type { RouterMiddleware } from '@koa/router';
 import type Model from '../../model/model.js';
 
-export function listAnnouncements(model: Model): IMiddleware {
+export function listAnnouncements(model: Model): RouterMiddleware {
   return async (ctx, next) => {
     let announcements;
     try {

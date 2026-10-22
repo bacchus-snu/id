@@ -305,7 +305,6 @@ test('test legacy login', async t => {
 
   const agent = request.agent(app);
 
-  /* eslint-disable @typescript-eslint/naming-convention */
   let response;
 
   response = await agent.post('/Authentication/Login.aspx').send({

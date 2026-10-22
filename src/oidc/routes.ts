@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 
-import Router from 'koa-router';
+import Router from '@koa/router';
 import type OIDCProvider from 'oidc-provider';
 import { errors as oidcErrors } from 'oidc-provider';
 import * as z from 'zod';
@@ -17,7 +17,7 @@ const paramsSchema = z.object({
 const detailsSchema = z.object({
   missingOIDCScope: z.optional(z.array(z.string())),
   missingOIDCClaims: z.optional(z.array(z.string())),
-  missingResourceScopes: z.optional(z.record(z.array(z.string()))),
+  missingResourceScopes: z.optional(z.record(z.string(), z.array(z.string()))),
 });
 
 export default (model: Model, provider: OIDCProvider) => {

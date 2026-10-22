@@ -1,5 +1,5 @@
+import Router from '@koa/router';
 import bodyParser from 'koa-bodyparser';
-import Router from 'koa-router';
 import type OIDCProvider from 'oidc-provider';
 import type { Configuration as OIDCConfiguration } from 'oidc-provider';
 

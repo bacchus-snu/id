@@ -1,5 +1,5 @@
+import type { RouterMiddleware } from '@koa/router';
 import * as crypto from 'crypto';
-import type { IMiddleware } from 'koa-router';
 import type Config from '../../config.js';
 import type Model from '../../model/model.js';
 
@@ -25,7 +25,7 @@ function frontendRedirect(config: Config, path: string) {
   return `${config.google.frontendUrl}${path}`;
 }
 
-export function googleAuth(config: Config): IMiddleware {
+export function googleAuth(config: Config): RouterMiddleware {
   return async ctx => {
     const userIdx = ctx.state.userIdx;
     if (typeof userIdx !== 'number') {
@@ -57,7 +57,7 @@ export function googleAuth(config: Config): IMiddleware {
   };
 }
 
-export function googleCallback(model: Model, config: Config): IMiddleware {
+export function googleCallback(model: Model, config: Config): RouterMiddleware {
   return async ctx => {
     const userIdx = ctx.state.userIdx;
     if (typeof userIdx !== 'number') {

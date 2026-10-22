@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "eqeqeq": [
+      "error",
+      "smart"
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "caughtErrors": "none"
+      }
+    ]
+  },
+  "env": {
+    "builtin": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    ".yarn/**"
+  ]
+}

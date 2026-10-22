@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 ENV YARN_ENABLE_GLOBAL_CACHE=false
 
 FROM base as builder
@@ -25,8 +25,8 @@ RUN apk add --no-cache tini
 WORKDIR /app
 
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY --from=deps /app/.yarn ./.yarn
-COPY --from=deps /app/.pnp.* ./
+COPY .yarn ./.yarn
+COPY --from=deps /app/node_modules node_modules
 COPY --from=builder /app/dist dist
 
 ENTRYPOINT ["/sbin/tini", "--"]
