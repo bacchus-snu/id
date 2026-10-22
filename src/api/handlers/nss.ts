@@ -18,7 +18,7 @@ export function getPasswd(model: Model): RouterMiddleware {
       return;
     }
 
-    let passwd: string;
+    let passwd = '';
     try {
       passwd = await model.pgDo(async tr => {
         return model.users.getPasswdEntries(tr);
@@ -56,7 +56,7 @@ export function getGroup(model: Model): RouterMiddleware {
       return;
     }
 
-    let group: string;
+    let group = '';
     try {
       group = await model.pgDo(async tr => {
         return model.users.getGroupEntries(tr);

@@ -6,8 +6,7 @@
     "arrowFunction.useParentheses": "preferNone"
   },
   "includes": [
-    "{bootstrap,src,test}/**/*.{ts,tsx,js,jsx,cjs,mjs}",
-    ".eslintrc.js"
+    "{bootstrap,src,test}/**/*.{ts,tsx,js,jsx,cjs,mjs}"
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.87.1.wasm"
