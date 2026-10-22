@@ -6,6 +6,7 @@ import type { Configuration as OIDCConfiguration } from 'oidc-provider';
 import type Config from '../config.js';
 import Model from '../model/model.js';
 import createOIDCRouter from '../oidc/routes.js';
+import { listAnnouncements } from './handlers/announcements.js';
 import { checkVerificationEmailToken, sendVerificationEmail } from './handlers/emails.js';
 import { googleAuth, googleCallback } from './handlers/google.js';
 import {
@@ -193,6 +194,12 @@ export function createRouter(
    * 401 if not a valid host
    */
   router.get('/api/nss/group', getGroup(model));
+
+  /**
+   * Get the announcements that are currently active
+   * 200 on success
+   */
+  router.get('/api/announcements', listAnnouncements(model));
 
   /**
    * Get get the group list, along with is_member, is_pending, is_owner
