@@ -17,7 +17,7 @@ const paramsSchema = z.object({
 const detailsSchema = z.object({
   missingOIDCScope: z.optional(z.array(z.string())),
   missingOIDCClaims: z.optional(z.array(z.string())),
-  missingResourceScopes: z.optional(z.record(z.array(z.string()))),
+  missingResourceScopes: z.optional(z.record(z.string(), z.array(z.string()))),
 });
 
 export default (model: Model, provider: OIDCProvider) => {

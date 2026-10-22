@@ -12,7 +12,7 @@ jobs:
     container: node:24-bookworm
     services:
       postgres:
-        image: postgres:15.3-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_PASSWORD: foo
         options: >-

@@ -145,7 +145,7 @@ test('get reachable group object', async t => {
     await createGroupRelation(tr, model, g[1], g[3]);
     await createGroupRelation(tr, model, g[1], g[4]);
 
-    let result: Array<number> = [];
+    let result: Array<number>;
 
     result = await model.groups.getGroupReachableArray(tr, g[0]);
     t.deepEqual(result.sort(), [g[0], g[1], g[2], g[3], g[4]].sort());

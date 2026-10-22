@@ -183,8 +183,6 @@ export default class Groups {
   }
 
   public async updateGroupReachableCache(tr: Transaction): Promise<void> {
-    let groupIdxArray: Array<number> = [];
-    let groupRelationArray: Array<GroupRelationship> = [];
     const firstGroupReachable: GroupReachable = {};
     const cache: GroupReachable = {};
 
@@ -193,8 +191,8 @@ export default class Groups {
     await tr.query('TRUNCATE group_reachable_cache');
 
     // these queries should be executed AFTER acquiring lock
-    groupIdxArray = await this.getAllIdx(tr);
-    groupRelationArray = await this.getAllGroupRelation(tr);
+    const groupIdxArray = await this.getAllIdx(tr);
+    const groupRelationArray = await this.getAllGroupRelation(tr);
 
     groupIdxArray.forEach(groupIdx => {
       firstGroupReachable[groupIdx] = [];
