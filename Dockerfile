@@ -24,10 +24,9 @@ FROM base as runner
 RUN apk add --no-cache tini
 WORKDIR /app
 
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
+COPY package.json ./
 COPY --from=deps /app/node_modules node_modules
 COPY --from=builder /app/dist dist
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["yarn", "start"]
+CMD ["sh", "-c", "node dist/bootstrap/rebuild_group_cache.js && exec node dist/src/index.js"]
