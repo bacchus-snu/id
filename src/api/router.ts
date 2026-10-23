@@ -44,7 +44,7 @@ export function createRouter(
   const router = new Router();
   router.use(bodyParser());
   router.use(async (ctx, next) => {
-    const oidcCtx = oidcProvider.app.createContext(ctx.req, ctx.res);
+    const oidcCtx = oidcProvider.createContext(ctx.req, ctx.res);
     const session = await oidcProvider.Session.get(oidcCtx);
     ctx.state.setSession = async (userIdx: number) => {
       session.loginAccount({
