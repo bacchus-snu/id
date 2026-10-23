@@ -1,6 +1,5 @@
 import cors from '@koa/cors';
 import * as Bunyan from 'bunyan';
-import * as crypto from 'crypto';
 import Koa from 'koa';
 import mount from 'koa-mount';
 import OIDCProvider from 'oidc-provider';
@@ -19,8 +18,12 @@ const createServer = (config: Config, log: Bunyan, inputModel?: Model) => {
   app.proxy = config.api.proxy;
   const router = createRouter(model, oidcProvider, oidcConfig, config);
 
-  const key = crypto.randomBytes(256).toString('hex');
-  app.keys = [key];
+  // Since oidc-provider 9 the Provider is itself a Koa app, and koa-mount runs
+  // its middleware on this app's context, so the provider signs its cookies
+  // (_interaction, _session, ...) with *these* keys. Our own routes read them
+  // through oidcProvider.createContext(), which verifies with
+  // oidc.cookieKey, so both apps must share the same signing keys.
+  app.keys = [config.oidc.cookieKey];
 
   app.on('error', e => {
     log.error('API error', e);
@@ -44,7 +47,7 @@ const createServer = (config: Config, log: Bunyan, inputModel?: Model) => {
     }))
     .use(router.routes())
     .use(router.allowedMethods())
-    .use(mount('/o', oidcProvider.app));
+    .use(mount('/o', oidcProvider));
 
   return app;
 };
